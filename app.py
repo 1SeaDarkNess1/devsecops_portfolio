@@ -18,5 +18,5 @@ def health_check():
 #3. App starting point 
 if __name__ == '__main__':
 	#host='0.0.0.0', mandatory in Docker
-	app.run(host='0.0.0.0', port=5000) #nosemgrep
+	app.run(host='0.0.0.0', port=5000) # nosemgrep
 
