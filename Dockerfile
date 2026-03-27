@@ -6,7 +6,7 @@ WORKDIR /app
 
 # 2. Bringing and installing the libraries
 COPY requirements.txt .
-RUN pip install -r requirements.txtrequirements.txt
+RUN pip install -r requirements.txt
 
 # 3. Bringing all files from the project (inclusiv app.py)
 COPY . .
