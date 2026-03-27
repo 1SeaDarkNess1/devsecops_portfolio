@@ -1,0 +1,48 @@
+name: DevSecOps CD Pipeline - Deploy
+
+# Cand se declanseaza? Doar dupa ce CI-ul s-a terminat cu SUCCES
+on:
+  workflow_run:
+    workflows: ["DevSecOps CI Pipeline"]
+    types:
+      - completed
+
+jobs:
+  deploy-to-server:
+    # Ruleaza doar daca robotul de CI a dat "verde"
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    runs-on: ubuntu-latest
+
+    steps:
+      # Pasul 1: Luam codul curent
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      # Pasul 2: Copiem fisierele pe serverul tau prin SSH
+      - name: Copy files to VPS
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.VPS_IP }}
+          username: ${{ secrets.VPS_USER }}
+          port: ${{ secrets.VPS_PORT }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          source: "."
+          target: "/home/bbm/devsecops_portfolio"
+
+      # Pasul 3: Intram pe server si pornim Docker-ul
+      - name: Deploy cu Docker pe Server
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.VPS_IP }}
+          username: ${{ secrets.VPS_USER }}
+          port: ${{ secrets.VPS_PORT }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          script: |
+            cd /home/bbm/devsecops_portfolio
+            # Oprim versiunea veche daca exista
+            docker stop portfolio-app || true
+            docker rm portfolio-app || true
+            # Construim imaginea noua din codul adus proaspat
+            docker build -t bbm-portfolio .
+            # Pornim aplicatia pe portul 80 (HTTP) si il legam de portul 5000 din container
+            docker run -d -p 80:5000 --name portfolio-app bbm-portfolio
