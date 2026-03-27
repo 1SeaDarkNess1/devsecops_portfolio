@@ -1,0 +1,39 @@
+name: DevSecOps CI Pipeline
+
+# Cand se declanseaza robotul? La fiecare push pe ramura main.
+on:
+  push:
+    branches: [ "main" ]
+
+jobs:
+  security-scanning:
+    runs-on: ubuntu-latest
+    
+    steps:
+      # Pasul 1: Robotul descarca codul din repo pentru a-l analiza
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      # Pasul 2: Cautam parole uitate in cod (Secret Scanning)
+      - name: Gitleaks Scan
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      # Pasul 3: Cautam vulnerabilitati logice in cod (SAST)
+      - name: Semgrep Scan
+        uses: returntocorp/semgrep-action@v1
+        with:
+          config: "p/default"
+
+      # Pasul 4: Scanam Containerul Docker de virusi si pachete vechi
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: 'fs'
+          scan-ref: '.'
+          format: 'table'
+          exit-code: '1' # Daca gaseste o eroare CRITICA, opreste toata banda rulanta
+          severity: 'CRITICAL,HIGH'
