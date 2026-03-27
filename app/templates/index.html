@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BBM System Monitor</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: #0a0a0f;
+            color: #e0e0ff;
+            font-family: 'JetBrains Mono', monospace, sans-serif;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        h1 {
+            text-align: center;
+            color: #00e5ff;
+            font-size: 24px;
+            margin-bottom: 8px;
+            letter-spacing: 4px;
+        }
+        .subtitle {
+            text-align: center;
+            color: #444;
+            font-size: 12px;
+            margin-bottom: 30px;
+        }
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 16px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .card {
+            background: #0e0e1c;
+            border: 1px solid #1c1c32;
+            border-radius: 12px;
+            padding: 20px;
+        }
+        .card-title {
+            font-size: 11px;
+            letter-spacing: 3px;
+            color: #444;
+            margin-bottom: 12px;
+            text-transform: uppercase;
+        }
+        .metric-value {
+            font-size: 42px;
+            font-weight: bold;
+            color: #00e5ff;
+            line-height: 1;
+        }
+        .metric-sub {
+            font-size: 12px;
+            color: #666;
+            margin-top: 6px;
+        }
+        .progress-bar {
+            height: 6px;
+            background: #1c1c32;
+            border-radius: 3px;
+            margin-top: 12px;
+            overflow: hidden;
+        }
+        .progress-fill {
+            height: 100%;
+            border-radius: 3px;
+            transition: width 0.5s ease;
+        }
+        .ok { background: #2ecc71; }
+        .warn { background: #ffd166; }
+        .danger { background: #ff4d6d; }
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            font-size: 12px;
+            padding: 4px 0;
+            border-bottom: 1px solid #1c1c32;
+            color: #888;
+        }
+        .info-row:last-child { border-bottom: none; }
+        .info-row span:last-child { color: #00e5ff; }
+        .status {
+            text-align: center;
+            font-size: 11px;
+            color: #444;
+            margin-top: 20px;
+        }
+        .dot {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            background: #2ecc71;
+            border-radius: 50%;
+            margin-right: 6px;
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
+    </style>
+</head>
+<body>
+    <h1>⚡ SYSTEM MONITOR</h1>
+    <div class="subtitle" id="hostname">Loading...</div>
+
+    <div class="grid">
+        <div class="card">
+            <div class="card-title">CPU Usage</div>
+            <div class="metric-value" id="cpu-percent">--%</div>
+            <div class="metric-sub" id="cpu-cores">-- cores</div>
+            <div class="progress-bar">
+                <div class="progress-fill ok" id="cpu-bar" style="width:0%"></div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-title">Memory (RAM)</div>
+            <div class="metric-value" id="ram-percent">--%</div>
+            <div class="metric-sub" id="ram-detail">-- / -- GB</div>
+            <div class="progress-bar">
+                <div class="progress-fill ok" id="ram-bar" style="width:0%"></div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-title">Disk Usage</div>
+            <div class="metric-value" id="disk-percent">--%</div>
+            <div class="metric-sub" id="disk-detail">-- / -- GB</div>
+            <div class="progress-bar">
+                <div class="progress-fill ok" id="disk-bar" style="width:0%"></div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-title">Network I/O</div>
+            <div class="info-row">
+                <span>Sent</span>
+                <span id="net-sent">-- MB</span>
+            </div>
+            <div class="info-row">
+                <span>Received</span>
+                <span id="net-recv">-- MB</span>
+            </div>
+            <div class="info-row">
+                <span>Uptime</span>
+                <span id="uptime">--</span>
+            </div>
+            <div class="info-row">
+                <span>OS</span>
+                <span id="os">--</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="status">
+        <span class="dot"></span>
+        Live — actualizat la fiecare 3 secunde
+    </div>
+
+    <script>
+        function getColor(percent) {
+            if (percent < 60) return 'ok';
+            if (percent < 85) return 'warn';
+            return 'danger';
+        }
+
+        async function updateMetrics() {
+            try {
+                const res = await fetch('/api/metrics');
+                const d = await res.json();
+
+                document.getElementById('hostname').textContent = 
+                    d.hostname + ' · ' + d.os;
+
+                // CPU
+                document.getElementById('cpu-percent').textContent = 
+                    d.cpu.percent + '%';
+                document.getElementById('cpu-cores').textContent = 
+                    d.cpu.cores + ' cores';
+                const cpuBar = document.getElementById('cpu-bar');
+                cpuBar.style.width = d.cpu.percent + '%';
+                cpuBar.className = 'progress-fill ' + getColor(d.cpu.percent);
+
+                // RAM
+                document.getElementById('ram-percent').textContent = 
+                    d.ram.percent + '%';
+                document.getElementById('ram-detail').textContent = 
+                    d.ram.used + ' / ' + d.ram.total + ' GB';
+                const ramBar = document.getElementById('ram-bar');
+                ramBar.style.width = d.ram.percent + '%';
+                ramBar.className = 'progress-fill ' + getColor(d.ram.percent);
+
+                // Disk
+                document.getElementById('disk-percent').textContent = 
+                    d.disk.percent + '%';
+                document.getElementById('disk-detail').textContent = 
+                    d.disk.used + ' / ' + d.disk.total + ' GB';
+                const diskBar = document.getElementById('disk-bar');
+                diskBar.style.width = d.disk.percent + '%';
+                diskBar.className = 'progress-fill ' + getColor(d.disk.percent);
+
+                // Network + info
+                document.getElementById('net-sent').textContent = 
+                    d.network.bytes_sent + ' MB';
+                document.getElementById('net-recv').textContent = 
+                    d.network.bytes_recv + ' MB';
+                document.getElementById('uptime').textContent = d.uptime;
+                document.getElementById('os').textContent = d.os;
+
+            } catch(e) {
+                console.error('Eroare fetch:', e);
+            }
+        }
+
+        updateMetrics();
+        setInterval(updateMetrics, 3000);
+    </script>
+</body>
+</html>
