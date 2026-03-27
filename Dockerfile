@@ -5,7 +5,7 @@ FROM python:3.11-slim
 WORKDIR /app
 
 # 2. Bringing and installing the libraries
-COPY req.txt .
+COPY requirements.txt .
 RUN pip install -r req.txt
 
 # 3. Bringing all files from the project (inclusiv app.py)
