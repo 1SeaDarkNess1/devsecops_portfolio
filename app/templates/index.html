@@ -3,112 +3,486 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BBM System Monitor</title>
+    <title>BBM System Monitor — Laboratorul DevSecOps</title>
+    <meta name="description" content="Real-time cyberpunk system monitor dashboard for BBM DevSecOps Lab. CPU, RAM, Disk, Network metrics with live updates.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700;800&display=swap" rel="stylesheet">
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+        /* ═══════════════════════════════════════════════
+           CSS RESET & CUSTOM PROPERTIES
+        ═══════════════════════════════════════════════ */
+        :root {
+            --cyan:        #00e5ff;
+            --cyan-dim:    rgba(0, 229, 255, 0.15);
+            --cyan-glow:   rgba(0, 229, 255, 0.45);
+            --magenta:     #ff2cf1;
+            --magenta-dim: rgba(255, 44, 241, 0.12);
+            --magenta-glow:rgba(255, 44, 241, 0.40);
+            --neon-yellow:  #faff00;
+            --neon-red:     #ff1744;
+            --neon-green:   #39ff14;
+            --bg-deep:     #04060f;
+            --bg-mid:      #0a0e1a;
+            --glass-bg:    rgba(10, 14, 30, 0.55);
+            --glass-border:rgba(255, 255, 255, 0.07);
+            --glass-border-hover: rgba(0, 229, 255, 0.30);
+            --text-muted:  rgba(180, 190, 220, 0.45);
+            --text-body:   rgba(210, 220, 245, 0.85);
+            --radius:      16px;
+            --transition:  0.3s ease;
+        }
+
+        *, *::before, *::after {
+            margin: 0; padding: 0; box-sizing: border-box;
+        }
+
+        /* ═══════════════════════════════════════════════
+           BODY – Deep gradient + hex-grid canvas
+        ═══════════════════════════════════════════════ */
         body {
-            background: #0a0a0f;
-            color: #e0e0ff;
-            font-family: 'JetBrains Mono', monospace, sans-serif;
+            background: var(--bg-deep);
+            color: var(--text-body);
+            font-family: 'JetBrains Mono', 'Fira Code', 'Cascadia Mono', monospace;
             min-height: 100vh;
-            padding: 20px;
+            padding: 24px 16px 40px;
+            overflow-x: hidden;
+            position: relative;
         }
+
+        /* Animated gradient layer */
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background: linear-gradient(
+                165deg,
+                #04060f 0%,
+                #080d1e 25%,
+                #0c1228 50%,
+                #08091a 75%,
+                #020308 100%
+            );
+            background-size: 400% 400%;
+            animation: gradientShift 20s ease infinite;
+            z-index: -3;
+        }
+
+        @keyframes gradientShift {
+            0%   { background-position: 0% 50%; }
+            50%  { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        /* Hex-grid overlay */
+        body::after {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='60' height='52'%3E%3Cpath d='M30 0l30 15v22L30 52 0 37V15z' fill='none' stroke='%2300e5ff' stroke-width='0.3' opacity='0.06'/%3E%3C/svg%3E");
+            background-size: 60px 52px;
+            animation: hexDrift 40s linear infinite;
+            z-index: -2;
+            pointer-events: none;
+        }
+
+        @keyframes hexDrift {
+            0%   { background-position: 0 0; }
+            100% { background-position: 60px 52px; }
+        }
+
+        /* Scanline CRT overlay */
+        .scanlines {
+            position: fixed;
+            inset: 0;
+            background: repeating-linear-gradient(
+                0deg,
+                transparent,
+                transparent 2px,
+                rgba(0, 0, 0, 0.04) 2px,
+                rgba(0, 0, 0, 0.04) 4px
+            );
+            pointer-events: none;
+            z-index: 9999;
+        }
+
+        /* ═══════════════════════════════════════════════
+           HEADER
+        ═══════════════════════════════════════════════ */
+        .header-group {
+            text-align: center;
+            margin-bottom: 40px;
+            position: relative;
+        }
+
         h1 {
-            text-align: center;
-            color: #00e5ff;
-            font-size: 24px;
-            margin-bottom: 8px;
-            letter-spacing: 4px;
+            font-size: clamp(20px, 4vw, 32px);
+            font-weight: 800;
+            letter-spacing: 6px;
+            text-transform: uppercase;
+            color: var(--cyan);
+            text-shadow:
+                0 0 8px  var(--cyan-glow),
+                0 0 20px var(--cyan-dim),
+                0 0 40px rgba(0, 229, 255, 0.08);
+            position: relative;
+            display: inline-block;
         }
+
+        h1::after {
+            content: '';
+            display: block;
+            width: 60%;
+            height: 1px;
+            margin: 10px auto 0;
+            background: linear-gradient(90deg, transparent, var(--cyan-glow), transparent);
+        }
+
         .subtitle {
-            text-align: center;
-            color: #444;
-            font-size: 12px;
-            margin-bottom: 30px;
+            font-size: 11px;
+            letter-spacing: 3px;
+            color: var(--text-muted);
+            margin-top: 6px;
+            text-transform: uppercase;
         }
+
+        .lab-badge {
+            display: inline-block;
+            margin-top: 12px;
+            padding: 4px 14px;
+            font-size: 9px;
+            letter-spacing: 4px;
+            text-transform: uppercase;
+            color: var(--magenta);
+            border: 1px solid var(--magenta-dim);
+            border-radius: 20px;
+            background: rgba(255, 44, 241, 0.04);
+            text-shadow: 0 0 6px var(--magenta-glow);
+        }
+
+        /* ═══════════════════════════════════════════════
+           GRID LAYOUT
+        ═══════════════════════════════════════════════ */
         .grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 16px;
+            gap: 20px;
             max-width: 1200px;
             margin: 0 auto;
         }
+
+        /* ═══════════════════════════════════════════════
+           GLASSMORPHISM CARDS
+        ═══════════════════════════════════════════════ */
         .card {
-            background: #0e0e1c;
-            border: 1px solid #1c1c32;
-            border-radius: 12px;
-            padding: 20px;
-        }
-        .card-title {
-            font-size: 11px;
-            letter-spacing: 3px;
-            color: #444;
-            margin-bottom: 12px;
-            text-transform: uppercase;
-        }
-        .metric-value {
-            font-size: 42px;
-            font-weight: bold;
-            color: #00e5ff;
-            line-height: 1;
-        }
-        .metric-sub {
-            font-size: 12px;
-            color: #666;
-            margin-top: 6px;
-        }
-        .progress-bar {
-            height: 6px;
-            background: #1c1c32;
-            border-radius: 3px;
-            margin-top: 12px;
+            background: var(--glass-bg);
+            backdrop-filter: blur(18px) saturate(1.4);
+            -webkit-backdrop-filter: blur(18px) saturate(1.4);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius);
+            padding: 24px;
+            position: relative;
             overflow: hidden;
+            transition:
+                transform var(--transition),
+                border-color var(--transition),
+                box-shadow var(--transition);
+            box-shadow:
+                0 4px 30px rgba(0, 0, 0, 0.40),
+                inset 0 1px 0 rgba(255, 255, 255, 0.03);
         }
+
+        /* Subtle corner accent */
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0;
+            width: 40px; height: 40px;
+            border-top: 1px solid var(--cyan-dim);
+            border-left: 1px solid var(--cyan-dim);
+            border-radius: var(--radius) 0 0 0;
+            pointer-events: none;
+            transition: border-color var(--transition);
+        }
+
+        .card::after {
+            content: '';
+            position: absolute;
+            bottom: 0; right: 0;
+            width: 40px; height: 40px;
+            border-bottom: 1px solid var(--magenta-dim);
+            border-right: 1px solid var(--magenta-dim);
+            border-radius: 0 0 var(--radius) 0;
+            pointer-events: none;
+            transition: border-color var(--transition);
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            border-color: var(--glass-border-hover);
+            box-shadow:
+                0 8px 50px rgba(0, 229, 255, 0.08),
+                0 4px 30px rgba(0, 0, 0, 0.50),
+                inset 0 1px 0 rgba(255, 255, 255, 0.05);
+        }
+
+        .card:hover::before {
+            border-top-color: var(--cyan-glow);
+            border-left-color: var(--cyan-glow);
+        }
+
+        .card:hover::after {
+            border-bottom-color: var(--magenta-glow);
+            border-right-color: var(--magenta-glow);
+        }
+
+        /* ═══════════════════════════════════════════════
+           CARD CONTENT
+        ═══════════════════════════════════════════════ */
+        .card-title {
+            font-size: 10px;
+            font-weight: 500;
+            letter-spacing: 4px;
+            text-transform: uppercase;
+            color: var(--magenta);
+            margin-bottom: 14px;
+            text-shadow: 0 0 8px var(--magenta-dim);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .card-title::before {
+            content: '▸';
+            color: var(--magenta);
+            font-size: 12px;
+        }
+
+        .metric-value {
+            font-size: clamp(36px, 5vw, 48px);
+            font-weight: 800;
+            color: var(--cyan);
+            line-height: 1;
+            text-shadow:
+                0 0 10px var(--cyan-glow),
+                0 0 30px var(--cyan-dim);
+            transition: color var(--transition), text-shadow var(--transition);
+        }
+
+        .metric-sub {
+            font-size: 11px;
+            color: var(--text-muted);
+            margin-top: 8px;
+            letter-spacing: 1px;
+        }
+
+        /* ═══════════════════════════════════════════════
+           NEON PROGRESS BARS
+        ═══════════════════════════════════════════════ */
+        .progress-bar {
+            height: 8px;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.04);
+            border-radius: 8px;
+            margin-top: 16px;
+            overflow: hidden;
+            position: relative;
+        }
+
         .progress-fill {
             height: 100%;
-            border-radius: 3px;
-            transition: width 0.5s ease;
+            border-radius: 8px;
+            transition: width 0.6s cubic-bezier(0.22, 1, 0.36, 1),
+                        background var(--transition),
+                        box-shadow var(--transition);
+            position: relative;
         }
-        .ok { background: #2ecc71; }
-        .warn { background: #ffd166; }
-        .danger { background: #ff4d6d; }
+
+        /* Animated shimmer on progress bar */
+        .progress-fill::after {
+            content: '';
+            position: absolute;
+            top: 0; left: -100%; right: 0; bottom: 0;
+            background: linear-gradient(
+                90deg,
+                transparent 0%,
+                rgba(255, 255, 255, 0.15) 50%,
+                transparent 100%
+            );
+            animation: shimmer 2.5s ease-in-out infinite;
+        }
+
+        @keyframes shimmer {
+            0%   { left: -100%; }
+            100% { left: 200%; }
+        }
+
+        /* Neon color classes with glow */
+        .ok {
+            background: linear-gradient(90deg, #00e5ff, #39ff14);
+            box-shadow:
+                0 0 8px  rgba(0, 229, 255, 0.5),
+                0 0 20px rgba(0, 229, 255, 0.2);
+        }
+        .warn {
+            background: linear-gradient(90deg, #faff00, #ffaa00);
+            box-shadow:
+                0 0 8px  rgba(250, 255, 0, 0.5),
+                0 0 20px rgba(250, 255, 0, 0.2);
+        }
+        .danger {
+            background: linear-gradient(90deg, #ff4444, #ff1744);
+            box-shadow:
+                0 0 8px  rgba(255, 23, 68, 0.6),
+                0 0 20px rgba(255, 23, 68, 0.3);
+        }
+
+        /* ═══════════════════════════════════════════════
+           INFO ROWS (Network card)
+        ═══════════════════════════════════════════════ */
         .info-row {
             display: flex;
             justify-content: space-between;
+            align-items: center;
             font-size: 12px;
-            padding: 4px 0;
-            border-bottom: 1px solid #1c1c32;
-            color: #888;
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+            color: var(--text-muted);
+            transition: color var(--transition);
         }
+
         .info-row:last-child { border-bottom: none; }
-        .info-row span:last-child { color: #00e5ff; }
+
+        .info-row:hover {
+            color: var(--text-body);
+        }
+
+        .info-row span:first-child {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .info-row span:first-child::before {
+            content: '›';
+            color: var(--magenta);
+            font-size: 14px;
+            font-weight: 700;
+        }
+
+        .info-row span:last-child {
+            color: var(--cyan);
+            font-weight: 500;
+            text-shadow: 0 0 6px var(--cyan-dim);
+        }
+
+        /* ═══════════════════════════════════════════════
+           STATUS BAR
+        ═══════════════════════════════════════════════ */
         .status {
             text-align: center;
-            font-size: 11px;
-            color: #444;
-            margin-top: 20px;
+            font-size: 10px;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            margin-top: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
         }
+
         .dot {
             display: inline-block;
             width: 8px;
             height: 8px;
-            background: #2ecc71;
+            background: var(--neon-green);
             border-radius: 50%;
-            margin-right: 6px;
-            animation: pulse 2s infinite;
+            box-shadow:
+                0 0 6px  rgba(57, 255, 20, 0.6),
+                0 0 16px rgba(57, 255, 20, 0.3);
+            animation: pulse 2s ease-in-out infinite;
         }
+
         @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.3; }
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50%      { opacity: 0.3; transform: scale(0.8); }
+        }
+
+        /* ═══════════════════════════════════════════════
+           ENTRANCE ANIMATION
+        ═══════════════════════════════════════════════ */
+        .card {
+            opacity: 0;
+            transform: translateY(25px);
+            animation: cardIn 0.6s ease forwards;
+        }
+        .card:nth-child(1) { animation-delay: 0.1s; }
+        .card:nth-child(2) { animation-delay: 0.2s; }
+        .card:nth-child(3) { animation-delay: 0.3s; }
+        .card:nth-child(4) { animation-delay: 0.4s; }
+
+        @keyframes cardIn {
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* ═══════════════════════════════════════════════
+           COUNTER-UP FLASH
+        ═══════════════════════════════════════════════ */
+        .metric-value.counting {
+            animation: counterFlash 0.4s ease;
+        }
+
+        @keyframes counterFlash {
+            0%   { opacity: 0.4; transform: scale(0.95); }
+            50%  { opacity: 1; transform: scale(1.04); text-shadow: 0 0 20px var(--cyan-glow), 0 0 40px var(--cyan-dim); }
+            100% { opacity: 1; transform: scale(1); }
+        }
+
+        /* ═══════════════════════════════════════════════
+           RESPONSIVE
+        ═══════════════════════════════════════════════ */
+        @media (max-width: 640px) {
+            body { padding: 16px 10px 32px; }
+            .grid { gap: 14px; }
+            .card { padding: 18px; }
+            h1 { letter-spacing: 3px; }
+            .metric-value { font-size: 34px; }
+            .lab-badge { font-size: 8px; letter-spacing: 3px; }
+        }
+
+        @media (max-width: 380px) {
+            .grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* ═══════════════════════════════════════════════
+           SCROLLBAR
+        ═══════════════════════════════════════════════ */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: var(--bg-deep); }
+        ::-webkit-scrollbar-thumb {
+            background: var(--cyan-dim);
+            border-radius: 3px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--cyan-glow);
         }
     </style>
 </head>
 <body>
-    <h1>⚡ SYSTEM MONITOR</h1>
-    <div class="subtitle" id="hostname">Loading...</div>
+    <!-- CRT scanline overlay -->
+    <div class="scanlines" aria-hidden="true"></div>
+
+    <div class="header-group">
+        <h1>⚡ SYSTEM MONITOR</h1>
+        <div class="subtitle" id="hostname">Loading...</div>
+        <div class="lab-badge">Laboratorul BBM DevSecOps</div>
+    </div>
 
     <div class="grid">
-        <div class="card">
+        <div class="card" id="card-cpu">
             <div class="card-title">CPU Usage</div>
             <div class="metric-value" id="cpu-percent">--%</div>
             <div class="metric-sub" id="cpu-cores">-- cores</div>
@@ -117,7 +491,7 @@
             </div>
         </div>
 
-        <div class="card">
+        <div class="card" id="card-ram">
             <div class="card-title">Memory (RAM)</div>
             <div class="metric-value" id="ram-percent">--%</div>
             <div class="metric-sub" id="ram-detail">-- / -- GB</div>
@@ -126,7 +500,7 @@
             </div>
         </div>
 
-        <div class="card">
+        <div class="card" id="card-disk">
             <div class="card-title">Disk Usage</div>
             <div class="metric-value" id="disk-percent">--%</div>
             <div class="metric-sub" id="disk-detail">-- / -- GB</div>
@@ -135,7 +509,7 @@
             </div>
         </div>
 
-        <div class="card">
+        <div class="card" id="card-net">
             <div class="card-title">Network I/O</div>
             <div class="info-row">
                 <span>Sent</span>
@@ -162,6 +536,35 @@
     </div>
 
     <script>
+        // ─── Counter-Up Animation Helper ───
+        function animateCounter(element, targetValue, suffix) {
+            const current = parseFloat(element.textContent) || 0;
+            const target = parseFloat(targetValue);
+            if (isNaN(target)) {
+                element.textContent = targetValue + suffix;
+                return;
+            }
+            const duration = 400;
+            const startTime = performance.now();
+            element.classList.add('counting');
+
+            function step(now) {
+                const elapsed = now - startTime;
+                const progress = Math.min(elapsed / duration, 1);
+                // easeOutExpo
+                const eased = progress === 1 ? 1 : 1 - Math.pow(2, -10 * progress);
+                const value = Math.round(current + (target - current) * eased);
+                element.textContent = value + suffix;
+                if (progress < 1) {
+                    requestAnimationFrame(step);
+                } else {
+                    element.textContent = target + suffix;
+                    setTimeout(() => element.classList.remove('counting'), 100);
+                }
+            }
+            requestAnimationFrame(step);
+        }
+
         function getColor(percent) {
             if (percent < 60) return 'ok';
             if (percent < 85) return 'warn';
@@ -177,8 +580,7 @@
                     d.hostname + ' · ' + d.os;
 
                 // CPU
-                document.getElementById('cpu-percent').textContent = 
-                    d.cpu.percent + '%';
+                animateCounter(document.getElementById('cpu-percent'), d.cpu.percent, '%');
                 document.getElementById('cpu-cores').textContent = 
                     d.cpu.cores + ' cores';
                 const cpuBar = document.getElementById('cpu-bar');
@@ -186,8 +588,7 @@
                 cpuBar.className = 'progress-fill ' + getColor(d.cpu.percent);
 
                 // RAM
-                document.getElementById('ram-percent').textContent = 
-                    d.ram.percent + '%';
+                animateCounter(document.getElementById('ram-percent'), d.ram.percent, '%');
                 document.getElementById('ram-detail').textContent = 
                     d.ram.used + ' / ' + d.ram.total + ' GB';
                 const ramBar = document.getElementById('ram-bar');
@@ -195,8 +596,7 @@
                 ramBar.className = 'progress-fill ' + getColor(d.ram.percent);
 
                 // Disk
-                document.getElementById('disk-percent').textContent = 
-                    d.disk.percent + '%';
+                animateCounter(document.getElementById('disk-percent'), d.disk.percent, '%');
                 document.getElementById('disk-detail').textContent = 
                     d.disk.used + ' / ' + d.disk.total + ' GB';
                 const diskBar = document.getElementById('disk-bar');
