@@ -1212,14 +1212,10 @@
             }
 
             // ===========================
-            //  C. EVENT STREAM (Synced)
+            //  C. EVENT STREAM (Real Data Pipeline)
             // ===========================
-            const protocols = ['SSH', 'HTTP', 'HTTPS', 'TCP', 'FTP', 'SMTP', 'DNS', 'RDP'];
-            function randCoord() {
-                const lat = (Math.random() * 180 - 90).toFixed(2);
-                const lng = (Math.random() * 360 - 180).toFixed(2);
-                return lat + '\u00b0, ' + lng + '\u00b0';
-            }
+            const impactQueue = []; // queued real log texts waiting for arc to land
+
             function fmtTime() {
                 const now = new Date();
                 return String(now.getHours()).padStart(2, '0') + ':' +
@@ -1227,25 +1223,44 @@
                        String(now.getSeconds()).padStart(2, '0');
             }
 
+            // Classify a log line to pick the right tag color
+            function classifyThreat(text) {
+                const lower = text.toLowerCase();
+                if (lower.includes('ban'))             return 'alert';
+                if (lower.includes('failed password')) return 'block';
+                if (lower.includes('invalid user'))    return 'warn';
+                return 'block';
+            }
+
+            const tagClasses = {
+                alert: 'log-tag-alert',
+                block: 'log-tag-block',
+                warn:  'log-tag-warn'
+            };
+            const tagLabels = {
+                alert: '[ALERT]',
+                block: '[BLOCK]',
+                warn:  '[WARN]'
+            };
+
             function onImpact() {
+                // If we have a queued real log, use it; otherwise skip
+                const realLog = impactQueue.shift();
+                if (!realLog) return;
+
                 counters.blocked++;
-                const proto = protocols[Math.floor(Math.random() * protocols.length)];
-                const coord = randCoord();
+                const tag = classifyThreat(realLog);
+
                 const html = '<span class="log-timestamp">[' + fmtTime() + ']</span> ' +
-                    '<span class="log-tag-block">INTRUSION BLOCKED</span> ' +
-                    '<span class="log-timestamp">//</span> ' +
-                    '<span class="log-timestamp">ORIGIN:</span> <span class="log-ip">' + coord + '</span> ' +
-                    '<span class="log-timestamp">//</span> ' +
-                    '<span class="log-timestamp">PROTOCOL:</span> <span class="log-service">' + proto + '</span> ' +
-                    '<span class="log-timestamp">//</span> ' +
-                    '<span class="log-timestamp">ACTION:</span> <span class="log-tag-alert">DROP</span>';
+                    '<span class="' + tagClasses[tag] + '">' + tagLabels[tag] + '</span> ' +
+                    '<span class="log-service">' + escapeHtml(realLog) + '</span>';
 
                 const line = document.createElement('div');
                 line.className = 'log-line';
                 line.innerHTML = html;
                 logContainer.appendChild(line);
 
-                // Remove excess lines immediately (detach from DOM first, then animate)
+                // Keep only MAX visible
                 while (logContainer.children.length > MAX_LOG_LINES) {
                     logContainer.removeChild(logContainer.firstChild);
                 }
@@ -1261,6 +1276,14 @@
                 if (countEls.blocked2)  countEls.blocked2.textContent  = counters.blocked;
                 if (countEls.warnings2) countEls.warnings2.textContent = counters.warnings;
                 if (countEls.banned2)   countEls.banned2.textContent   = counters.banned;
+            }
+
+            // Simple HTML escape for real log text
+            function escapeHtml(str) {
+                return str.replace(/&/g, '&amp;')
+                          .replace(/</g, '&lt;')
+                          .replace(/>/g, '&gt;')
+                          .replace(/"/g, '&quot;');
             }
 
             // ===========================
@@ -1283,15 +1306,91 @@
             requestAnimationFrame(render);
 
             // ===========================
-            //  E. ATTACK SCHEDULER
+            //  E. REAL THREAT POLLER
             // ===========================
-            function scheduleAttack() {
-                const cw = parseFloat(canvas.style.width) || 400;
-                const ch = parseFloat(canvas.style.height) || 300;
-                spawnArc(cw * 0.5, ch * 0.5, Math.min(cw, ch) * 0.32);
-                setTimeout(scheduleAttack, 2000 + Math.random() * 2000);
+            const seenThreats = new Set(); // deduplication
+            let simulationMode = false;
+
+            async function pollThreats() {
+                try {
+                    const res = await fetch('/api/threats');
+                    const data = await res.json();
+
+                    if (data.status === 'file_not_found' && !simulationMode) {
+                        simulationMode = true;
+                        console.warn('[ThreatPoller] Log file not found — activating simulation mode.');
+                        startSimulation();
+                        return;
+                    }
+
+                    const threats = data.threats || [];
+                    const newThreats = [];
+
+                    for (const t of threats) {
+                        if (!seenThreats.has(t)) {
+                            seenThreats.add(t);
+                            newThreats.push(t);
+                        }
+                    }
+
+                    // Prevent Set from growing forever (trim at 200)
+                    if (seenThreats.size > 200) {
+                        const iter = seenThreats.values();
+                        for (let i = 0; i < 100; i++) {
+                            seenThreats.delete(iter.next().value);
+                        }
+                    }
+
+                    // For each new threat: queue log text + fire arc
+                    const cw = parseFloat(canvas.style.width) || 400;
+                    const ch = parseFloat(canvas.style.height) || 300;
+                    const cx = cw * 0.5;
+                    const cy = ch * 0.5;
+                    const r = Math.min(cw, ch) * 0.32;
+
+                    // Stagger arcs with slight delays so they don't all fire at once
+                    newThreats.forEach((t, idx) => {
+                        setTimeout(() => {
+                            impactQueue.push(t);
+                            spawnArc(cx, cy, r);
+                        }, idx * 400);
+                    });
+
+                } catch (e) {
+                    console.error('[ThreatPoller] Fetch failed:', e);
+                }
             }
-            setTimeout(scheduleAttack, 2000);
+
+            // Poll every 4 seconds + initial fetch
+            pollThreats();
+            setInterval(pollThreats, 4000);
+
+            // ===========================
+            //  F. SIMULATION FALLBACK
+            // ===========================
+            // Only activates when /api/threats returns file_not_found (local dev)
+            function startSimulation() {
+                const simTemplates = [
+                    'Failed password for [REDACTED] from 185.220.***.*** port 22 ssh2',
+                    'Invalid user [REDACTED] from 91.240.***.*** port 2222',
+                    'Ban 104.128.***.*** after 5 failed attempts',
+                    'Failed password for [REDACTED] from 45.33.***.*** port 443 ssh2',
+                    'Invalid user [REDACTED] from 178.62.***.*** port 8080',
+                    'Ban 159.89.***.*** — jail [sshd]',
+                    'Failed password for [REDACTED] from 64.227.***.*** port 22 ssh2',
+                    'Invalid user [REDACTED] from 103.216.***.*** port 3306'
+                ];
+
+                function fireSimAttack() {
+                    const cw = parseFloat(canvas.style.width) || 400;
+                    const ch = parseFloat(canvas.style.height) || 300;
+                    const template = simTemplates[Math.floor(Math.random() * simTemplates.length)];
+                    impactQueue.push(template);
+                    spawnArc(cw * 0.5, ch * 0.5, Math.min(cw, ch) * 0.32);
+                    setTimeout(fireSimAttack, 3000 + Math.random() * 4000);
+                }
+                setTimeout(fireSimAttack, 2000);
+            }
 
         })();
     </script>
