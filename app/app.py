@@ -1,4 +1,4 @@
-from flask import Flask, render_template, jsonify
+from flask import Flask, render_template, jsonify, request
 import psutil
 import platform
 import datetime
@@ -110,9 +110,43 @@ def threats():
         'source': LOG_PATH
     })
 
+@app.route('/api/analyze', methods=['POST'])
+def analyze_payload():
+    """Mini-WAF (Web Application Firewall) endpoint pentru analizarea payload-urilor."""
+    try:
+        data = request.get_json()
+        payload = data.get('payload', '').lower()
+        
+        threat_level = "SAFE"
+        threat_type = "None"
+        
+        # 1. Detectie SQL Injection
+        if re.search(r"(\b(union|select|insert|drop|delete|update)\b|--|' or 1=1|;)", payload):
+            threat_level = "CRITICAL"
+            threat_type = "SQL Injection (OWASP A03:2021)"
+            
+        # 2. Detectie Cross-Site Scripting (XSS)
+        elif re.search(r"(<script>|javascript:|onerror=|onload=|alert\()", payload):
+            threat_level = "CRITICAL"
+            threat_type = "Cross-Site Scripting (OWASP A03:2021)"
+            
+        # 3. Detectie Path Traversal
+        elif re.search(r"(\.\./|\.\.\\|/etc/passwd)", payload):
+            threat_level = "CRITICAL"
+            threat_type = "Path Traversal (OWASP A01:2021)"
+
+        return jsonify({
+            "status": "success",
+            "level": threat_level,
+            "type": threat_type,
+            "original_payload": payload
+        })
+    except Exception as e:
+        return jsonify({"status": "error", "message": str(e)}), 400
+
 @app.route('/health')
 def health():
     return jsonify({'status': 'ok'}), 200
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000) # nosemgrep
+    app.run(host='0.0.0.0', port=5000)
