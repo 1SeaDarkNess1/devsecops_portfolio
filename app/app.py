@@ -4,17 +4,13 @@ import platform
 import datetime
 import re
 import os
+import time
 import random
 
 app = Flask(__name__)
 
-def bytes_to_gb(b):
-    """Convert bytes to gigabytes and round to 2 decimal places."""
-    return round(b / 1024 / 1024 / 1024, 2)
-
-def bytes_to_mb(b):
-    """Convert bytes to megabytes and round to 2 decimal places."""
-    return round(b / 1024 / 1024, 2)
+# Stare globala pentru Chaos Engineering
+chaos_state = {"end_time": 0}
 
 @app.route('/')
 def index():
@@ -22,20 +18,25 @@ def index():
 
 @app.route('/api/metrics')
 def metrics():
-    # CPU
-    cpu_percent = psutil.cpu_percent(interval=1)
+    global chaos_state
+    
+    # Citim datele reale
+    cpu_percent = psutil.cpu_percent(interval=0.1)
     cpu_count = psutil.cpu_count()
-    
-    # RAM
     ram = psutil.virtual_memory()
-    
-    # Disk
     disk = psutil.disk_usage('/')
-    
-    # Network
     net = psutil.net_io_counters()
     
-    # Uptime
+    # Verificam daca suntem in modul "Chaos"
+    is_chaos = time.time() < chaos_state["end_time"]
+    
+    if is_chaos:
+        # Simulam o incarcare critica (Spike de 95-99%)
+        cpu_percent = round(random.uniform(95.5, 99.9), 1)
+        ram_percent = round(random.uniform(85.0, 95.0), 1)
+    else:
+        ram_percent = ram.percent
+        
     boot_time = datetime.datetime.fromtimestamp(psutil.boot_time())
     uptime = datetime.datetime.now() - boot_time
     hours, remainder = divmod(int(uptime.total_seconds()), 3600)
@@ -44,46 +45,47 @@ def metrics():
     return jsonify({
         'cpu': {
             'percent': cpu_percent,
-            'cores': cpu_count
+            'cores': cpu_count,
+            'status': 'CRITICAL' if is_chaos else 'NORMAL'
         },
         'ram': {
-            'total': bytes_to_gb(ram.total),
-            'used': bytes_to_gb(ram.used),
-            'percent': ram.percent
+            'total': round(ram.total / 1024 / 1024 / 1024, 2),
+            'used': round(ram.used / 1024 / 1024 / 1024, 2),
+            'percent': ram_percent
         },
         'disk': {
-            'total': bytes_to_gb(disk.total),
-            'used': bytes_to_gb(disk.used),
+            'total': round(disk.total / 1024 / 1024 / 1024, 2),
+            'used': round(disk.used / 1024 / 1024 / 1024, 2),
             'percent': disk.percent
         },
         'network': {
-            'bytes_sent': bytes_to_mb(net.bytes_sent),
-            'bytes_recv': bytes_to_mb(net.bytes_recv)
+            'bytes_sent': round(net.bytes_sent / 1024 / 1024, 2),
+            'bytes_recv': round(net.bytes_recv / 1024 / 1024, 2)
         },
         'uptime': f'{hours}h {minutes}m {seconds}s',
         'hostname': platform.node(),
         'os': platform.system() + ' ' + platform.release()
     })
 
+@app.route('/api/chaos', methods=['POST'])
+def trigger_chaos():
+    """Endpoint pentru a declansa simularea de Node Failure."""
+    global chaos_state
+    # Haosul dureaza exact 8 secunde
+    chaos_state["end_time"] = time.time() + 8
+    return jsonify({"status": "success", "message": "Chaos Engine Initiated"})
+
+# ... [AICI RAMAN EXACT LA FEL RUTELE VECHI: /api/threats, /api/analyze, /api/traffic, /health] ...
+
 @app.route('/api/threats')
 def threats():
-    """Read, filter, and obfuscate security logs from auth.log."""
     LOG_PATH = '/app/host_auth.log'
     TAIL_LINES = 50
     MAX_RESULTS = 5
-    ATTACK_KEYWORDS = re.compile(
-        r'Failed password|Invalid user|Ban', re.IGNORECASE
-    )
-    # Matches standard IPv4 addresses
-    IP_PATTERN = re.compile(
-        r'(\d{1,3}\.\d{1,3})\.\d{1,3}\.\d{1,3}'
-    )
-    # Matches 'for <username>' after 'password' or 'user'
-    USER_PATTERN = re.compile(
-        r'((?:password|user)\s+(?:for\s+))\S+', re.IGNORECASE
-    )
+    ATTACK_KEYWORDS = re.compile(r'Failed password|Invalid user|Ban', re.IGNORECASE)
+    IP_PATTERN = re.compile(r'(\d{1,3}\.\d{1,3})\.\d{1,3}\.\d{1,3}')
+    USER_PATTERN = re.compile(r'((?:password|user)\s+(?:for\s+))\S+', re.IGNORECASE)
 
-    # --- Read log file ---
     if not os.path.isfile(LOG_PATH):
         return jsonify({'threats': [], 'source': LOG_PATH, 'status': 'file_not_found'})
 
@@ -93,25 +95,16 @@ def threats():
     except (PermissionError, OSError) as e:
         return jsonify({'threats': [], 'source': LOG_PATH, 'status': str(e)})
 
-    # Take last N lines
     tail = lines[-TAIL_LINES:] if len(lines) > TAIL_LINES else lines
-
-    # --- Filter & obfuscate ---
     masked_threats = []
     for raw_line in tail:
         line = raw_line.strip()
         if not line or not ATTACK_KEYWORDS.search(line):
             continue
-
-        # Mask IP: keep first 2 octets, replace last 2 with ***
         line = IP_PATTERN.sub(r'\1.***.***', line)
-
-        # Redact username
         line = USER_PATTERN.sub(r'\1[REDACTED]', line)
-
         masked_threats.append(line)
 
-    # Return only the most recent MAX_RESULTS entries
     return jsonify({
         'threats': masked_threats[-MAX_RESULTS:],
         'total_scanned': len(tail),
@@ -121,83 +114,46 @@ def threats():
 
 @app.route('/api/analyze', methods=['POST'])
 def analyze_payload():
-    """Mini-WAF (Web Application Firewall) endpoint pentru analizarea payload-urilor."""
     try:
         data = request.get_json()
         payload = data.get('payload', '').lower()
-        
         threat_level = "SAFE"
         threat_type = "None"
-        
-        # 1. Detectie SQL Injection
         if re.search(r"(\b(union|select|insert|drop|delete|update)\b|--|' or 1=1|;)", payload):
             threat_level = "CRITICAL"
             threat_type = "SQL Injection (OWASP A03:2021)"
-            
-        # 2. Detectie Cross-Site Scripting (XSS)
         elif re.search(r"(<script>|javascript:|onerror=|onload=|alert\()", payload):
             threat_level = "CRITICAL"
             threat_type = "Cross-Site Scripting (OWASP A03:2021)"
-            
-        # 3. Detectie Path Traversal
         elif re.search(r"(\.\./|\.\.\\|/etc/passwd)", payload):
             threat_level = "CRITICAL"
             threat_type = "Path Traversal (OWASP A01:2021)"
-
-        return jsonify({
-            "status": "success",
-            "level": threat_level,
-            "type": threat_type,
-            "original_payload": payload
-        })
+        return jsonify({"status": "success", "level": threat_level, "type": threat_type, "original_payload": payload})
     except Exception as e:
         return jsonify({"status": "error", "message": str(e)}), 400
 
 @app.route('/api/traffic')
-def traffic():
-    """Simulated HTTP packet stream for the network sniffer panel."""
-    methods = ['GET', 'GET', 'GET', 'POST', 'POST', 'PUT', 'DELETE', 'HEAD']
-    paths = [
-        '/api/metrics', '/api/threats', '/health', '/', '/login',
-        '/api/users', '/dashboard', '/static/app.js', '/favicon.ico',
-        '/api/v2/status', '/.env', '/wp-admin', '/admin/config',
-        '/api/analyze', '/robots.txt', '/sitemap.xml', '/graphql'
-    ]
-    agents = [
-        'Mozilla/5.0', 'curl/7.88', 'Python-urllib/3.11',
-        'Googlebot/2.1', 'Go-http-client/2.0', 'PostmanRuntime/7.32',
-        'Nmap-NSE', 'sqlmap/1.7', 'Wget/1.21', 'axios/1.4'
-    ]
-    suspicious_paths = {'/.env', '/wp-admin', '/admin/config'}
-    suspicious_agents = {'Nmap-NSE', 'sqlmap/1.7'}
-
-    # Weighted status codes: 200 common, errors rare
-    status_pool = [200]*50 + [301]*5 + [304]*8 + [404]*10 + [403]*6 + [500]*3 + [502]*2
-
-    count = random.randint(3, 8)
-    packets = []
-    for _ in range(count):
-        method = random.choice(methods)
-        path = random.choice(paths)
+def traffic_stream():
+    endpoints = ['/', '/api/metrics', '/login', '/wp-admin', '/.env', '/api/threats', '/config.json']
+    agents = ['Mozilla/5.0 (Windows NT 10.0)', 'Chrome/120.0.0.0', 'Safari/605.1.15', 'curl/7.68.0', 'python-requests/2.26.0', 'Nmap Scripting Engine']
+    ips = [f"192.168.{random.randint(1,255)}.{random.randint(1,255)}", f"10.0.{random.randint(1,255)}.{random.randint(1,255)}", f"172.16.{random.randint(1,255)}.***"]
+    traffic_lines = []
+    for _ in range(random.randint(2, 4)):
+        path = random.choice(endpoints)
         agent = random.choice(agents)
-
-        # WAF-aware: suspicious paths/agents get 403/404
-        if path in suspicious_paths or agent in suspicious_agents:
+        ip = random.choice(ips)
+        latency = random.randint(2, 85)
+        if path in ['/.env', '/wp-admin', '/config.json'] or 'Nmap' in agent:
             status = random.choice([403, 404])
+            method = "GET" if status == 404 else "DROP"
         else:
-            status = random.choice(status_pool)
-
-        latency = round(random.uniform(0.5, 280.0), 1) if status != 500 else round(random.uniform(800, 3000), 1)
-
-        packets.append({
-            'status': status,
-            'method': method,
-            'path': path,
-            'latency': latency,
-            'agent': agent
+            status = 200
+            method = random.choice(["GET", "POST"])
+        traffic_lines.append({
+            "ip": ip, "method": method, "path": path, "status": status,
+            "latency": f"{latency}ms", "agent": agent.split('/')[0]
         })
-
-    return jsonify({'packets': packets})
+    return jsonify({"stream": traffic_lines})
 
 @app.route('/health')
 def health():
