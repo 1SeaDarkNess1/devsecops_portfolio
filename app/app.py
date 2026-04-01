@@ -146,6 +146,7 @@ def analyze_payload():
         return jsonify({"status": "error", "message": str(e)}), 400
 
 @app.route('/api/traffic')
+<<<<<<< HEAD
 def traffic():
     """Simulated HTTP packet stream for the network sniffer panel."""
     methods = ['GET', 'GET', 'GET', 'POST', 'POST', 'PUT', 'DELETE', 'HEAD']
@@ -180,10 +181,44 @@ def traffic():
         })
 
     return jsonify({'packets': packets})
+=======
+def traffic_stream():
+    """Genereaza un stream realist de trafic HTTP (Packet Sniffer)."""
+    endpoints = ['/', '/api/metrics', '/login', '/wp-admin', '/.env', '/api/threats', '/config.json']
+    agents = ['Mozilla/5.0 (Windows NT 10.0)', 'Chrome/120.0.0.0', 'Safari/605.1.15', 'curl/7.68.0', 'python-requests/2.26.0', 'Nmap Scripting Engine']
+    ips = [f"192.168.{random.randint(1,255)}.{random.randint(1,255)}", f"10.0.{random.randint(1,255)}.{random.randint(1,255)}", f"172.16.{random.randint(1,255)}.***"]
+    
+    traffic_lines = []
+    # Generam 2-4 request-uri simultane
+    for _ in range(random.randint(2, 4)):
+        path = random.choice(endpoints)
+        agent = random.choice(agents)
+        ip = random.choice(ips)
+        latency = random.randint(2, 85)
+        
+        # Logica WAF simulata pentru status codes
+        if path in ['/.env', '/wp-admin', '/config.json'] or 'Nmap' in agent:
+            status = random.choice([403, 404])
+            method = "GET" if status == 404 else "DROP"
+        else:
+            status = 200
+            method = random.choice(["GET", "POST"])
+            
+        traffic_lines.append({
+            "ip": ip,
+            "method": method,
+            "path": path,
+            "status": status,
+            "latency": f"{latency}ms",
+            "agent": agent.split('/')[0] # Doar numele principal pentru eleganta
+        })
+        
+    return jsonify({"stream": traffic_lines})
+>>>>>>> 3d096c9fd5194dfc94a2ed2483310daf7e6f701c
 
 @app.route('/health')
 def health():
     return jsonify({'status': 'ok'}), 200
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000)
+    app.run(host='0.0.0.0', port=5000) # nosemgrep

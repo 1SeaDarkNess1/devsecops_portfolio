@@ -617,6 +617,97 @@
             }
         }
 
+        /* ═══════════════════════════════════════════════
+           PACKET SNIFFER (Data Waterfall)
+        ═══════════════════════════════════════════════ */
+        #packet-sniffer {
+            position: fixed;
+            right: 16px;
+            top: 90px;
+            bottom: 40px;
+            width: 300px;
+            z-index: 10;
+            pointer-events: none;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .sniffer-title {
+            font-family: var(--font-mono);
+            font-size: 0.55rem;
+            font-weight: 600;
+            letter-spacing: 2.5px;
+            text-transform: uppercase;
+            color: var(--text-tertiary);
+            margin-bottom: 10px;
+            opacity: 0.5;
+        }
+
+        #traffic-stream {
+            flex: 1;
+            overflow-y: hidden;
+            -webkit-mask-image: linear-gradient(to bottom, transparent, black 8%, black 92%, transparent);
+            mask-image: linear-gradient(to bottom, transparent, black 8%, black 92%, transparent);
+        }
+
+        .pkt-line {
+            font-family: var(--font-mono);
+            font-size: 10px;
+            letter-spacing: 0.5px;
+            line-height: 1.8;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            animation: pktSlideIn 0.35s ease;
+            opacity: 0.7;
+        }
+
+        @keyframes pktSlideIn {
+            from { opacity: 0; transform: translateY(-6px); }
+            to   { opacity: 0.7; transform: translateY(0); }
+        }
+
+        .pkt-line .pkt-status {
+            font-weight: 700;
+            margin-right: 4px;
+        }
+        .pkt-line .pkt-method {
+            color: var(--text-secondary);
+            margin-right: 2px;
+        }
+        .pkt-line .pkt-path {
+            color: var(--text-primary);
+            opacity: 0.6;
+        }
+        .pkt-line .pkt-latency {
+            color: var(--text-tertiary);
+            margin-left: 4px;
+        }
+        .pkt-line .pkt-agent {
+            color: var(--text-tertiary);
+            opacity: 0.4;
+            margin-left: 4px;
+        }
+
+        /* Status color coding */
+        .status-200 .pkt-status { color: rgba(226, 232, 240, 0.45); }
+        .status-301 .pkt-status { color: rgba(226, 232, 240, 0.35); }
+        .status-304 .pkt-status { color: rgba(226, 232, 240, 0.30); }
+        .status-404 .pkt-status { color: #ffb703; }
+        .status-403 .pkt-status { color: var(--crimson); animation: pktPulse 0.6s ease; }
+        .status-500 .pkt-status { color: var(--crimson); }
+        .status-502 .pkt-status { color: var(--amber); }
+
+        @keyframes pktPulse {
+            0%, 100% { opacity: 1; }
+            50%      { opacity: 0.3; }
+        }
+
+        /* Don't show on narrow screens */
+        @media (max-width: 1280px) {
+            #packet-sniffer { display: none; }
+        }
+
         @media (max-width: 600px) {
             .dashboard { padding: 16px 12px; }
             .sidebar { grid-template-columns: 1fr; }
@@ -899,6 +990,12 @@
             <span>Actualizat la fiecare 3 secunde</span>
         </div>
 
+    </div>
+
+    <!-- ═══ PACKET SNIFFER (Data Waterfall) ═══ -->
+    <div id="packet-sniffer">
+        <div class="sniffer-title">Network Stream // Port 443</div>
+        <div id="traffic-stream"></div>
     </div>
 
     <script>
@@ -1588,6 +1685,57 @@
             input.addEventListener('keydown', (e) => {
                 if (e.key === 'Enter') analyzePayload();
             });
+        })();
+
+        // ═══════════════════════════════════════════════
+        //  7. LIVE PACKET SNIFFER
+        // ═══════════════════════════════════════════════
+        (function initPacketSniffer() {
+            const stream = document.getElementById('traffic-stream');
+            if (!stream) return;
+            const MAX_LINES = 25;
+
+            async function pollTraffic() {
+                try {
+                    const res = await fetch('/api/traffic');
+                    const data = await res.json();
+                    const packets = data.packets || [];
+
+                    // Build fragment (batch DOM writes)
+                    const frag = document.createDocumentFragment();
+                    for (let i = packets.length - 1; i >= 0; i--) {
+                        const p = packets[i];
+                        const line = document.createElement('div');
+                        line.className = 'pkt-line status-' + p.status;
+                        line.innerHTML =
+                            '<span class="pkt-status">' + p.status + '</span>' +
+                            '<span class="pkt-method">' + p.method + '</span> ' +
+                            '<span class="pkt-path">' + p.path + '</span>' +
+                            '<span class="pkt-latency">' + p.latency + 'ms</span>' +
+                            '<span class="pkt-agent">' + p.agent + '</span>';
+                        frag.appendChild(line);
+                    }
+
+                    // Prepend new lines at top
+                    if (stream.firstChild) {
+                        stream.insertBefore(frag, stream.firstChild);
+                    } else {
+                        stream.appendChild(frag);
+                    }
+
+                    // Trim excess from bottom
+                    while (stream.children.length > MAX_LINES) {
+                        stream.removeChild(stream.lastChild);
+                    }
+
+                } catch (e) {
+                    // Silent fail — sniffer is decorative
+                }
+            }
+
+            // Poll every 1 second
+            pollTraffic();
+            setInterval(pollTraffic, 1000);
         })();
     </script>
 </body>
