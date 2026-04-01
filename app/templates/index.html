@@ -3,34 +3,38 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BBM System Monitor — Laboratorul DevSecOps</title>
-    <meta name="description" content="Real-time cyberpunk system monitor dashboard for BBM DevSecOps Lab. CPU, RAM, Disk, Network metrics with live updates.">
+    <title>BBM DevSecOps — Threat Intelligence Dashboard</title>
+    <meta name="description" content="Enterprise-grade DevSecOps threat intelligence dashboard with live system monitoring, global threat map, and security event stream.">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@300;400;500;700&display=swap" rel="stylesheet">
     <style>
         /* ═══════════════════════════════════════════════
-           CSS RESET & CUSTOM PROPERTIES
+           DESIGN TOKENS
         ═══════════════════════════════════════════════ */
         :root {
-            --cyan:        #00e5ff;
-            --cyan-dim:    rgba(0, 229, 255, 0.15);
-            --cyan-glow:   rgba(0, 229, 255, 0.45);
-            --magenta:     #ff2cf1;
-            --magenta-dim: rgba(255, 44, 241, 0.12);
-            --magenta-glow:rgba(255, 44, 241, 0.40);
-            --neon-yellow:  #faff00;
-            --neon-red:     #ff1744;
-            --neon-green:   #39ff14;
-            --bg-deep:     #04060f;
-            --bg-mid:      #0a0e1a;
-            --glass-bg:    rgba(10, 14, 30, 0.55);
-            --glass-border:rgba(255, 255, 255, 0.07);
-            --glass-border-hover: rgba(0, 229, 255, 0.30);
-            --text-muted:  rgba(180, 190, 220, 0.45);
-            --text-body:   rgba(210, 220, 245, 0.85);
-            --radius:      16px;
-            --transition:  0.3s ease;
+            --bg-obsidian:    #090a0f;
+            --bg-surface:     rgba(18, 20, 28, 0.65);
+            --bg-surface-hover: rgba(24, 27, 38, 0.70);
+            --border-subtle:  rgba(255, 255, 255, 0.04);
+            --border-hover:   rgba(255, 255, 255, 0.08);
+            --text-primary:   #e2e8f0;
+            --text-secondary: rgba(226, 232, 240, 0.50);
+            --text-tertiary:  rgba(226, 232, 240, 0.28);
+            --accent:         #00b4d8;
+            --accent-dim:     rgba(0, 180, 216, 0.12);
+            --accent-muted:   rgba(0, 180, 216, 0.35);
+            --crimson:        #e63946;
+            --crimson-dim:    rgba(230, 57, 70, 0.12);
+            --amber:          #f4a261;
+            --amber-dim:      rgba(244, 162, 97, 0.12);
+            --green:          #2ec4b6;
+            --green-dim:      rgba(46, 196, 182, 0.12);
+            --font-ui:        'Inter', -apple-system, 'Segoe UI', sans-serif;
+            --font-mono:      'JetBrains Mono', 'Fira Code', 'Cascadia Mono', monospace;
+            --radius:         12px;
+            --radius-sm:      8px;
+            --ease:           0.4s ease;
         }
 
         *, *::before, *::after {
@@ -38,119 +42,80 @@
         }
 
         /* ═══════════════════════════════════════════════
-           BODY – Deep gradient + hex-grid canvas
+           BASE
         ═══════════════════════════════════════════════ */
         body {
-            background: var(--bg-deep);
-            color: var(--text-body);
-            font-family: 'JetBrains Mono', 'Fira Code', 'Cascadia Mono', monospace;
+            background: var(--bg-obsidian);
+            color: var(--text-primary);
+            font-family: var(--font-ui);
             min-height: 100vh;
-            padding: 24px 16px 40px;
+            padding: 0;
             overflow-x: hidden;
             position: relative;
+            font-size: 14px;
+            line-height: 1.5;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
         }
 
-        /* Animated gradient layer */
-        body::before {
-            content: '';
-            position: fixed;
-            inset: 0;
-            background: linear-gradient(
-                165deg,
-                #04060f 0%,
-                #080d1e 25%,
-                #0c1228 50%,
-                #08091a 75%,
-                #020308 100%
-            );
-            background-size: 400% 400%;
-            animation: gradientShift 20s ease infinite;
-            z-index: -3;
-        }
-
-        @keyframes gradientShift {
-            0%   { background-position: 0% 50%; }
-            50%  { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; }
-        }
-
-        /* Hex-grid overlay */
+        /* Subtle dot-grid pattern */
         body::after {
             content: '';
             position: fixed;
             inset: 0;
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='60' height='52'%3E%3Cpath d='M30 0l30 15v22L30 52 0 37V15z' fill='none' stroke='%2300e5ff' stroke-width='0.3' opacity='0.06'/%3E%3C/svg%3E");
-            background-size: 60px 52px;
-            animation: hexDrift 40s linear infinite;
-            z-index: -2;
+            background-image: radial-gradient(rgba(255,255,255,0.03) 1px, transparent 1px);
+            background-size: 32px 32px;
             pointer-events: none;
+            z-index: -1;
         }
 
-        @keyframes hexDrift {
-            0%   { background-position: 0 0; }
-            100% { background-position: 60px 52px; }
-        }
-
-        /* Scanline CRT overlay */
-        .scanlines {
-            position: fixed;
-            inset: 0;
-            background: repeating-linear-gradient(
-                0deg,
-                transparent,
-                transparent 2px,
-                rgba(0, 0, 0, 0.04) 2px,
-                rgba(0, 0, 0, 0.04) 4px
-            );
-            pointer-events: none;
-            z-index: 9999;
+        /* ═══════════════════════════════════════════════
+           LAYOUT SHELL
+        ═══════════════════════════════════════════════ */
+        .dashboard {
+            max-width: 1440px;
+            margin: 0 auto;
+            padding: 32px 28px;
         }
 
         /* ═══════════════════════════════════════════════
            HEADER
         ═══════════════════════════════════════════════ */
         .header-group {
-            text-align: center;
-            margin-bottom: 40px;
-            position: relative;
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-between;
+            margin-bottom: 32px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid var(--border-subtle);
+        }
+
+        .header-left {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
         }
 
         h1 {
-            font-size: clamp(20px, 4vw, 32px);
-            font-weight: 800;
-            letter-spacing: 6px;
-            text-transform: uppercase;
-            color: var(--cyan);
-            text-shadow:
-                0 0 8px  var(--cyan-glow),
-                0 0 20px var(--cyan-dim),
-                0 0 40px rgba(0, 229, 255, 0.08);
-            position: relative;
-            display: inline-block;
+            font-family: var(--font-ui);
+            font-size: 18px;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            gap: 8px;
             min-height: 1.2em;
         }
 
-        h1::after {
-            content: '';
-            display: block;
-            width: 60%;
-            height: 1px;
-            margin: 10px auto 0;
-            background: linear-gradient(90deg, transparent, var(--cyan-glow), transparent);
-        }
-
-        /* ═══════════════════════════════════════════════
-           TYPEWRITER CURSOR
-        ═══════════════════════════════════════════════ */
         .typewriter-cursor {
             display: inline-block;
-            width: 2px;
+            width: 1.5px;
             height: 1em;
-            background: var(--cyan);
-            margin-left: 3px;
+            background: var(--accent);
+            margin-left: 2px;
             vertical-align: text-bottom;
-            animation: cursorBlink 0.7s step-end infinite;
-            box-shadow: 0 0 6px var(--cyan-glow), 0 0 12px var(--cyan-dim);
+            animation: cursorBlink 1s step-end infinite;
         }
 
         @keyframes cursorBlink {
@@ -159,216 +124,152 @@
         }
 
         .boot-line {
-            font-size: 11px;
-            letter-spacing: 2px;
-            color: var(--neon-green);
-            margin-top: 8px;
+            font-family: var(--font-mono);
+            font-size: 0.75rem;
+            letter-spacing: 0.5px;
+            color: var(--green);
             opacity: 0;
-            transition: opacity 0.4s ease;
-            text-shadow: 0 0 6px rgba(57, 255, 20, 0.4);
+            transition: opacity 0.5s ease;
         }
 
         .boot-line.visible {
-            opacity: 1;
+            opacity: 0.7;
         }
 
         .subtitle {
-            font-size: 11px;
-            letter-spacing: 3px;
-            color: var(--text-muted);
-            margin-top: 6px;
-            text-transform: uppercase;
+            font-family: var(--font-mono);
+            font-size: 0.75rem;
+            color: var(--text-tertiary);
+            letter-spacing: 0.5px;
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 16px;
         }
 
         .lab-badge {
-            display: inline-block;
-            margin-top: 12px;
-            padding: 4px 14px;
-            font-size: 9px;
-            letter-spacing: 4px;
+            font-size: 0.65rem;
+            font-weight: 500;
+            letter-spacing: 2px;
             text-transform: uppercase;
-            color: var(--magenta);
-            border: 1px solid var(--magenta-dim);
+            color: var(--text-secondary);
+            padding: 5px 12px;
+            border: 1px solid var(--border-subtle);
             border-radius: 20px;
-            background: rgba(255, 44, 241, 0.04);
-            text-shadow: 0 0 6px var(--magenta-glow);
+            background: transparent;
+        }
+
+        .status {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.7rem;
+            font-weight: 500;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            color: var(--text-tertiary);
+        }
+
+        .dot {
+            width: 6px;
+            height: 6px;
+            background: var(--green);
+            border-radius: 50%;
+            animation: pulse 3s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50%      { opacity: 0.35; }
         }
 
         /* ═══════════════════════════════════════════════
-           GRID LAYOUT
+           MAIN GRID — 30/70 split
         ═══════════════════════════════════════════════ */
-        .grid {
+        .main-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 20px;
-            max-width: 1200px;
-            margin: 0 auto;
+            grid-template-columns: 340px 1fr;
+            gap: 24px;
+            margin-bottom: 24px;
         }
 
         /* ═══════════════════════════════════════════════
-           GLASSMORPHISM CARDS
+           CARDS — Acrylic Glass
         ═══════════════════════════════════════════════ */
+        .sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
         .card {
-            background: var(--glass-bg);
-            backdrop-filter: blur(18px) saturate(1.4);
-            -webkit-backdrop-filter: blur(18px) saturate(1.4);
-            border: 1px solid var(--glass-border);
+            background: var(--bg-surface);
+            backdrop-filter: blur(24px) saturate(1.2);
+            -webkit-backdrop-filter: blur(24px) saturate(1.2);
+            border: 1px solid var(--border-subtle);
             border-radius: var(--radius);
-            padding: 24px;
-            position: relative;
-            overflow: hidden;
-            transition:
-                transform var(--transition),
-                border-color var(--transition),
-                box-shadow var(--transition);
-            box-shadow:
-                0 4px 30px rgba(0, 0, 0, 0.40),
-                inset 0 1px 0 rgba(255, 255, 255, 0.03);
-        }
-
-        /* Subtle corner accent */
-        .card::before {
-            content: '';
-            position: absolute;
-            top: 0; left: 0;
-            width: 40px; height: 40px;
-            border-top: 1px solid var(--cyan-dim);
-            border-left: 1px solid var(--cyan-dim);
-            border-radius: var(--radius) 0 0 0;
-            pointer-events: none;
-            transition: border-color var(--transition);
-        }
-
-        .card::after {
-            content: '';
-            position: absolute;
-            bottom: 0; right: 0;
-            width: 40px; height: 40px;
-            border-bottom: 1px solid var(--magenta-dim);
-            border-right: 1px solid var(--magenta-dim);
-            border-radius: 0 0 var(--radius) 0;
-            pointer-events: none;
-            transition: border-color var(--transition);
+            padding: 22px 24px;
+            transition: background var(--ease), border-color var(--ease);
         }
 
         .card:hover {
-            transform: translateY(-5px);
-            border-color: var(--glass-border-hover);
-            box-shadow:
-                0 8px 50px rgba(0, 229, 255, 0.08),
-                0 4px 30px rgba(0, 0, 0, 0.50),
-                inset 0 1px 0 rgba(255, 255, 255, 0.05);
+            background: var(--bg-surface-hover);
+            border-color: var(--border-hover);
         }
 
-        .card:hover::before {
-            border-top-color: var(--cyan-glow);
-            border-left-color: var(--cyan-glow);
-        }
-
-        .card:hover::after {
-            border-bottom-color: var(--magenta-glow);
-            border-right-color: var(--magenta-glow);
-        }
-
-        /* ═══════════════════════════════════════════════
-           CARD CONTENT
-        ═══════════════════════════════════════════════ */
         .card-title {
-            font-size: 10px;
-            font-weight: 500;
-            letter-spacing: 4px;
+            font-size: 0.65rem;
+            font-weight: 600;
+            letter-spacing: 2.5px;
             text-transform: uppercase;
-            color: var(--magenta);
-            margin-bottom: 14px;
-            text-shadow: 0 0 8px var(--magenta-dim);
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .card-title::before {
-            content: '▸';
-            color: var(--magenta);
-            font-size: 12px;
+            color: var(--text-tertiary);
+            margin-bottom: 16px;
         }
 
         .metric-value {
-            font-size: clamp(36px, 5vw, 48px);
-            font-weight: 800;
-            color: var(--cyan);
+            font-family: var(--font-mono);
+            font-size: clamp(28px, 3.5vw, 36px);
+            font-weight: 700;
+            color: var(--accent);
             line-height: 1;
-            text-shadow:
-                0 0 10px var(--cyan-glow),
-                0 0 30px var(--cyan-dim);
-            transition: color var(--transition), text-shadow var(--transition);
+            transition: color var(--ease);
         }
 
         .metric-sub {
-            font-size: 11px;
-            color: var(--text-muted);
-            margin-top: 8px;
-            letter-spacing: 1px;
+            font-family: var(--font-mono);
+            font-size: 0.75rem;
+            color: var(--text-tertiary);
+            margin-top: 6px;
         }
 
         /* ═══════════════════════════════════════════════
-           NEON PROGRESS BARS
+           PROGRESS BARS — Minimal 4px
         ═══════════════════════════════════════════════ */
         .progress-bar {
-            height: 8px;
+            height: 4px;
             background: rgba(255, 255, 255, 0.04);
-            border: 1px solid rgba(255, 255, 255, 0.04);
-            border-radius: 8px;
-            margin-top: 16px;
+            border-radius: 4px;
+            margin-top: 14px;
             overflow: hidden;
-            position: relative;
         }
 
         .progress-fill {
             height: 100%;
-            border-radius: 8px;
+            border-radius: 4px;
             transition: width 0.5s ease-in-out,
-                        background var(--transition),
-                        box-shadow var(--transition);
-            position: relative;
+                        background var(--ease);
         }
 
-        /* Animated shimmer on progress bar */
-        .progress-fill::after {
-            content: '';
-            position: absolute;
-            top: 0; left: -100%; right: 0; bottom: 0;
-            background: linear-gradient(
-                90deg,
-                transparent 0%,
-                rgba(255, 255, 255, 0.15) 50%,
-                transparent 100%
-            );
-            animation: shimmer 2.5s ease-in-out infinite;
-        }
-
-        @keyframes shimmer {
-            0%   { left: -100%; }
-            100% { left: 200%; }
-        }
-
-        /* Neon color classes with glow */
         .ok {
-            background: linear-gradient(90deg, #00e5ff, #39ff14);
-            box-shadow:
-                0 0 8px  rgba(0, 229, 255, 0.5),
-                0 0 20px rgba(0, 229, 255, 0.2);
+            background: var(--accent);
         }
         .warn {
-            background: linear-gradient(90deg, #faff00, #ffaa00);
-            box-shadow:
-                0 0 8px  rgba(250, 255, 0, 0.5),
-                0 0 20px rgba(250, 255, 0, 0.2);
+            background: var(--amber);
         }
         .danger {
-            background: linear-gradient(90deg, #ff4444, #ff1744);
-            box-shadow:
-                0 0 8px  rgba(255, 23, 68, 0.6),
-                0 0 20px rgba(255, 23, 68, 0.3);
+            background: var(--crimson);
         }
 
         /* ═══════════════════════════════════════════════
@@ -378,485 +279,477 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            font-size: 12px;
-            padding: 8px 0;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.04);
-            color: var(--text-muted);
-            transition: color var(--transition);
+            font-size: 0.8rem;
+            padding: 7px 0;
+            border-bottom: 1px solid var(--border-subtle);
+            color: var(--text-secondary);
+            transition: color var(--ease);
         }
 
         .info-row:last-child { border-bottom: none; }
 
-        .info-row:hover {
-            color: var(--text-body);
+        .info-row:hover { color: var(--text-primary); }
+
+        .info-row span:last-child {
+            font-family: var(--font-mono);
+            font-size: 0.8rem;
+            color: var(--accent);
+            font-weight: 500;
         }
 
-        .info-row span:first-child {
+        /* ═══════════════════════════════════════════════
+           THREAT MAP CONTAINER
+        ═══════════════════════════════════════════════ */
+        #threat-map-container {
+            background: var(--bg-surface);
+            backdrop-filter: blur(24px) saturate(1.2);
+            -webkit-backdrop-filter: blur(24px) saturate(1.2);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius);
+            padding: 28px;
+            display: flex;
+            flex-direction: column;
+            min-height: 420px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .map-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+
+        .map-title {
+            font-size: 0.65rem;
+            font-weight: 600;
+            letter-spacing: 2.5px;
+            text-transform: uppercase;
+            color: var(--text-tertiary);
+        }
+
+        .map-stats {
+            display: flex;
+            gap: 20px;
+        }
+
+        .map-stat {
             display: flex;
             align-items: center;
             gap: 6px;
+            font-size: 0.7rem;
+            color: var(--text-tertiary);
+            letter-spacing: 1px;
         }
 
-        .info-row span:first-child::before {
-            content: '›';
-            color: var(--magenta);
-            font-size: 14px;
-            font-weight: 700;
+        .map-stat .stat-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
         }
 
-        .info-row span:last-child {
-            color: var(--cyan);
-            font-weight: 500;
-            text-shadow: 0 0 6px var(--cyan-dim);
+        .map-stat .stat-dot.dot-blocked  { background: var(--crimson); }
+        .map-stat .stat-dot.dot-warnings { background: var(--amber); }
+        .map-stat .stat-dot.dot-banned   { background: var(--accent); }
+
+        .map-stat .stat-value {
+            font-family: var(--font-mono);
+            font-weight: 600;
+            color: var(--text-secondary);
         }
 
-        /* ═══════════════════════════════════════════════
-           STATUS BAR
-        ═══════════════════════════════════════════════ */
-        .status {
-            text-align: center;
-            font-size: 10px;
-            letter-spacing: 3px;
-            text-transform: uppercase;
-            color: var(--text-muted);
-            margin-top: 32px;
+        #earth-canvas {
+            flex: 1;
+            width: 100%;
+            min-height: 320px;
+            border-radius: var(--radius-sm);
+            background: radial-gradient(ellipse at center, rgba(0, 180, 216, 0.03) 0%, transparent 70%);
             display: flex;
             align-items: center;
             justify-content: center;
+        }
+
+        /* Placeholder for globe — before JS inits it */
+        #earth-canvas::before {
+            content: '';
+            width: 220px;
+            height: 220px;
+            border-radius: 50%;
+            border: 1px solid rgba(255, 255, 255, 0.04);
+            background:
+                radial-gradient(ellipse at 30% 30%, rgba(0, 180, 216, 0.06) 0%, transparent 60%),
+                radial-gradient(circle, rgba(18, 20, 28, 0.8) 40%, transparent 100%);
+            box-shadow: inset 0 0 60px rgba(0, 180, 216, 0.03);
+            animation: globeRotate 30s linear infinite;
+        }
+
+        @keyframes globeRotate {
+            from { transform: rotate(0deg); }
+            to   { transform: rotate(360deg); }
+        }
+
+        /* ═══════════════════════════════════════════════
+           EVENT STREAM — bottom section
+        ═══════════════════════════════════════════════ */
+        .event-stream-section {
+            background: var(--bg-surface);
+            backdrop-filter: blur(24px) saturate(1.2);
+            -webkit-backdrop-filter: blur(24px) saturate(1.2);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius);
+            overflow: hidden;
+        }
+
+        .event-stream-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 14px 24px;
+            border-bottom: 1px solid var(--border-subtle);
+        }
+
+        .event-stream-title {
+            font-size: 0.65rem;
+            font-weight: 600;
+            letter-spacing: 2.5px;
+            text-transform: uppercase;
+            color: var(--text-tertiary);
+        }
+
+        .event-stream-meta {
+            font-family: var(--font-mono);
+            font-size: 0.7rem;
+            color: var(--text-tertiary);
+            letter-spacing: 0.5px;
+        }
+
+        .terminal-body {
+            padding: 8px 24px 12px;
+            max-height: 240px;
+            overflow-y: auto;
+            font-family: var(--font-mono);
+            font-size: 0.8rem;
+            line-height: 1.9;
+            color: rgba(226, 232, 240, 0.35);
+            scrollbar-width: thin;
+            scrollbar-color: rgba(255,255,255,0.05) transparent;
+        }
+
+        .terminal-body::-webkit-scrollbar { width: 3px; }
+        .terminal-body::-webkit-scrollbar-track { background: transparent; }
+        .terminal-body::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.05); border-radius: 2px; }
+
+        /* Log line with fade-in */
+        .log-line {
+            white-space: nowrap;
+            overflow: hidden;
+            padding: 2px 0;
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(4px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        .log-timestamp {
+            color: rgba(226, 232, 240, 0.15);
+        }
+
+        .log-tag-warn {
+            color: var(--amber);
+            font-weight: 600;
+        }
+
+        .log-tag-block {
+            color: var(--crimson);
+            font-weight: 600;
+        }
+
+        .log-tag-alert {
+            color: var(--crimson);
+            font-weight: 700;
+        }
+
+        .log-tag-ok {
+            color: var(--green);
+            font-weight: 600;
+        }
+
+        .log-ip {
+            color: var(--amber);
+            font-weight: 500;
+        }
+
+        .log-service {
+            color: var(--accent);
+        }
+
+        .threat-counter {
+            display: flex;
+            gap: 24px;
+            padding: 10px 24px 14px;
+            border-top: 1px solid var(--border-subtle);
+        }
+
+        .threat-stat {
+            font-size: 0.7rem;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            color: var(--text-tertiary);
+            display: flex;
+            align-items: center;
             gap: 8px;
         }
 
-        .dot {
-            display: inline-block;
-            width: 8px;
-            height: 8px;
-            background: var(--neon-green);
-            border-radius: 50%;
-            box-shadow:
-                0 0 6px  rgba(57, 255, 20, 0.6),
-                0 0 16px rgba(57, 255, 20, 0.3);
-            animation: pulse 2s ease-in-out infinite;
+        .threat-stat .count {
+            font-family: var(--font-mono);
+            font-size: 0.85rem;
+            font-weight: 700;
         }
 
-        @keyframes pulse {
-            0%, 100% { opacity: 1; transform: scale(1); }
-            50%      { opacity: 0.3; transform: scale(0.8); }
-        }
+        .threat-stat.blocked .count  { color: var(--crimson); }
+        .threat-stat.monitored .count { color: var(--amber); }
+        .threat-stat.banned .count    { color: var(--accent); }
 
         /* ═══════════════════════════════════════════════
-           ENTRANCE ANIMATION
-        ═══════════════════════════════════════════════ */
-        .card {
-            opacity: 0;
-            transform: translateY(25px);
-            animation: cardIn 0.6s ease forwards;
-        }
-        .card:nth-child(1) { animation-delay: 0.1s; }
-        .card:nth-child(2) { animation-delay: 0.2s; }
-        .card:nth-child(3) { animation-delay: 0.3s; }
-        .card:nth-child(4) { animation-delay: 0.4s; }
-
-        @keyframes cardIn {
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        /* ═══════════════════════════════════════════════
-           COUNTER-UP FLASH
+           COUNTER-UP FLASH (refined)
         ═══════════════════════════════════════════════ */
         .metric-value.counting {
             animation: counterFlash 0.5s ease;
         }
 
         @keyframes counterFlash {
-            0%   { opacity: 0.4; transform: scale(0.95); }
-            50%  { opacity: 1; transform: scale(1.04); text-shadow: 0 0 20px var(--cyan-glow), 0 0 40px var(--cyan-dim); }
-            100% { opacity: 1; transform: scale(1); }
+            0%   { opacity: 0.5; }
+            50%  { opacity: 1; }
+            100% { opacity: 1; }
         }
 
         /* ═══════════════════════════════════════════════
-           GLITCH EFFECT
+           ENTRANCE ANIMATION
         ═══════════════════════════════════════════════ */
-        .glitch {
-            position: relative;
+        .card, #threat-map-container, .event-stream-section {
+            opacity: 0;
+            transform: translateY(12px);
+            animation: fadeUp 0.5s ease forwards;
         }
 
-        .glitch.glitching {
-            animation: glitchAnim 0.3s linear;
+        .sidebar .card:nth-child(1) { animation-delay: 0.05s; }
+        .sidebar .card:nth-child(2) { animation-delay: 0.10s; }
+        .sidebar .card:nth-child(3) { animation-delay: 0.15s; }
+        .sidebar .card:nth-child(4) { animation-delay: 0.20s; }
+        #threat-map-container { animation-delay: 0.12s; }
+        .event-stream-section { animation-delay: 0.25s; }
+
+        @keyframes fadeUp {
+            to { opacity: 1; transform: translateY(0); }
         }
 
-        @keyframes glitchAnim {
-            0%   { transform: translate(0); filter: none; }
-            10%  { transform: translate(-2px, 1px); filter: hue-rotate(90deg); }
-            20%  { transform: translate(2px, -1px); filter: hue-rotate(-90deg) saturate(2); }
-            30%  { transform: translate(-1px, -2px); filter: hue-rotate(45deg); }
-            40%  { transform: translate(1px, 2px) skewX(1deg); filter: none; }
-            50%  { transform: translate(-2px, 0px); filter: hue-rotate(-45deg) brightness(1.5); }
-            60%  { transform: translate(2px, 1px) skewX(-0.5deg); filter: saturate(3); }
-            70%  { transform: translate(0, -1px); filter: hue-rotate(180deg); }
-            80%  { transform: translate(-1px, 2px); filter: none; }
-            90%  { transform: translate(1px, -1px); filter: hue-rotate(-30deg) brightness(1.2); }
-            100% { transform: translate(0); filter: none; }
-        }
-
-        /* Pseudo-element glitch layers */
-        .glitch.glitching::before,
-        .glitch.glitching::after {
-            content: attr(data-text);
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
+        /* ═══════════════════════════════════════════════
+           FOOTER STATUS
+        ═══════════════════════════════════════════════ */
+        .footer-status {
             display: flex;
             align-items: center;
             justify-content: center;
             gap: 8px;
-            pointer-events: none;
-        }
-
-        .glitch.glitching::before {
-            color: var(--cyan);
-            animation: glitchLayer1 0.3s linear;
-            clip-path: inset(0 0 60% 0);
-        }
-
-        .glitch.glitching::after {
-            color: var(--magenta);
-            animation: glitchLayer2 0.3s linear;
-            clip-path: inset(60% 0 0 0);
-        }
-
-        @keyframes glitchLayer1 {
-            0%   { transform: translate(0); }
-            25%  { transform: translate(3px, -1px); }
-            50%  { transform: translate(-2px, 1px); }
-            75%  { transform: translate(1px, 2px); }
-            100% { transform: translate(0); }
-        }
-
-        @keyframes glitchLayer2 {
-            0%   { transform: translate(0); }
-            25%  { transform: translate(-3px, 1px); }
-            50%  { transform: translate(2px, -2px); }
-            75%  { transform: translate(-1px, -1px); }
-            100% { transform: translate(0); }
-        }
-
-        /* ═══════════════════════════════════════════════
-           THREAT MONITOR TERMINAL
-        ═══════════════════════════════════════════════ */
-        .terminal-section {
-            max-width: 1200px;
-            margin: 28px auto 0;
-        }
-
-        .terminal-section-title {
-            font-size: 10px;
-            font-weight: 500;
-            letter-spacing: 4px;
-            text-transform: uppercase;
-            color: var(--magenta);
-            margin-bottom: 14px;
-            text-shadow: 0 0 8px var(--magenta-dim);
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .terminal-section-title::before {
-            content: '▸';
-            color: var(--magenta);
-            font-size: 12px;
-        }
-
-        .terminal-window {
-            border-radius: 12px;
-            overflow: hidden;
-            border: 1px solid rgba(255, 255, 255, 0.06);
-            box-shadow:
-                0 4px 40px rgba(0, 0, 0, 0.50),
-                inset 0 0 80px rgba(255, 23, 68, 0.03);
-        }
-
-        /* Terminal title bar */
-        .terminal-header {
-            background: #1a1a2e;
-            padding: 10px 16px;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.04);
-            user-select: none;
-        }
-
-        .terminal-buttons {
-            display: flex;
-            gap: 7px;
-            flex-shrink: 0;
-        }
-
-        .terminal-btn {
-            width: 12px;
-            height: 12px;
-            border-radius: 50%;
-            border: none;
-            cursor: default;
-        }
-
-        .terminal-btn.btn-close  { background: #ff5f57; box-shadow: 0 0 6px rgba(255, 95, 87, 0.4); }
-        .terminal-btn.btn-min    { background: #ffbd2e; box-shadow: 0 0 6px rgba(255, 189, 46, 0.4); }
-        .terminal-btn.btn-max    { background: #28c840; box-shadow: 0 0 6px rgba(40, 200, 64, 0.4); }
-
-        .terminal-title {
-            font-size: 11px;
-            color: rgba(255, 255, 255, 0.35);
-            letter-spacing: 1px;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-
-        /* Terminal body */
-        .terminal-body {
-            background: #0a0a0a;
-            padding: 16px;
-            min-height: 260px;
-            max-height: 320px;
-            overflow-y: auto;
-            font-size: 12px;
-            line-height: 1.8;
-            color: rgba(180, 190, 200, 0.55);
-            box-shadow: inset 0 0 60px rgba(139, 0, 0, 0.06);
-            scrollbar-width: thin;
-            scrollbar-color: rgba(255,255,255,0.08) transparent;
-        }
-
-        .terminal-body::-webkit-scrollbar { width: 4px; }
-        .terminal-body::-webkit-scrollbar-track { background: transparent; }
-        .terminal-body::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.08); border-radius: 2px; }
-
-        /* Log line */
-        .log-line {
-            white-space: nowrap;
-            overflow: hidden;
-            border-left: 2px solid transparent;
-            padding-left: 8px;
-            margin-bottom: 1px;
-            animation: logSlideIn 0.3s ease;
-        }
-
-        @keyframes logSlideIn {
-            from { opacity: 0; transform: translateX(-12px); }
-            to   { opacity: 1; transform: translateX(0); }
-        }
-
-        /* Log tag colors */
-        .log-timestamp {
-            color: rgba(255, 255, 255, 0.18);
-        }
-
-        .log-tag-warn {
-            color: #ffbd2e;
-            font-weight: 700;
-            text-shadow: 0 0 4px rgba(255, 189, 46, 0.3);
-        }
-
-        .log-tag-block {
-            color: var(--neon-red);
-            font-weight: 700;
-            text-shadow: 0 0 6px rgba(255, 23, 68, 0.4);
-        }
-
-        .log-tag-alert {
-            color: #ff4444;
-            font-weight: 700;
-            text-shadow: 0 0 8px rgba(255, 68, 68, 0.5);
-        }
-
-        .log-tag-ok {
-            color: var(--neon-green);
-            font-weight: 700;
-            text-shadow: 0 0 4px rgba(57, 255, 20, 0.3);
-        }
-
-        .log-ip {
-            color: var(--neon-yellow);
-            font-weight: 500;
-        }
-
-        .log-service {
-            color: var(--cyan);
-        }
-
-        /* Threat counter badge */
-        .threat-counter {
-            display: flex;
-            gap: 20px;
-            margin-top: 12px;
-            justify-content: flex-start;
-            flex-wrap: wrap;
-        }
-
-        .threat-stat {
-            font-size: 10px;
+            margin-top: 24px;
+            padding: 12px 0;
+            border-top: 1px solid var(--border-subtle);
+            font-size: 0.65rem;
             letter-spacing: 2px;
             text-transform: uppercase;
-            color: var(--text-muted);
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-
-        .threat-stat .count {
-            font-size: 16px;
-            font-weight: 800;
-            color: var(--neon-red);
-            text-shadow: 0 0 8px rgba(255, 23, 68, 0.4);
-        }
-
-        .threat-stat.blocked .count {
-            color: var(--neon-red);
-        }
-
-        .threat-stat.monitored .count {
-            color: var(--neon-yellow);
-            text-shadow: 0 0 8px rgba(250, 255, 0, 0.3);
-        }
-
-        .threat-stat.banned .count {
-            color: #ff4444;
-            text-shadow: 0 0 8px rgba(255, 68, 68, 0.4);
+            color: var(--text-tertiary);
         }
 
         /* ═══════════════════════════════════════════════
            RESPONSIVE
         ═══════════════════════════════════════════════ */
-        @media (max-width: 640px) {
-            body { padding: 16px 10px 32px; }
-            .grid { gap: 14px; }
-            .card { padding: 18px; }
-            h1 { letter-spacing: 3px; }
-            .metric-value { font-size: 34px; }
-            .lab-badge { font-size: 8px; letter-spacing: 3px; }
-            .terminal-body { font-size: 10px; min-height: 200px; padding: 12px; }
-            .terminal-title { font-size: 9px; }
-            .threat-counter { gap: 12px; }
-            .threat-stat .count { font-size: 14px; }
-        }
-
-        @media (max-width: 380px) {
-            .grid {
+        @media (max-width: 960px) {
+            .main-grid {
                 grid-template-columns: 1fr;
             }
+            .sidebar {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            }
+            .header-group {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 12px;
+            }
+            .header-right {
+                width: 100%;
+                justify-content: flex-start;
+            }
+        }
+
+        @media (max-width: 600px) {
+            .dashboard { padding: 16px 12px; }
+            .sidebar { grid-template-columns: 1fr; }
+            .card { padding: 18px 20px; }
+            .metric-value { font-size: 28px; }
+            .map-stats { flex-wrap: wrap; gap: 10px; }
+            #earth-canvas { min-height: 220px; }
+            .terminal-body { font-size: 0.7rem; padding: 8px 14px; }
+            .threat-counter { padding: 10px 14px; gap: 14px; flex-wrap: wrap; }
         }
 
         /* ═══════════════════════════════════════════════
            SCROLLBAR
         ═══════════════════════════════════════════════ */
-        ::-webkit-scrollbar { width: 6px; }
-        ::-webkit-scrollbar-track { background: var(--bg-deep); }
+        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb {
-            background: var(--cyan-dim);
-            border-radius: 3px;
+            background: rgba(255, 255, 255, 0.06);
+            border-radius: 2px;
         }
         ::-webkit-scrollbar-thumb:hover {
-            background: var(--cyan-glow);
+            background: rgba(255, 255, 255, 0.10);
+        }
+
+        /* ═══════════════════════════════════════════════
+           GLITCH (kept for JS compat, made subtle)
+        ═══════════════════════════════════════════════ */
+        .glitch { position: relative; }
+        .glitch.glitching { animation: subtleGlitch 0.2s linear; }
+        @keyframes subtleGlitch {
+            0%, 100% { opacity: 1; }
+            30%      { opacity: 0.6; }
+            60%      { opacity: 0.85; }
         }
     </style>
 </head>
 <body>
-    <!-- CRT scanline overlay -->
-    <div class="scanlines" aria-hidden="true"></div>
 
-    <div class="header-group">
-        <h1 id="main-title"><span class="typewriter-cursor"></span></h1>
-        <div class="boot-line" id="boot-status"></div>
-        <div class="subtitle" id="hostname">Loading...</div>
-        <div class="lab-badge">Laboratorul BBM DevSecOps</div>
-    </div>
+    <div class="dashboard">
 
-    <div class="grid">
-        <div class="card" id="card-cpu">
-            <div class="card-title">CPU Usage</div>
-            <div class="metric-value" id="cpu-percent">--%</div>
-            <div class="metric-sub" id="cpu-cores">-- cores</div>
-            <div class="progress-bar">
-                <div class="progress-fill ok" id="cpu-bar" style="width:0%"></div>
+        <!-- ═══ HEADER ═══ -->
+        <div class="header-group">
+            <div class="header-left">
+                <h1 id="main-title"><span class="typewriter-cursor"></span></h1>
+                <div class="boot-line" id="boot-status"></div>
+                <div class="subtitle" id="hostname">Initializing...</div>
             </div>
-        </div>
-
-        <div class="card" id="card-ram">
-            <div class="card-title">Memory (RAM)</div>
-            <div class="metric-value" id="ram-percent">--%</div>
-            <div class="metric-sub" id="ram-detail">-- / -- GB</div>
-            <div class="progress-bar">
-                <div class="progress-fill ok" id="ram-bar" style="width:0%"></div>
-            </div>
-        </div>
-
-        <div class="card" id="card-disk">
-            <div class="card-title">Disk Usage</div>
-            <div class="metric-value" id="disk-percent">--%</div>
-            <div class="metric-sub" id="disk-detail">-- / -- GB</div>
-            <div class="progress-bar">
-                <div class="progress-fill ok" id="disk-bar" style="width:0%"></div>
-            </div>
-        </div>
-
-        <div class="card" id="card-net">
-            <div class="card-title">Network I/O</div>
-            <div class="info-row">
-                <span>Sent</span>
-                <span id="net-sent">-- MB</span>
-            </div>
-            <div class="info-row">
-                <span>Received</span>
-                <span id="net-recv">-- MB</span>
-            </div>
-            <div class="info-row">
-                <span>Uptime</span>
-                <span id="uptime">--</span>
-            </div>
-            <div class="info-row">
-                <span>OS</span>
-                <span id="os">--</span>
-            </div>
-        </div>
-    </div>
-
-    <!-- ═══ LIVE THREAT MONITORING TERMINAL ═══ -->
-    <div class="terminal-section">
-        <div class="terminal-section-title">Live Threat Monitoring (Fail2Ban/UFW)</div>
-        <div class="terminal-window">
-            <div class="terminal-header">
-                <div class="terminal-buttons">
-                    <span class="terminal-btn btn-close"></span>
-                    <span class="terminal-btn btn-min"></span>
-                    <span class="terminal-btn btn-max"></span>
+            <div class="header-right">
+                <div class="lab-badge">BBM DevSecOps Lab</div>
+                <div class="status glitch" id="live-status" data-text="Live">
+                    <span class="dot"></span>
+                    <span id="status-text">Live</span>
                 </div>
-                <span class="terminal-title">root@bbm-vps:~# tail -f /var/log/auth.log</span>
+            </div>
+        </div>
+
+        <!-- ═══ MAIN GRID: 30/70 ═══ -->
+        <div class="main-grid">
+
+            <!-- LEFT COLUMN — System Metrics -->
+            <div class="sidebar">
+                <div class="card" id="card-cpu">
+                    <div class="card-title">CPU Usage</div>
+                    <div class="metric-value" id="cpu-percent">--%</div>
+                    <div class="metric-sub" id="cpu-cores">-- cores</div>
+                    <div class="progress-bar">
+                        <div class="progress-fill ok" id="cpu-bar" style="width:0%"></div>
+                    </div>
+                </div>
+
+                <div class="card" id="card-ram">
+                    <div class="card-title">Memory</div>
+                    <div class="metric-value" id="ram-percent">--%</div>
+                    <div class="metric-sub" id="ram-detail">-- / -- GB</div>
+                    <div class="progress-bar">
+                        <div class="progress-fill ok" id="ram-bar" style="width:0%"></div>
+                    </div>
+                </div>
+
+                <div class="card" id="card-disk">
+                    <div class="card-title">Disk</div>
+                    <div class="metric-value" id="disk-percent">--%</div>
+                    <div class="metric-sub" id="disk-detail">-- / -- GB</div>
+                    <div class="progress-bar">
+                        <div class="progress-fill ok" id="disk-bar" style="width:0%"></div>
+                    </div>
+                </div>
+
+                <div class="card" id="card-net">
+                    <div class="card-title">Network I/O</div>
+                    <div class="info-row">
+                        <span>Sent</span>
+                        <span id="net-sent">-- MB</span>
+                    </div>
+                    <div class="info-row">
+                        <span>Received</span>
+                        <span id="net-recv">-- MB</span>
+                    </div>
+                    <div class="info-row">
+                        <span>Uptime</span>
+                        <span id="uptime">--</span>
+                    </div>
+                    <div class="info-row">
+                        <span>OS</span>
+                        <span id="os">--</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- RIGHT COLUMN — Threat Intelligence Map -->
+            <div id="threat-map-container">
+                <div class="map-header">
+                    <div class="map-title">Live Threat Intelligence</div>
+                    <div class="map-stats">
+                        <div class="map-stat">
+                            <span class="stat-dot dot-blocked"></span>
+                            <span>Blocked</span>
+                            <span class="stat-value" id="count-blocked">0</span>
+                        </div>
+                        <div class="map-stat">
+                            <span class="stat-dot dot-warnings"></span>
+                            <span>Warnings</span>
+                            <span class="stat-value" id="count-warnings">0</span>
+                        </div>
+                        <div class="map-stat">
+                            <span class="stat-dot dot-banned"></span>
+                            <span>Banned</span>
+                            <span class="stat-value" id="count-banned">0</span>
+                        </div>
+                    </div>
+                </div>
+                <canvas id="earth-canvas"></canvas>
+            </div>
+
+        </div>
+
+        <!-- ═══ EVENT STREAM — full width ═══ -->
+        <div class="event-stream-section">
+            <div class="event-stream-header">
+                <div class="event-stream-title">Security Event Stream</div>
+                <div class="event-stream-meta">root@bbm-vps:~# tail -f /var/log/auth.log</div>
             </div>
             <div class="terminal-body" id="threat-log"></div>
+            <div class="threat-counter">
+                <div class="threat-stat blocked">
+                    <span>Blocked:</span>
+                    <span class="count" id="count-blocked-2">0</span>
+                </div>
+                <div class="threat-stat monitored">
+                    <span>Warnings:</span>
+                    <span class="count" id="count-warnings-2">0</span>
+                </div>
+                <div class="threat-stat banned">
+                    <span>Banned IPs:</span>
+                    <span class="count" id="count-banned-2">0</span>
+                </div>
+            </div>
         </div>
-        <div class="threat-counter">
-            <div class="threat-stat blocked">
-                <span>Blocked:</span>
-                <span class="count" id="count-blocked">0</span>
-            </div>
-            <div class="threat-stat monitored">
-                <span>Warnings:</span>
-                <span class="count" id="count-warnings">0</span>
-            </div>
-            <div class="threat-stat banned">
-                <span>Banned IPs:</span>
-                <span class="count" id="count-banned">0</span>
-            </div>
-        </div>
-    </div>
 
-    <div class="status glitch" id="live-status" data-text="Live — actualizat la fiecare 3 secunde">
-        <span class="dot"></span>
-        <span id="status-text">Live — actualizat la fiecare 3 secunde</span>
+        <!-- ═══ FOOTER ═══ -->
+        <div class="footer-status">
+            <span class="dot"></span>
+            <span>Actualizat la fiecare 3 secunde</span>
+        </div>
+
     </div>
 
     <script>
@@ -1040,6 +933,10 @@
             const countBlocked = document.getElementById('count-blocked');
             const countWarnings = document.getElementById('count-warnings');
             const countBanned = document.getElementById('count-banned');
+            // Also update the secondary counters in the event stream
+            const countBlocked2 = document.getElementById('count-blocked-2');
+            const countWarnings2 = document.getElementById('count-warnings-2');
+            const countBanned2 = document.getElementById('count-banned-2');
             const MAX_LINES = 10;
             let blockedN = 0, warningsN = 0, bannedN = 0;
 
@@ -1168,10 +1065,13 @@
                 // Auto-scroll to bottom
                 logContainer.scrollTop = logContainer.scrollHeight;
 
-                // Update counters
+                // Update counters (both map header + event stream)
                 countBlocked.textContent = blockedN;
                 countWarnings.textContent = warningsN;
                 countBanned.textContent = bannedN;
+                if (countBlocked2)  countBlocked2.textContent = blockedN;
+                if (countWarnings2) countWarnings2.textContent = warningsN;
+                if (countBanned2)   countBanned2.textContent = bannedN;
 
                 // Schedule next log (2–5 seconds)
                 const nextDelay = 2000 + Math.random() * 3000;
