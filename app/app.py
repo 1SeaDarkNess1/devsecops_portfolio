@@ -146,7 +146,6 @@ def analyze_payload():
         return jsonify({"status": "error", "message": str(e)}), 400
 
 @app.route('/api/traffic')
-<<<<<<< HEAD
 def traffic():
     """Simulated HTTP packet stream for the network sniffer panel."""
     methods = ['GET', 'GET', 'GET', 'POST', 'POST', 'PUT', 'DELETE', 'HEAD']
@@ -161,17 +160,27 @@ def traffic():
         'Googlebot/2.1', 'Go-http-client/2.0', 'PostmanRuntime/7.32',
         'Nmap-NSE', 'sqlmap/1.7', 'Wget/1.21', 'axios/1.4'
     ]
+    suspicious_paths = {'/.env', '/wp-admin', '/admin/config'}
+    suspicious_agents = {'Nmap-NSE', 'sqlmap/1.7'}
+
     # Weighted status codes: 200 common, errors rare
     status_pool = [200]*50 + [301]*5 + [304]*8 + [404]*10 + [403]*6 + [500]*3 + [502]*2
 
     count = random.randint(3, 8)
     packets = []
     for _ in range(count):
-        status = random.choice(status_pool)
         method = random.choice(methods)
         path = random.choice(paths)
-        latency = round(random.uniform(0.5, 280.0), 1) if status != 500 else round(random.uniform(800, 3000), 1)
         agent = random.choice(agents)
+
+        # WAF-aware: suspicious paths/agents get 403/404
+        if path in suspicious_paths or agent in suspicious_agents:
+            status = random.choice([403, 404])
+        else:
+            status = random.choice(status_pool)
+
+        latency = round(random.uniform(0.5, 280.0), 1) if status != 500 else round(random.uniform(800, 3000), 1)
+
         packets.append({
             'status': status,
             'method': method,
@@ -181,40 +190,6 @@ def traffic():
         })
 
     return jsonify({'packets': packets})
-=======
-def traffic_stream():
-    """Genereaza un stream realist de trafic HTTP (Packet Sniffer)."""
-    endpoints = ['/', '/api/metrics', '/login', '/wp-admin', '/.env', '/api/threats', '/config.json']
-    agents = ['Mozilla/5.0 (Windows NT 10.0)', 'Chrome/120.0.0.0', 'Safari/605.1.15', 'curl/7.68.0', 'python-requests/2.26.0', 'Nmap Scripting Engine']
-    ips = [f"192.168.{random.randint(1,255)}.{random.randint(1,255)}", f"10.0.{random.randint(1,255)}.{random.randint(1,255)}", f"172.16.{random.randint(1,255)}.***"]
-    
-    traffic_lines = []
-    # Generam 2-4 request-uri simultane
-    for _ in range(random.randint(2, 4)):
-        path = random.choice(endpoints)
-        agent = random.choice(agents)
-        ip = random.choice(ips)
-        latency = random.randint(2, 85)
-        
-        # Logica WAF simulata pentru status codes
-        if path in ['/.env', '/wp-admin', '/config.json'] or 'Nmap' in agent:
-            status = random.choice([403, 404])
-            method = "GET" if status == 404 else "DROP"
-        else:
-            status = 200
-            method = random.choice(["GET", "POST"])
-            
-        traffic_lines.append({
-            "ip": ip,
-            "method": method,
-            "path": path,
-            "status": status,
-            "latency": f"{latency}ms",
-            "agent": agent.split('/')[0] # Doar numele principal pentru eleganta
-        })
-        
-    return jsonify({"stream": traffic_lines})
->>>>>>> 3d096c9fd5194dfc94a2ed2483310daf7e6f701c
 
 @app.route('/health')
 def health():

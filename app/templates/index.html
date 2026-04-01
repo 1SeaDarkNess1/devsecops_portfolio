@@ -1,51 +1,59 @@
 <!DOCTYPE html>
 <html lang="ro">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>BBM DevSecOps — Threat Intelligence Dashboard</title>
-    <meta name="description" content="Enterprise-grade DevSecOps threat intelligence dashboard with live system monitoring, global threat map, and security event stream.">
+    <meta name="description"
+        content="Enterprise-grade DevSecOps threat intelligence dashboard with live system monitoring, global threat map, and security event stream.">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@300;400;500;700&display=swap"
+        rel="stylesheet">
     <style>
         /* ═══════════════════════════════════════════════
            DESIGN TOKENS
         ═══════════════════════════════════════════════ */
         :root {
-            --bg-obsidian:    #050507;
-            --bg-surface:     rgba(18, 20, 28, 0.55);
+            --bg-obsidian: #050507;
+            --bg-surface: rgba(18, 20, 28, 0.55);
             --bg-surface-hover: rgba(24, 27, 38, 0.62);
-            --border-subtle:  rgba(255, 255, 255, 0.04);
-            --border-hover:   rgba(255, 255, 255, 0.08);
-            --text-primary:   #e2e8f0;
+            --border-subtle: rgba(255, 255, 255, 0.04);
+            --border-hover: rgba(255, 255, 255, 0.08);
+            --text-primary: #e2e8f0;
             --text-secondary: rgba(226, 232, 240, 0.50);
-            --text-tertiary:  rgba(226, 232, 240, 0.28);
-            --accent:         #00b4d8;
-            --accent-dim:     rgba(0, 180, 216, 0.12);
-            --accent-muted:   rgba(0, 180, 216, 0.35);
-            --accent-bloom:   rgba(0, 180, 216, 0.40);
+            --text-tertiary: rgba(226, 232, 240, 0.28);
+            --accent: #00b4d8;
+            --accent-dim: rgba(0, 180, 216, 0.12);
+            --accent-muted: rgba(0, 180, 216, 0.35);
+            --accent-bloom: rgba(0, 180, 216, 0.40);
             --accent-bloom-far: rgba(0, 180, 216, 0.18);
-            --crimson:        #e63946;
-            --crimson-dim:    rgba(230, 57, 70, 0.12);
-            --amber:          #f4a261;
-            --amber-dim:      rgba(244, 162, 97, 0.12);
-            --green:          #2ec4b6;
-            --green-dim:      rgba(46, 196, 182, 0.12);
-            --font-ui:        'Inter', -apple-system, 'Segoe UI', sans-serif;
-            --font-mono:      'JetBrains Mono', 'Fira Code', 'Cascadia Mono', monospace;
-            --radius:         12px;
-            --radius-sm:      8px;
-            --ease:           0.4s ease;
+            --crimson: #e63946;
+            --crimson-dim: rgba(230, 57, 70, 0.12);
+            --amber: #f4a261;
+            --amber-dim: rgba(244, 162, 97, 0.12);
+            --green: #2ec4b6;
+            --green-dim: rgba(46, 196, 182, 0.12);
+            --font-ui: 'Inter', -apple-system, 'Segoe UI', sans-serif;
+            --font-mono: 'JetBrains Mono', 'Fira Code', 'Cascadia Mono', monospace;
+            --radius: 12px;
+            --radius-sm: 8px;
+            --ease: 0.4s ease;
             /* Cinematic glass */
-            --glass-blur:     blur(32px) saturate(180%);
-            --glass-bg:       linear-gradient(135deg, rgba(255,255,255,0.03) 0%, rgba(255,255,255,0.01) 100%);
-            --glass-rim:      inset 0.5px 0.5px 1px rgba(255, 255, 255, 0.12);
-            --glass-depth:    0 20px 40px rgba(0, 0, 0, 0.50);
+            --glass-blur: blur(32px) saturate(180%);
+            --glass-bg: linear-gradient(135deg, rgba(255, 255, 255, 0.03) 0%, rgba(255, 255, 255, 0.01) 100%);
+            --glass-rim: inset 0.5px 0.5px 1px rgba(255, 255, 255, 0.12);
+            --glass-depth: 0 20px 40px rgba(0, 0, 0, 0.50);
         }
 
-        *, *::before, *::after {
-            margin: 0; padding: 0; box-sizing: border-box;
+        *,
+        *::before,
+        *::after {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
         }
 
         /* ═══════════════════════════════════════════════
@@ -83,13 +91,11 @@
             content: '';
             position: fixed;
             inset: 0;
-            background: repeating-linear-gradient(
-                0deg,
-                transparent,
-                transparent 1px,
-                rgba(0, 0, 0, 0.02) 1px,
-                rgba(0, 0, 0, 0.02) 2px
-            );
+            background: repeating-linear-gradient(0deg,
+                    transparent,
+                    transparent 1px,
+                    rgba(0, 0, 0, 0.02) 1px,
+                    rgba(0, 0, 0, 0.02) 2px);
             pointer-events: none;
             z-index: 9999;
         }
@@ -98,9 +104,18 @@
            LAYOUT SHELL
         ═══════════════════════════════════════════════ */
         .dashboard {
-            max-width: 1440px;
+            max-width: 1100px;
             margin: 0 auto;
             padding: 32px 28px;
+        }
+
+        /* When sniffer is visible, add right padding */
+        @media (min-width: 1281px) {
+            .dashboard {
+                margin-right: 320px;
+                margin-left: auto;
+                max-width: 1100px;
+            }
         }
 
         /* ═══════════════════════════════════════════════
@@ -144,8 +159,15 @@
         }
 
         @keyframes cursorBlink {
-            0%, 100% { opacity: 1; }
-            50%      { opacity: 0; }
+
+            0%,
+            100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0;
+            }
         }
 
         .boot-line {
@@ -206,8 +228,15 @@
         }
 
         @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50%      { opacity: 0.35; }
+
+            0%,
+            100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.35;
+            }
         }
 
         /* ═══════════════════════════════════════════════
@@ -246,7 +275,7 @@
         }
 
         .card:hover {
-            background: linear-gradient(135deg, rgba(255,255,255,0.045) 0%, rgba(255,255,255,0.015) 100%);
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.045) 0%, rgba(255, 255, 255, 0.015) 100%);
             border-color: var(--border-hover);
             box-shadow:
                 inset 0.5px 0.5px 1px rgba(255, 255, 255, 0.18),
@@ -296,15 +325,17 @@
             height: 100%;
             border-radius: 4px;
             transition: width 0.5s ease-in-out,
-                        background var(--ease);
+                background var(--ease);
         }
 
         .ok {
             background: var(--accent);
         }
+
         .warn {
             background: var(--amber);
         }
+
         .danger {
             background: var(--crimson);
         }
@@ -323,9 +354,13 @@
             transition: color var(--ease);
         }
 
-        .info-row:last-child { border-bottom: none; }
+        .info-row:last-child {
+            border-bottom: none;
+        }
 
-        .info-row:hover { color: var(--text-primary); }
+        .info-row:hover {
+            color: var(--text-primary);
+        }
 
         .info-row span:last-child {
             font-family: var(--font-mono);
@@ -390,9 +425,17 @@
             border-radius: 50%;
         }
 
-        .map-stat .stat-dot.dot-blocked  { background: var(--crimson); }
-        .map-stat .stat-dot.dot-warnings { background: var(--amber); }
-        .map-stat .stat-dot.dot-banned   { background: var(--accent); }
+        .map-stat .stat-dot.dot-blocked {
+            background: var(--crimson);
+        }
+
+        .map-stat .stat-dot.dot-warnings {
+            background: var(--amber);
+        }
+
+        .map-stat .stat-dot.dot-banned {
+            background: var(--accent);
+        }
 
         .map-stat .stat-value {
             font-family: var(--font-mono);
@@ -414,8 +457,15 @@
         }
 
         @keyframes fadeOut {
-            from { opacity: 1; transform: translateY(0); }
-            to   { opacity: 0; transform: translateY(-6px); }
+            from {
+                opacity: 1;
+                transform: translateY(0);
+            }
+
+            to {
+                opacity: 0;
+                transform: translateY(-6px);
+            }
         }
 
         /* ═══════════════════════════════════════════════
@@ -465,12 +515,21 @@
             line-height: 1.9;
             color: rgba(226, 232, 240, 0.35);
             scrollbar-width: thin;
-            scrollbar-color: rgba(255,255,255,0.05) transparent;
+            scrollbar-color: rgba(255, 255, 255, 0.05) transparent;
         }
 
-        .terminal-body::-webkit-scrollbar { width: 3px; }
-        .terminal-body::-webkit-scrollbar-track { background: transparent; }
-        .terminal-body::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.05); border-radius: 2px; }
+        .terminal-body::-webkit-scrollbar {
+            width: 3px;
+        }
+
+        .terminal-body::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .terminal-body::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 2px;
+        }
 
         /* Log line with fade-in */
         .log-line {
@@ -481,8 +540,15 @@
         }
 
         @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(4px); }
-            to   { opacity: 1; transform: translateY(0); }
+            from {
+                opacity: 0;
+                transform: translateY(4px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
         .log-timestamp {
@@ -541,9 +607,17 @@
             font-weight: 700;
         }
 
-        .threat-stat.blocked .count  { color: var(--crimson); }
-        .threat-stat.monitored .count { color: var(--amber); }
-        .threat-stat.banned .count    { color: var(--accent); }
+        .threat-stat.blocked .count {
+            color: var(--crimson);
+        }
+
+        .threat-stat.monitored .count {
+            color: var(--amber);
+        }
+
+        .threat-stat.banned .count {
+            color: var(--accent);
+        }
 
         /* ═══════════════════════════════════════════════
            COUNTER-UP FLASH (refined)
@@ -553,29 +627,59 @@
         }
 
         @keyframes counterFlash {
-            0%   { opacity: 0.5; }
-            50%  { opacity: 1; }
-            100% { opacity: 1; }
+            0% {
+                opacity: 0.5;
+            }
+
+            50% {
+                opacity: 1;
+            }
+
+            100% {
+                opacity: 1;
+            }
         }
 
         /* ═══════════════════════════════════════════════
            ENTRANCE ANIMATION
         ═══════════════════════════════════════════════ */
-        .card, #threat-map-container, .event-stream-section {
+        .card,
+        #threat-map-container,
+        .event-stream-section {
             opacity: 0;
             transform: translateY(12px);
             animation: fadeUp 0.5s ease forwards;
         }
 
-        .sidebar .card:nth-child(1) { animation-delay: 0.05s; }
-        .sidebar .card:nth-child(2) { animation-delay: 0.10s; }
-        .sidebar .card:nth-child(3) { animation-delay: 0.15s; }
-        .sidebar .card:nth-child(4) { animation-delay: 0.20s; }
-        #threat-map-container { animation-delay: 0.12s; }
-        .event-stream-section { animation-delay: 0.25s; }
+        .sidebar .card:nth-child(1) {
+            animation-delay: 0.05s;
+        }
+
+        .sidebar .card:nth-child(2) {
+            animation-delay: 0.10s;
+        }
+
+        .sidebar .card:nth-child(3) {
+            animation-delay: 0.15s;
+        }
+
+        .sidebar .card:nth-child(4) {
+            animation-delay: 0.20s;
+        }
+
+        #threat-map-container {
+            animation-delay: 0.12s;
+        }
+
+        .event-stream-section {
+            animation-delay: 0.25s;
+        }
 
         @keyframes fadeUp {
-            to { opacity: 1; transform: translateY(0); }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
         /* ═══════════════════════════════════════════════
@@ -615,6 +719,9 @@
                 width: 100%;
                 justify-content: flex-start;
             }
+            #threat-map-container {
+                min-height: 340px;
+            }
         }
 
         /* ═══════════════════════════════════════════════
@@ -625,7 +732,7 @@
             right: 16px;
             top: 90px;
             bottom: 40px;
-            width: 300px;
+            width: 260px;
             z-index: 10;
             pointer-events: none;
             display: flex;
@@ -663,26 +770,32 @@
         }
 
         @keyframes pktSlideIn {
-            from { opacity: 0; transform: translateY(-6px); }
-            to   { opacity: 0.7; transform: translateY(0); }
+            to {
+                opacity: 0.7;
+                transform: translateY(0);
+            }
         }
 
         .pkt-line .pkt-status {
             font-weight: 700;
             margin-right: 4px;
         }
+
         .pkt-line .pkt-method {
             color: var(--text-secondary);
             margin-right: 2px;
         }
+
         .pkt-line .pkt-path {
             color: var(--text-primary);
             opacity: 0.6;
         }
+
         .pkt-line .pkt-latency {
             color: var(--text-tertiary);
             margin-left: 4px;
         }
+
         .pkt-line .pkt-agent {
             color: var(--text-tertiary);
             opacity: 0.4;
@@ -690,44 +803,108 @@
         }
 
         /* Status color coding */
-        .status-200 .pkt-status { color: rgba(226, 232, 240, 0.45); }
-        .status-301 .pkt-status { color: rgba(226, 232, 240, 0.35); }
-        .status-304 .pkt-status { color: rgba(226, 232, 240, 0.30); }
-        .status-404 .pkt-status { color: #ffb703; }
-        .status-403 .pkt-status { color: var(--crimson); animation: pktPulse 0.6s ease; }
-        .status-500 .pkt-status { color: var(--crimson); }
-        .status-502 .pkt-status { color: var(--amber); }
+        .status-200 .pkt-status {
+            color: rgba(226, 232, 240, 0.45);
+        }
+
+        .status-301 .pkt-status {
+            color: rgba(226, 232, 240, 0.35);
+        }
+
+        .status-304 .pkt-status {
+            color: rgba(226, 232, 240, 0.30);
+        }
+
+        .status-404 .pkt-status {
+            color: #ffb703;
+        }
+
+        .status-403 .pkt-status {
+            color: var(--crimson);
+            animation: pktPulse 0.6s ease;
+        }
+
+        .status-500 .pkt-status {
+            color: var(--crimson);
+        }
+
+        .status-502 .pkt-status {
+            color: var(--amber);
+        }
 
         @keyframes pktPulse {
-            0%, 100% { opacity: 1; }
-            50%      { opacity: 0.3; }
+
+            0%,
+            100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.3;
+            }
         }
 
         /* Don't show on narrow screens */
         @media (max-width: 1280px) {
-            #packet-sniffer { display: none; }
+            #packet-sniffer {
+                display: none;
+            }
         }
 
         @media (max-width: 600px) {
-            .dashboard { padding: 16px 12px; }
-            .sidebar { grid-template-columns: 1fr; }
-            .card { padding: 18px 20px; }
-            .metric-value { font-size: 28px; }
-            .map-stats { flex-wrap: wrap; gap: 10px; }
-            #earth-canvas { min-height: 220px; }
-            .terminal-body { font-size: 0.7rem; padding: 8px 14px; }
-            .threat-counter { padding: 10px 14px; gap: 14px; flex-wrap: wrap; }
+            .dashboard {
+                padding: 16px 12px;
+            }
+
+            .sidebar {
+                grid-template-columns: 1fr;
+            }
+
+            .card {
+                padding: 18px 20px;
+            }
+
+            .metric-value {
+                font-size: 28px;
+            }
+
+            .map-stats {
+                flex-wrap: wrap;
+                gap: 10px;
+            }
+
+            #earth-canvas {
+                min-height: 220px;
+            }
+
+            .terminal-body {
+                font-size: 0.7rem;
+                padding: 8px 14px;
+            }
+
+            .threat-counter {
+                padding: 10px 14px;
+                gap: 14px;
+                flex-wrap: wrap;
+            }
         }
 
         /* ═══════════════════════════════════════════════
            SCROLLBAR
         ═══════════════════════════════════════════════ */
-        ::-webkit-scrollbar { width: 4px; }
-        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
         ::-webkit-scrollbar-thumb {
             background: rgba(255, 255, 255, 0.06);
             border-radius: 2px;
         }
+
         ::-webkit-scrollbar-thumb:hover {
             background: rgba(255, 255, 255, 0.10);
         }
@@ -735,12 +912,28 @@
         /* ═══════════════════════════════════════════════
            GLITCH (kept for JS compat, made subtle)
         ═══════════════════════════════════════════════ */
-        .glitch { position: relative; }
-        .glitch.glitching { animation: subtleGlitch 0.2s linear; }
+        .glitch {
+            position: relative;
+        }
+
+        .glitch.glitching {
+            animation: subtleGlitch 0.2s linear;
+        }
+
         @keyframes subtleGlitch {
-            0%, 100% { opacity: 1; }
-            30%      { opacity: 0.6; }
-            60%      { opacity: 0.85; }
+
+            0%,
+            100% {
+                opacity: 1;
+            }
+
+            30% {
+                opacity: 0.6;
+            }
+
+            60% {
+                opacity: 0.85;
+            }
         }
 
         /* ═══════════════════════════════════════════════
@@ -836,15 +1029,43 @@
         }
 
         @keyframes shake {
-            0%, 100% { transform: translateX(0); }
-            10%      { transform: translateX(-4px) rotate(-0.5deg); }
-            20%      { transform: translateX(4px) rotate(0.5deg); }
-            30%      { transform: translateX(-3px); }
-            40%      { transform: translateX(3px); }
-            50%      { transform: translateX(-2px) rotate(-0.3deg); }
-            60%      { transform: translateX(2px) rotate(0.3deg); }
-            70%      { transform: translateX(-1px); }
-            80%      { transform: translateX(1px); }
+
+            0%,
+            100% {
+                transform: translateX(0);
+            }
+
+            10% {
+                transform: translateX(-4px) rotate(-0.5deg);
+            }
+
+            20% {
+                transform: translateX(4px) rotate(0.5deg);
+            }
+
+            30% {
+                transform: translateX(-3px);
+            }
+
+            40% {
+                transform: translateX(3px);
+            }
+
+            50% {
+                transform: translateX(-2px) rotate(-0.3deg);
+            }
+
+            60% {
+                transform: translateX(2px) rotate(0.3deg);
+            }
+
+            70% {
+                transform: translateX(-1px);
+            }
+
+            80% {
+                transform: translateX(1px);
+            }
         }
 
         .card.shaking {
@@ -852,6 +1073,7 @@
         }
     </style>
 </head>
+
 <body>
 
     <div class="dashboard">
@@ -927,7 +1149,8 @@
                 <div class="card" id="card-waf">
                     <div class="card-title">WAF Payload Analyzer</div>
                     <div class="waf-input-group">
-                        <input type="text" class="waf-input" id="waf-input" placeholder="> Inject payload here..." autocomplete="off" spellcheck="false">
+                        <input type="text" class="waf-input" id="waf-input" placeholder="> Inject payload here..."
+                            autocomplete="off" spellcheck="false">
                         <button class="waf-btn" id="waf-btn">Execute</button>
                     </div>
                     <div id="waf-result-display"></div>
@@ -1107,12 +1330,12 @@
                 const res = await fetch('/api/metrics');
                 const d = await res.json();
 
-                document.getElementById('hostname').textContent = 
+                document.getElementById('hostname').textContent =
                     d.hostname + ' · ' + d.os;
 
                 // CPU
                 animateCounter(document.getElementById('cpu-percent'), d.cpu.percent, '%');
-                document.getElementById('cpu-cores').textContent = 
+                document.getElementById('cpu-cores').textContent =
                     d.cpu.cores + ' cores';
                 const cpuBar = document.getElementById('cpu-bar');
                 cpuBar.style.width = d.cpu.percent + '%';
@@ -1120,7 +1343,7 @@
 
                 // RAM
                 animateCounter(document.getElementById('ram-percent'), d.ram.percent, '%');
-                document.getElementById('ram-detail').textContent = 
+                document.getElementById('ram-detail').textContent =
                     d.ram.used + ' / ' + d.ram.total + ' GB';
                 const ramBar = document.getElementById('ram-bar');
                 ramBar.style.width = d.ram.percent + '%';
@@ -1128,21 +1351,21 @@
 
                 // Disk
                 animateCounter(document.getElementById('disk-percent'), d.disk.percent, '%');
-                document.getElementById('disk-detail').textContent = 
+                document.getElementById('disk-detail').textContent =
                     d.disk.used + ' / ' + d.disk.total + ' GB';
                 const diskBar = document.getElementById('disk-bar');
                 diskBar.style.width = d.disk.percent + '%';
                 diskBar.className = 'progress-fill ' + getColor(d.disk.percent);
 
                 // Network + info
-                document.getElementById('net-sent').textContent = 
+                document.getElementById('net-sent').textContent =
                     d.network.bytes_sent + ' MB';
-                document.getElementById('net-recv').textContent = 
+                document.getElementById('net-recv').textContent =
                     d.network.bytes_recv + ' MB';
                 document.getElementById('uptime').textContent = d.uptime;
                 document.getElementById('os').textContent = d.os;
 
-            } catch(e) {
+            } catch (e) {
                 console.error('Eroare fetch:', e);
             }
         }
@@ -1182,20 +1405,20 @@
             const ctx = canvas.getContext('2d');
             const logContainer = document.getElementById('threat-log');
             const countEls = {
-                blocked:  document.getElementById('count-blocked'),
+                blocked: document.getElementById('count-blocked'),
                 warnings: document.getElementById('count-warnings'),
-                banned:   document.getElementById('count-banned'),
+                banned: document.getElementById('count-banned'),
                 blocked2: document.getElementById('count-blocked-2'),
-                warnings2:document.getElementById('count-warnings-2'),
-                banned2:  document.getElementById('count-banned-2')
+                warnings2: document.getElementById('count-warnings-2'),
+                banned2: document.getElementById('count-banned-2')
             };
             let counters = { blocked: 0, warnings: 0, banned: 0 };
 
             // ---- Constants ----
-            const ACCENT  = '#00b4d8';
+            const ACCENT = '#00b4d8';
             const CRIMSON = '#e63946';
-            const AMBER   = '#f4a261';
-            const PI2     = Math.PI * 2;
+            const AMBER = '#f4a261';
+            const PI2 = Math.PI * 2;
             const MAX_LOG_LINES = 5;
 
             // ---- Canvas sizing (HiDPI) ----
@@ -1433,28 +1656,28 @@
             function fmtTime() {
                 const now = new Date();
                 return String(now.getHours()).padStart(2, '0') + ':' +
-                       String(now.getMinutes()).padStart(2, '0') + ':' +
-                       String(now.getSeconds()).padStart(2, '0');
+                    String(now.getMinutes()).padStart(2, '0') + ':' +
+                    String(now.getSeconds()).padStart(2, '0');
             }
 
             // Classify a log line to pick the right tag color
             function classifyThreat(text) {
                 const lower = text.toLowerCase();
-                if (lower.includes('ban'))             return 'alert';
+                if (lower.includes('ban')) return 'alert';
                 if (lower.includes('failed password')) return 'block';
-                if (lower.includes('invalid user'))    return 'warn';
+                if (lower.includes('invalid user')) return 'warn';
                 return 'block';
             }
 
             const tagClasses = {
                 alert: 'log-tag-alert',
                 block: 'log-tag-block',
-                warn:  'log-tag-warn'
+                warn: 'log-tag-warn'
             };
             const tagLabels = {
                 alert: '[ALERT]',
                 block: '[BLOCK]',
-                warn:  '[WARN]'
+                warn: '[WARN]'
             };
 
             function onImpact() {
@@ -1484,20 +1707,20 @@
                 // Update counters
                 counters.warnings = Math.floor(counters.blocked * 0.6);
                 counters.banned = Math.floor(counters.blocked * 0.25);
-                countEls.blocked.textContent  = counters.blocked;
+                countEls.blocked.textContent = counters.blocked;
                 countEls.warnings.textContent = counters.warnings;
-                countEls.banned.textContent   = counters.banned;
-                if (countEls.blocked2)  countEls.blocked2.textContent  = counters.blocked;
+                countEls.banned.textContent = counters.banned;
+                if (countEls.blocked2) countEls.blocked2.textContent = counters.blocked;
                 if (countEls.warnings2) countEls.warnings2.textContent = counters.warnings;
-                if (countEls.banned2)   countEls.banned2.textContent   = counters.banned;
+                if (countEls.banned2) countEls.banned2.textContent = counters.banned;
             }
 
             // Simple HTML escape for real log text
             function escapeHtml(str) {
                 return str.replace(/&/g, '&amp;')
-                          .replace(/</g, '&lt;')
-                          .replace(/>/g, '&gt;')
-                          .replace(/"/g, '&quot;');
+                    .replace(/</g, '&lt;')
+                    .replace(/>/g, '&gt;')
+                    .replace(/"/g, '&quot;');
             }
 
             // ===========================
@@ -1612,10 +1835,10 @@
         //  6. WAF PAYLOAD ANALYZER (Interactive Sandbox)
         // ═══════════════════════════════════════════════
         (function initWAF() {
-            const input   = document.getElementById('waf-input');
-            const btn     = document.getElementById('waf-btn');
-            const result  = document.getElementById('waf-result-display');
-            const card    = document.getElementById('card-waf');
+            const input = document.getElementById('waf-input');
+            const btn = document.getElementById('waf-btn');
+            const result = document.getElementById('waf-result-display');
+            const card = document.getElementById('card-waf');
             let dismissTimer = null;
 
             function resetResult() {
@@ -1736,7 +1959,11 @@
             // Poll every 1 second
             pollTraffic();
             setInterval(pollTraffic, 1000);
+
+
+
         })();
     </script>
 </body>
+
 </html>
