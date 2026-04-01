@@ -543,6 +543,192 @@
         }
 
         /* ═══════════════════════════════════════════════
+           THREAT MONITOR TERMINAL
+        ═══════════════════════════════════════════════ */
+        .terminal-section {
+            max-width: 1200px;
+            margin: 28px auto 0;
+        }
+
+        .terminal-section-title {
+            font-size: 10px;
+            font-weight: 500;
+            letter-spacing: 4px;
+            text-transform: uppercase;
+            color: var(--magenta);
+            margin-bottom: 14px;
+            text-shadow: 0 0 8px var(--magenta-dim);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .terminal-section-title::before {
+            content: '▸';
+            color: var(--magenta);
+            font-size: 12px;
+        }
+
+        .terminal-window {
+            border-radius: 12px;
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            box-shadow:
+                0 4px 40px rgba(0, 0, 0, 0.50),
+                inset 0 0 80px rgba(255, 23, 68, 0.03);
+        }
+
+        /* Terminal title bar */
+        .terminal-header {
+            background: #1a1a2e;
+            padding: 10px 16px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+            user-select: none;
+        }
+
+        .terminal-buttons {
+            display: flex;
+            gap: 7px;
+            flex-shrink: 0;
+        }
+
+        .terminal-btn {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            border: none;
+            cursor: default;
+        }
+
+        .terminal-btn.btn-close  { background: #ff5f57; box-shadow: 0 0 6px rgba(255, 95, 87, 0.4); }
+        .terminal-btn.btn-min    { background: #ffbd2e; box-shadow: 0 0 6px rgba(255, 189, 46, 0.4); }
+        .terminal-btn.btn-max    { background: #28c840; box-shadow: 0 0 6px rgba(40, 200, 64, 0.4); }
+
+        .terminal-title {
+            font-size: 11px;
+            color: rgba(255, 255, 255, 0.35);
+            letter-spacing: 1px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        /* Terminal body */
+        .terminal-body {
+            background: #0a0a0a;
+            padding: 16px;
+            min-height: 260px;
+            max-height: 320px;
+            overflow-y: auto;
+            font-size: 12px;
+            line-height: 1.8;
+            color: rgba(180, 190, 200, 0.55);
+            box-shadow: inset 0 0 60px rgba(139, 0, 0, 0.06);
+            scrollbar-width: thin;
+            scrollbar-color: rgba(255,255,255,0.08) transparent;
+        }
+
+        .terminal-body::-webkit-scrollbar { width: 4px; }
+        .terminal-body::-webkit-scrollbar-track { background: transparent; }
+        .terminal-body::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.08); border-radius: 2px; }
+
+        /* Log line */
+        .log-line {
+            white-space: nowrap;
+            overflow: hidden;
+            border-left: 2px solid transparent;
+            padding-left: 8px;
+            margin-bottom: 1px;
+            animation: logSlideIn 0.3s ease;
+        }
+
+        @keyframes logSlideIn {
+            from { opacity: 0; transform: translateX(-12px); }
+            to   { opacity: 1; transform: translateX(0); }
+        }
+
+        /* Log tag colors */
+        .log-timestamp {
+            color: rgba(255, 255, 255, 0.18);
+        }
+
+        .log-tag-warn {
+            color: #ffbd2e;
+            font-weight: 700;
+            text-shadow: 0 0 4px rgba(255, 189, 46, 0.3);
+        }
+
+        .log-tag-block {
+            color: var(--neon-red);
+            font-weight: 700;
+            text-shadow: 0 0 6px rgba(255, 23, 68, 0.4);
+        }
+
+        .log-tag-alert {
+            color: #ff4444;
+            font-weight: 700;
+            text-shadow: 0 0 8px rgba(255, 68, 68, 0.5);
+        }
+
+        .log-tag-ok {
+            color: var(--neon-green);
+            font-weight: 700;
+            text-shadow: 0 0 4px rgba(57, 255, 20, 0.3);
+        }
+
+        .log-ip {
+            color: var(--neon-yellow);
+            font-weight: 500;
+        }
+
+        .log-service {
+            color: var(--cyan);
+        }
+
+        /* Threat counter badge */
+        .threat-counter {
+            display: flex;
+            gap: 20px;
+            margin-top: 12px;
+            justify-content: flex-start;
+            flex-wrap: wrap;
+        }
+
+        .threat-stat {
+            font-size: 10px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .threat-stat .count {
+            font-size: 16px;
+            font-weight: 800;
+            color: var(--neon-red);
+            text-shadow: 0 0 8px rgba(255, 23, 68, 0.4);
+        }
+
+        .threat-stat.blocked .count {
+            color: var(--neon-red);
+        }
+
+        .threat-stat.monitored .count {
+            color: var(--neon-yellow);
+            text-shadow: 0 0 8px rgba(250, 255, 0, 0.3);
+        }
+
+        .threat-stat.banned .count {
+            color: #ff4444;
+            text-shadow: 0 0 8px rgba(255, 68, 68, 0.4);
+        }
+
+        /* ═══════════════════════════════════════════════
            RESPONSIVE
         ═══════════════════════════════════════════════ */
         @media (max-width: 640px) {
@@ -552,6 +738,10 @@
             h1 { letter-spacing: 3px; }
             .metric-value { font-size: 34px; }
             .lab-badge { font-size: 8px; letter-spacing: 3px; }
+            .terminal-body { font-size: 10px; min-height: 200px; padding: 12px; }
+            .terminal-title { font-size: 9px; }
+            .threat-counter { gap: 12px; }
+            .threat-stat .count { font-size: 14px; }
         }
 
         @media (max-width: 380px) {
@@ -630,6 +820,36 @@
             <div class="info-row">
                 <span>OS</span>
                 <span id="os">--</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══ LIVE THREAT MONITORING TERMINAL ═══ -->
+    <div class="terminal-section">
+        <div class="terminal-section-title">Live Threat Monitoring (Fail2Ban/UFW)</div>
+        <div class="terminal-window">
+            <div class="terminal-header">
+                <div class="terminal-buttons">
+                    <span class="terminal-btn btn-close"></span>
+                    <span class="terminal-btn btn-min"></span>
+                    <span class="terminal-btn btn-max"></span>
+                </div>
+                <span class="terminal-title">root@bbm-vps:~# tail -f /var/log/auth.log</span>
+            </div>
+            <div class="terminal-body" id="threat-log"></div>
+        </div>
+        <div class="threat-counter">
+            <div class="threat-stat blocked">
+                <span>Blocked:</span>
+                <span class="count" id="count-blocked">0</span>
+            </div>
+            <div class="threat-stat monitored">
+                <span>Warnings:</span>
+                <span class="count" id="count-warnings">0</span>
+            </div>
+            <div class="threat-stat banned">
+                <span>Banned IPs:</span>
+                <span class="count" id="count-banned">0</span>
             </div>
         </div>
     </div>
@@ -810,6 +1030,158 @@
 
             // First glitch after 5 seconds
             setTimeout(triggerGlitch, 5000);
+        })();
+
+        // ═══════════════════════════════════════════════
+        //  5. LIVE THREAT MONITORING – Log Simulation
+        // ═══════════════════════════════════════════════
+        (function initThreatMonitor() {
+            const logContainer = document.getElementById('threat-log');
+            const countBlocked = document.getElementById('count-blocked');
+            const countWarnings = document.getElementById('count-warnings');
+            const countBanned = document.getElementById('count-banned');
+            const MAX_LINES = 10;
+            let blockedN = 0, warningsN = 0, bannedN = 0;
+
+            // Random IP generators
+            function randOctet() { return Math.floor(Math.random() * 255) + 1; }
+            function randIP() {
+                const prefixes = ['45.33', '104.128', '185.220', '91.240', '23.94', '178.62', '159.89', '64.227', '139.59', '167.71', '103.216', '202.61'];
+                return prefixes[Math.floor(Math.random() * prefixes.length)] + '.' + randOctet() + '.' + randOctet();
+            }
+            function randPort() {
+                const ports = [22, 80, 443, 3306, 8080, 8443, 2222, 5432, 6379, 27017];
+                return ports[Math.floor(Math.random() * ports.length)];
+            }
+            function randUser() {
+                const users = ['root', 'admin', 'ubuntu', 'postgres', 'deploy', 'git', 'www-data', 'mysql', 'oracle', 'test'];
+                return users[Math.floor(Math.random() * users.length)];
+            }
+
+            // Timestamp
+            function timestamp() {
+                const now = new Date();
+                const mon = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+                const d = now.getDate().toString().padStart(2, ' ');
+                const h = now.getHours().toString().padStart(2, '0');
+                const m = now.getMinutes().toString().padStart(2, '0');
+                const s = now.getSeconds().toString().padStart(2, '0');
+                return mon[now.getMonth()] + ' ' + d + ' ' + h + ':' + m + ':' + s;
+            }
+
+            // Log templates
+            const logTemplates = [
+                // WARN – failed SSH login
+                () => {
+                    const ip = randIP();
+                    const user = randUser();
+                    const port = randPort();
+                    warningsN++;
+                    return {
+                        tag: 'warn',
+                        html: `<span class="log-timestamp">${timestamp()}</span> <span class="log-tag-warn">[WARN]</span> Failed password for <span class="log-service">${user}</span> from <span class="log-ip">${ip}</span> port <span class="log-service">${port}</span> ssh2`
+                    };
+                },
+                // BLOCK – UFW blocked connection
+                () => {
+                    const ip = randIP();
+                    const port = randPort();
+                    const proto = Math.random() > 0.3 ? 'TCP' : 'UDP';
+                    blockedN++;
+                    return {
+                        tag: 'block',
+                        html: `<span class="log-timestamp">${timestamp()}</span> <span class="log-tag-block">[BLOCK]</span> UFW Blocked <span class="log-service">${proto}</span> connection from <span class="log-ip">${ip}</span> to port <span class="log-service">${port}</span>`
+                    };
+                },
+                // ALERT – Fail2Ban ban
+                () => {
+                    const ip = randIP();
+                    const attempts = Math.floor(Math.random() * 4) + 3;
+                    bannedN++;
+                    return {
+                        tag: 'alert',
+                        html: `<span class="log-timestamp">${timestamp()}</span> <span class="log-tag-alert">[ALERT]</span> Fail2Ban: Ban <span class="log-ip">${ip}</span> after <span class="log-service">${attempts}</span> failed attempts`
+                    };
+                },
+                // WARN – port scan detected
+                () => {
+                    const ip = randIP();
+                    warningsN++;
+                    return {
+                        tag: 'warn',
+                        html: `<span class="log-timestamp">${timestamp()}</span> <span class="log-tag-warn">[WARN]</span> Port scan detected from <span class="log-ip">${ip}</span> — <span class="log-service">${Math.floor(Math.random() * 200) + 50} ports</span> scanned`
+                    };
+                },
+                // BLOCK – repeated auth failure
+                () => {
+                    const ip = randIP();
+                    const user = randUser();
+                    blockedN++;
+                    return {
+                        tag: 'block',
+                        html: `<span class="log-timestamp">${timestamp()}</span> <span class="log-tag-block">[BLOCK]</span> Repeated auth failure for <span class="log-service">${user}</span> from <span class="log-ip">${ip}</span> — connection dropped`
+                    };
+                },
+                // ALERT – brute force jail
+                () => {
+                    const ip = randIP();
+                    const jail = Math.random() > 0.5 ? 'sshd' : 'apache-auth';
+                    bannedN++;
+                    return {
+                        tag: 'alert',
+                        html: `<span class="log-timestamp">${timestamp()}</span> <span class="log-tag-alert">[ALERT]</span> Fail2Ban jail <span class="log-service">[${jail}]</span>: Ban <span class="log-ip">${ip}</span>`
+                    };
+                },
+                // OK – unban (rare)
+                () => {
+                    const ip = randIP();
+                    return {
+                        tag: 'ok',
+                        html: `<span class="log-timestamp">${timestamp()}</span> <span class="log-tag-ok">[INFO]</span> Fail2Ban: Unban <span class="log-ip">${ip}</span> — ban period expired`
+                    };
+                }
+            ];
+
+            function addLogLine() {
+                // Weight: WARN 35%, BLOCK 30%, ALERT 20%, port-scan 8%, repeat-auth 5%, jail 5%, unban 2%  
+                const weights = [35, 30, 20, 8, 5, 5, 2];
+                const totalW = weights.reduce((a, b) => a + b, 0);
+                let r = Math.random() * totalW;
+                let templateIndex = 0;
+                for (let i = 0; i < weights.length; i++) {
+                    r -= weights[i];
+                    if (r <= 0) { templateIndex = i; break; }
+                }
+
+                const logEntry = logTemplates[templateIndex]();
+                const line = document.createElement('div');
+                line.className = 'log-line';
+                line.innerHTML = logEntry.html;
+
+                logContainer.appendChild(line);
+
+                // Remove oldest lines beyond MAX_LINES
+                while (logContainer.children.length > MAX_LINES) {
+                    logContainer.removeChild(logContainer.firstChild);
+                }
+
+                // Auto-scroll to bottom
+                logContainer.scrollTop = logContainer.scrollHeight;
+
+                // Update counters
+                countBlocked.textContent = blockedN;
+                countWarnings.textContent = warningsN;
+                countBanned.textContent = bannedN;
+
+                // Schedule next log (2–5 seconds)
+                const nextDelay = 2000 + Math.random() * 3000;
+                setTimeout(addLogLine, nextDelay);
+            }
+
+            // Initial burst: 3 quick lines to populate the terminal
+            setTimeout(() => addLogLine(), 1200);
+            setTimeout(() => addLogLine(), 1800);
+            setTimeout(() => addLogLine(), 2500);
         })();
     </script>
 </body>
