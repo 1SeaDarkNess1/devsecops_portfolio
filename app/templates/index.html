@@ -540,6 +540,7 @@
             overflow: hidden;
             padding: 2px 0;
             opacity: 0;
+            will-change: transform, opacity;
             animation: fadeIn 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
         }
 
@@ -718,6 +719,16 @@
         /* ═══════════════════════════════════════════════
            RESPONSIVE
         ═══════════════════════════════════════════════ */
+        @media (max-width: 1200px) {
+            .main-grid {
+                grid-template-columns: 300px 1fr;
+                gap: 18px;
+            }
+            .dashboard {
+                padding: 24px 20px;
+            }
+        }
+
         @media (max-width: 960px) {
             .main-grid {
                 grid-template-columns: 1fr;
@@ -737,6 +748,57 @@
             }
             #threat-map-container {
                 min-height: 340px;
+                max-height: none;
+                position: relative;
+                top: 0;
+                align-self: stretch;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .dashboard {
+                padding: 16px 14px;
+            }
+            .main-grid {
+                grid-template-columns: 1fr;
+                gap: 14px;
+            }
+            .sidebar {
+                grid-template-columns: 1fr;
+            }
+            .card {
+                padding: 18px 20px;
+            }
+            .metric-value {
+                font-size: clamp(24px, 6vw, 32px);
+            }
+            .map-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
+            }
+            .map-stats {
+                flex-wrap: wrap;
+                gap: 10px;
+            }
+            #earth-canvas {
+                min-height: 240px;
+            }
+            .event-stream-meta {
+                display: none;
+            }
+            .terminal-body {
+                font-size: 0.7rem;
+                padding: 8px 14px;
+                max-height: 180px;
+            }
+            .threat-counter {
+                padding: 10px 14px;
+                gap: 14px;
+                flex-wrap: wrap;
+            }
+            h1 {
+                font-size: 15px;
             }
         }
 
@@ -827,6 +889,7 @@
             text-overflow: ellipsis;
             opacity: 0;
             transform: translateY(10px) translateX(5px);
+            will-change: transform, opacity;
             animation: pktSlideIn 0.4s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
         }
 
@@ -912,49 +975,12 @@
             }
         }
 
-        @media (max-width: 600px) {
-            .dashboard {
-                padding: 16px 12px;
-            }
-
-            .sidebar {
-                grid-template-columns: 1fr;
-            }
-
-            .card {
-                padding: 18px 20px;
-            }
-
-            .metric-value {
-                font-size: 28px;
-            }
-
-            .map-stats {
-                flex-wrap: wrap;
-                gap: 10px;
-            }
-
-            #earth-canvas {
-                min-height: 220px;
-            }
-
-            .terminal-body {
-                font-size: 0.7rem;
-                padding: 8px 14px;
-            }
-
-            .threat-counter {
-                padding: 10px 14px;
-                gap: 14px;
-                flex-wrap: wrap;
-            }
-        }
-
         /* ═══════════════════════════════════════════════
-           SCROLLBAR
+           SCROLLBAR — Teal Cinematic
         ═══════════════════════════════════════════════ */
         ::-webkit-scrollbar {
             width: 4px;
+            height: 4px;
         }
 
         ::-webkit-scrollbar-track {
@@ -962,12 +988,18 @@
         }
 
         ::-webkit-scrollbar-thumb {
-            background: rgba(255, 255, 255, 0.06);
-            border-radius: 2px;
+            background: var(--accent-dim);
+            border-radius: 4px;
         }
 
         ::-webkit-scrollbar-thumb:hover {
-            background: rgba(255, 255, 255, 0.10);
+            background: var(--accent-muted);
+        }
+
+        /* Firefox scrollbar */
+        * {
+            scrollbar-width: thin;
+            scrollbar-color: var(--accent-dim) transparent;
         }
 
         /* ═══════════════════════════════════════════════
@@ -1223,6 +1255,7 @@
             animation: pulse-alert 2s ease-in-out infinite;
             border-color: rgba(230, 57, 70, 0.6);
             background: linear-gradient(135deg, rgba(230, 57, 70, 0.08) 0%, rgba(230, 57, 70, 0.02) 100%);
+            will-change: box-shadow, border-color;
         }
 
         .card.alert-mode .metric-value {
@@ -1261,7 +1294,7 @@
 
             <!-- LEFT COLUMN — System Metrics -->
             <div class="sidebar">
-                <div class="card" id="card-cpu">
+                <div class="card" id="card-cpu" title="Live CPU utilization fetched via psutil — updates every 3s">
                     <div class="card-title">CPU Usage</div>
                     <div class="metric-value" id="cpu-percent">--%</div>
                     <div class="metric-sub" id="cpu-cores">-- cores</div>
@@ -1270,7 +1303,7 @@
                     </div>
                 </div>
 
-                <div class="card" id="card-ram">
+                <div class="card" id="card-ram" title="Virtual memory usage via psutil — real-time">
                     <div class="card-title">Memory</div>
                     <div class="metric-value" id="ram-percent">--%</div>
                     <div class="metric-sub" id="ram-detail">-- / -- GB</div>
@@ -1279,7 +1312,7 @@
                     </div>
                 </div>
 
-                <div class="card" id="card-disk">
+                <div class="card" id="card-disk" title="Root filesystem disk usage — psutil.disk_usage('/')">
                     <div class="card-title">Disk</div>
                     <div class="metric-value" id="disk-percent">--%</div>
                     <div class="metric-sub" id="disk-detail">-- / -- GB</div>
@@ -1288,7 +1321,7 @@
                     </div>
                 </div>
 
-                <div class="card" id="card-net">
+                <div class="card" id="card-net" title="Cumulative network I/O counters, uptime, and OS info">
                     <div class="card-title">Network I/O</div>
                     <div class="info-row">
                         <span>Sent</span>
@@ -1308,37 +1341,37 @@
                     </div>
                 </div>
 
-                <div class="card" id="card-waf">
+                <div class="card" id="card-waf" title="Tests payloads against OWASP Top 10 RegEx signatures (SQLi, XSS, Path Traversal)">
                     <div class="card-title">WAF Payload Analyzer</div>
                     <div class="waf-input-group">
                         <input type="text" class="waf-input" id="waf-input" placeholder="> Inject payload here..."
                             autocomplete="off" spellcheck="false">
-                        <button class="waf-btn" id="waf-btn">Execute</button>
+                        <button class="waf-btn" id="waf-btn" title="Submit payload for OWASP signature analysis">Execute</button>
                     </div>
                     <div id="waf-result-display"></div>
                 </div>
 
-                <div class="card" id="card-dlp">
+                <div class="card" id="card-dlp" title="Browser-based SHA-256 encryption using Web Crypto API — zero server exposure">
                     <div class="card-title">ZERO-TRUST DLP VAULT</div>
                     <div class="waf-input-group" id="dlp-input-group">
                         <input type="password" class="waf-input" id="dlp-input" placeholder="> Enter sensitive data..."
                             autocomplete="off" spellcheck="false">
-                        <button class="waf-btn" id="dlp-btn">ENCRYPT</button>
+                        <button class="waf-btn" id="dlp-btn" title="Encrypt data locally using SHA-256">ENCRYPT</button>
                     </div>
                     <div id="crypto-result-display"></div>
                 </div>
 
-                <div class="card" id="card-chaos">
+                <div class="card" id="card-chaos" title="Chaos Engineering — triggers POST /api/chaos to simulate node failure and CPU spike">
                     <div class="card-title" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
                         <span>CHAOS ENGINEERING</span>
                         <span id="chaos-status"></span>
                     </div>
-                    <button id="btn-chaos">INITIATE NODE FAILURE</button>
+                    <button id="btn-chaos" title="Simulate 8-second node failure with CPU spike to 95-99%">INITIATE NODE FAILURE</button>
                 </div>
             </div>
 
             <!-- RIGHT COLUMN — Threat Intelligence Map -->
-            <div id="threat-map-container">
+            <div id="threat-map-container" title="3D holographic globe with live attack arc visualization — canvas 2D, frame-rate independent">
                 <div class="map-header">
                     <div class="map-title">Live Threat Intelligence</div>
                     <div class="map-stats">
@@ -1359,7 +1392,7 @@
                         </div>
                     </div>
                 </div>
-                <canvas id="earth-canvas"></canvas>
+                <canvas id="earth-canvas" title="Canvas WebGL globe — 420 golden-spiral points"></canvas>
             </div>
 
         </div>
@@ -1368,7 +1401,7 @@
         <div class="event-stream-section">
             <div class="event-stream-header">
                 <div class="event-stream-title">Security Event Stream</div>
-                <div class="event-stream-meta">root@bbm-vps:~# tail -f /var/log/auth.log</div>
+                <div class="event-stream-meta" title="Real-time auth.log stream — masked IPs and usernames for GDPR compliance">root@bbm-vps:~# tail -f /var/log/auth.log</div>
             </div>
             <div class="terminal-body" id="threat-log"></div>
             <div class="threat-counter">
@@ -1397,7 +1430,7 @@
 
     <!-- ═══ PACKET SNIFFER (Data Waterfall) ═══ -->
     <div id="packet-sniffer">
-        <div class="sniffer-title">Network Stream // Port 443</div>
+        <div class="sniffer-title" title="Simulated HTTP traffic stream — /api/traffic endpoint">Network Stream // Port 443</div>
         <div class="sniffer-stats">
             <div class="sniffer-stat">
                 <span class="sniffer-stat-value" id="sniffer-total">0</span>
@@ -1515,64 +1548,83 @@
         }
 
         // ═══════════════════════════════════════════════
-        //  3. CORE METRICS LOGIC (fetch preserved)
+        //  UTILITY: Shared helpers (DRY)
         // ═══════════════════════════════════════════════
+        const GLOBE_RADIUS_FACTOR = 0.34; // Single source of truth for globe sizing
+
         function getColor(percent) {
             if (percent < 60) return 'ok';
             if (percent < 85) return 'warn';
             return 'danger';
         }
 
-        async function updateMetrics() {
+        /** Safe fetch wrapper — returns null on failure, never throws */
+        async function safeFetch(url, options) {
             try {
-                const res = await fetch('/api/metrics');
-                const d = await res.json();
-
-                document.getElementById('hostname').textContent =
-                    d.hostname + ' · ' + d.os;
-
-                // CPU
-                const cpuCard = document.getElementById('card-cpu');
-                if (d.cpu.status === 'CRITICAL') {
-                    cpuCard.classList.add('alert-mode');
-                } else {
-                    cpuCard.classList.remove('alert-mode');
-                }
-
-                animateCounter(document.getElementById('cpu-percent'), d.cpu.percent, '%');
-                document.getElementById('cpu-cores').textContent =
-                    d.cpu.cores + ' cores';
-                const cpuBar = document.getElementById('cpu-bar');
-                cpuBar.style.width = d.cpu.percent + '%';
-                cpuBar.className = 'progress-fill ' + getColor(d.cpu.percent);
-
-                // RAM
-                animateCounter(document.getElementById('ram-percent'), d.ram.percent, '%');
-                document.getElementById('ram-detail').textContent =
-                    d.ram.used + ' / ' + d.ram.total + ' GB';
-                const ramBar = document.getElementById('ram-bar');
-                ramBar.style.width = d.ram.percent + '%';
-                ramBar.className = 'progress-fill ' + getColor(d.ram.percent);
-
-                // Disk
-                animateCounter(document.getElementById('disk-percent'), d.disk.percent, '%');
-                document.getElementById('disk-detail').textContent =
-                    d.disk.used + ' / ' + d.disk.total + ' GB';
-                const diskBar = document.getElementById('disk-bar');
-                diskBar.style.width = d.disk.percent + '%';
-                diskBar.className = 'progress-fill ' + getColor(d.disk.percent);
-
-                // Network + info
-                document.getElementById('net-sent').textContent =
-                    d.network.bytes_sent + ' MB';
-                document.getElementById('net-recv').textContent =
-                    d.network.bytes_recv + ' MB';
-                document.getElementById('uptime').textContent = d.uptime;
-                document.getElementById('os').textContent = d.os;
-
+                const res = await fetch(url, options);
+                if (!res.ok) throw new Error(`HTTP ${res.status}`);
+                return await res.json();
             } catch (e) {
-                console.error('Eroare fetch:', e);
+                console.warn(`[safeFetch] ${url} — ${e.message}`);
+                return null;
             }
+        }
+
+        // ═══════════════════════════════════════════════
+        //  3. CORE METRICS LOGIC
+        // ═══════════════════════════════════════════════
+        let metricsRetries = 0;
+        const MAX_RETRIES = 3;
+
+        function updateBar(barId, percent) {
+            const bar = document.getElementById(barId);
+            if (!bar) return;
+            bar.style.width = percent + '%';
+            bar.className = 'progress-fill ' + getColor(percent);
+        }
+
+        async function updateMetrics() {
+            const d = await safeFetch('/api/metrics');
+
+            if (!d) {
+                metricsRetries++;
+                if (metricsRetries >= MAX_RETRIES) {
+                    document.getElementById('hostname').textContent = '[ API UNAVAILABLE ]';
+                }
+                return;
+            }
+            metricsRetries = 0;
+
+            document.getElementById('hostname').textContent =
+                d.hostname + ' · ' + d.os;
+
+            // CPU + Chaos alert-mode
+            const cpuCard = document.getElementById('card-cpu');
+            if (d.cpu.status === 'CRITICAL') {
+                cpuCard.classList.add('alert-mode');
+            } else {
+                cpuCard.classList.remove('alert-mode');
+            }
+
+            animateCounter(document.getElementById('cpu-percent'), d.cpu.percent, '%');
+            document.getElementById('cpu-cores').textContent = d.cpu.cores + ' cores';
+            updateBar('cpu-bar', d.cpu.percent);
+
+            // RAM
+            animateCounter(document.getElementById('ram-percent'), d.ram.percent, '%');
+            document.getElementById('ram-detail').textContent = d.ram.used + ' / ' + d.ram.total + ' GB';
+            updateBar('ram-bar', d.ram.percent);
+
+            // Disk
+            animateCounter(document.getElementById('disk-percent'), d.disk.percent, '%');
+            document.getElementById('disk-detail').textContent = d.disk.used + ' / ' + d.disk.total + ' GB';
+            updateBar('disk-bar', d.disk.percent);
+
+            // Network + info
+            document.getElementById('net-sent').textContent = d.network.bytes_sent + ' MB';
+            document.getElementById('net-recv').textContent = d.network.bytes_recv + ' MB';
+            document.getElementById('uptime').textContent = d.uptime;
+            document.getElementById('os').textContent = d.os;
         }
 
         updateMetrics();
@@ -1627,11 +1679,12 @@
             const MAX_LOG_LINES = 5;
 
             // ---- Canvas sizing (HiDPI) ----
+            let resizeTimer;
             function resize() {
                 const rect = canvas.parentElement.getBoundingClientRect();
                 const headerH = canvas.parentElement.querySelector('.map-header')?.offsetHeight || 0;
-                const padH = 48; // vertical padding
-                const padW = 48; // horizontal padding
+                const padH = 48;
+                const padW = 48;
                 const w = rect.width - padW;
                 const h = rect.height - headerH - padH;
                 const dpr = Math.min(window.devicePixelRatio || 1, 2);
@@ -1642,7 +1695,10 @@
                 ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
             }
             resize();
-            window.addEventListener('resize', resize);
+            window.addEventListener('resize', () => {
+                clearTimeout(resizeTimer);
+                resizeTimer = setTimeout(resize, 100); // debounced
+            });
 
             // ===========================
             //  A. HOLOGRAM GLOBE
@@ -1947,7 +2003,7 @@
 
                 const cx = cw * 0.5;
                 const cy = ch * 0.5;
-                const radius = Math.min(cw, ch) * 0.34;
+                const radius = Math.min(cw, ch) * GLOBE_RADIUS_FACTOR;
 
                 drawGlobe(cx, cy, radius, delta);
                 drawArcs(cx, cy, radius, delta);
@@ -1963,53 +2019,48 @@
             let simulationMode = false;
 
             async function pollThreats() {
-                try {
-                    const res = await fetch('/api/threats');
-                    const data = await res.json();
+                const data = await safeFetch('/api/threats');
+                if (!data) return; // graceful degradation
 
-                    if (data.status === 'file_not_found' && !simulationMode) {
-                        simulationMode = true;
-                        console.warn('[ThreatPoller] Log file not found — activating simulation mode.');
-                        startSimulation();
-                        return;
-                    }
-
-                    const threats = data.threats || [];
-                    const newThreats = [];
-
-                    for (const t of threats) {
-                        if (!seenThreats.has(t)) {
-                            seenThreats.add(t);
-                            newThreats.push(t);
-                        }
-                    }
-
-                    // Prevent Set from growing forever (trim at 200)
-                    if (seenThreats.size > 200) {
-                        const iter = seenThreats.values();
-                        for (let i = 0; i < 100; i++) {
-                            seenThreats.delete(iter.next().value);
-                        }
-                    }
-
-                    // For each new threat: queue log text + fire arc
-                    const cw = parseFloat(canvas.style.width) || 400;
-                    const ch = parseFloat(canvas.style.height) || 300;
-                    const cx = cw * 0.5;
-                    const cy = ch * 0.5;
-                    const r = Math.min(cw, ch) * 0.32;
-
-                    // Stagger arcs with slight delays so they don't all fire at once
-                    newThreats.forEach((t, idx) => {
-                        setTimeout(() => {
-                            impactQueue.push(t);
-                            spawnArc(cx, cy, r);
-                        }, idx * 400);
-                    });
-
-                } catch (e) {
-                    console.error('[ThreatPoller] Fetch failed:', e);
+                if (data.status === 'file_not_found' && !simulationMode) {
+                    simulationMode = true;
+                    console.warn('[ThreatPoller] Log file not found — activating simulation mode.');
+                    startSimulation();
+                    return;
                 }
+
+                const threats = data.threats || [];
+                const newThreats = [];
+
+                for (const t of threats) {
+                    if (!seenThreats.has(t)) {
+                        seenThreats.add(t);
+                        newThreats.push(t);
+                    }
+                }
+
+                // Prevent Set from growing forever (trim at 200)
+                if (seenThreats.size > 200) {
+                    const iter = seenThreats.values();
+                    for (let i = 0; i < 100; i++) {
+                        seenThreats.delete(iter.next().value);
+                    }
+                }
+
+                // For each new threat: queue log text + fire arc
+                const cw = parseFloat(canvas.style.width) || 400;
+                const ch = parseFloat(canvas.style.height) || 300;
+                const cx = cw * 0.5;
+                const cy = ch * 0.5;
+                const r = Math.min(cw, ch) * GLOBE_RADIUS_FACTOR;
+
+                // Stagger arcs with slight delays so they don't all fire at once
+                newThreats.forEach((t, idx) => {
+                    setTimeout(() => {
+                        impactQueue.push(t);
+                        spawnArc(cx, cy, r);
+                    }, idx * 400);
+                });
             }
 
             // Poll every 4 seconds + initial fetch
@@ -2037,7 +2088,7 @@
                     const ch = parseFloat(canvas.style.height) || 300;
                     const template = simTemplates[Math.floor(Math.random() * simTemplates.length)];
                     impactQueue.push(template);
-                    spawnArc(cw * 0.5, ch * 0.5, Math.min(cw, ch) * 0.32);
+                    spawnArc(cw * 0.5, ch * 0.5, Math.min(cw, ch) * GLOBE_RADIUS_FACTOR);
                     setTimeout(fireSimAttack, 3000 + Math.random() * 4000);
                 }
                 setTimeout(fireSimAttack, 2000);
@@ -2144,69 +2195,65 @@
             let totalErr = 0;
 
             async function pollTraffic() {
-                try {
-                    const res = await fetch('/api/traffic');
-                    const data = await res.json();
-                    const packets = data.stream || data.packets || [];
+                const data = await safeFetch('/api/traffic');
+                if (!data) return; // graceful degradation
 
-                    // Calculate batch stats
-                    let batchLatency = 0;
-                    let batchOk = 0;
-                    let batchErr = 0;
+                const packets = data.stream || data.packets || [];
 
-                    // Build fragment (batch DOM writes)
-                    const frag = document.createDocumentFragment();
-                    for (let i = packets.length - 1; i >= 0; i--) {
-                        const p = packets[i];
-                        const line = document.createElement('div');
-                        line.className = 'pkt-line status-' + p.status;
-                        // Strip duplicate 'ms' — backend may already include it
-                        const lat = parseInt(String(p.latency).replace(/ms$/i, ''), 10) || 0;
-                        batchLatency += lat;
+                // Calculate batch stats
+                let batchLatency = 0;
+                let batchOk = 0;
+                let batchErr = 0;
 
-                        if (p.status >= 400) {
-                            batchErr++;
-                        } else {
-                            batchOk++;
-                        }
+                // Build fragment (batch DOM writes)
+                const frag = document.createDocumentFragment();
+                for (let i = packets.length - 1; i >= 0; i--) {
+                    const p = packets[i];
+                    const line = document.createElement('div');
+                    line.className = 'pkt-line status-' + p.status;
+                    // Strip duplicate 'ms' — backend may already include it
+                    const lat = parseInt(String(p.latency).replace(/ms$/i, ''), 10) || 0;
+                    batchLatency += lat;
 
-                        // Show IP if available
-                        const ipStr = p.ip ? '<span class="pkt-agent">' + p.ip + '</span> ' : '';
-                        line.innerHTML =
-                            '<span class="pkt-status">' + p.status + '</span>' +
-                            '<span class="pkt-method">' + p.method + '</span> ' +
-                            '<span class="pkt-path">' + p.path + '</span>' +
-                            '<span class="pkt-latency">' + lat + 'ms</span> ' +
-                            ipStr;
-                        frag.appendChild(line);
-                    }
-
-                    // Prepend new lines at top
-                    if (stream.firstChild) {
-                        stream.insertBefore(frag, stream.firstChild);
+                    if (p.status >= 400) {
+                        batchErr++;
                     } else {
-                        stream.appendChild(frag);
+                        batchOk++;
                     }
 
-                    // Trim excess from bottom
-                    while (stream.children.length > MAX_LINES) {
-                        stream.removeChild(stream.lastChild);
-                    }
-
-                    // Update stats
-                    totalReqs += packets.length;
-                    totalOk += batchOk;
-                    totalErr += batchErr;
-                    const avgLat = packets.length ? Math.round(batchLatency / packets.length) : 0;
-
-                    if (elTotal) elTotal.textContent = packets.length;
-                    if (elOk) elOk.textContent = totalOk;
-                    if (elErr) elErr.textContent = totalErr;
-                    if (elLat) elLat.textContent = avgLat;
-
-                } catch (e) {
-                    // Silent fail — sniffer is decorative
+                    // Show IP if available
+                    const ipStr = p.ip ? '<span class="pkt-agent">' + p.ip + '</span> ' : '';
+                    line.innerHTML =
+                        '<span class="pkt-status">' + p.status + '</span>' +
+                        '<span class="pkt-method">' + p.method + '</span> ' +
+                        '<span class="pkt-path">' + p.path + '</span>' +
+                        '<span class="pkt-latency">' + lat + 'ms</span> ' +
+                        ipStr;
+                    frag.appendChild(line);
                 }
+
+                // Prepend new lines at top
+                if (stream.firstChild) {
+                    stream.insertBefore(frag, stream.firstChild);
+                } else {
+                    stream.appendChild(frag);
+                }
+
+                // Trim excess from bottom (aggressive GC)
+                while (stream.children.length > MAX_LINES) {
+                    stream.removeChild(stream.lastChild);
+                }
+
+                // Update stats
+                totalReqs += packets.length;
+                totalOk += batchOk;
+                totalErr += batchErr;
+                const avgLat = packets.length ? Math.round(batchLatency / packets.length) : 0;
+
+                if (elTotal) elTotal.textContent = packets.length;
+                if (elOk) elOk.textContent = totalOk;
+                if (elErr) elErr.textContent = totalErr;
+                if (elLat) elLat.textContent = avgLat;
             }
 
             // Poll every 1 second
