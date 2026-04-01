@@ -8,6 +8,14 @@ import random
 
 app = Flask(__name__)
 
+def bytes_to_gb(b):
+    """Convert bytes to gigabytes and round to 2 decimal places."""
+    return round(b / 1024 / 1024 / 1024, 2)
+
+def bytes_to_mb(b):
+    """Convert bytes to megabytes and round to 2 decimal places."""
+    return round(b / 1024 / 1024, 2)
+
 @app.route('/')
 def index():
     return render_template('index.html')
@@ -39,18 +47,18 @@ def metrics():
             'cores': cpu_count
         },
         'ram': {
-            'total': round(ram.total / 1024 / 1024 / 1024, 2),
-            'used': round(ram.used / 1024 / 1024 / 1024, 2),
+            'total': bytes_to_gb(ram.total),
+            'used': bytes_to_gb(ram.used),
             'percent': ram.percent
         },
         'disk': {
-            'total': round(disk.total / 1024 / 1024 / 1024, 2),
-            'used': round(disk.used / 1024 / 1024 / 1024, 2),
+            'total': bytes_to_gb(disk.total),
+            'used': bytes_to_gb(disk.used),
             'percent': disk.percent
         },
         'network': {
-            'bytes_sent': round(net.bytes_sent / 1024 / 1024, 2),
-            'bytes_recv': round(net.bytes_recv / 1024 / 1024, 2)
+            'bytes_sent': bytes_to_mb(net.bytes_sent),
+            'bytes_recv': bytes_to_mb(net.bytes_recv)
         },
         'uptime': f'{hours}h {minutes}m {seconds}s',
         'hostname': platform.node(),
