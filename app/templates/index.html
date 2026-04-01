@@ -13,9 +13,9 @@
            DESIGN TOKENS
         ═══════════════════════════════════════════════ */
         :root {
-            --bg-obsidian:    #090a0f;
-            --bg-surface:     rgba(18, 20, 28, 0.65);
-            --bg-surface-hover: rgba(24, 27, 38, 0.70);
+            --bg-obsidian:    #050507;
+            --bg-surface:     rgba(18, 20, 28, 0.55);
+            --bg-surface-hover: rgba(24, 27, 38, 0.62);
             --border-subtle:  rgba(255, 255, 255, 0.04);
             --border-hover:   rgba(255, 255, 255, 0.08);
             --text-primary:   #e2e8f0;
@@ -24,6 +24,8 @@
             --accent:         #00b4d8;
             --accent-dim:     rgba(0, 180, 216, 0.12);
             --accent-muted:   rgba(0, 180, 216, 0.35);
+            --accent-bloom:   rgba(0, 180, 216, 0.40);
+            --accent-bloom-far: rgba(0, 180, 216, 0.18);
             --crimson:        #e63946;
             --crimson-dim:    rgba(230, 57, 70, 0.12);
             --amber:          #f4a261;
@@ -35,6 +37,11 @@
             --radius:         12px;
             --radius-sm:      8px;
             --ease:           0.4s ease;
+            /* Cinematic glass */
+            --glass-blur:     blur(32px) saturate(180%);
+            --glass-bg:       linear-gradient(135deg, rgba(255,255,255,0.03) 0%, rgba(255,255,255,0.01) 100%);
+            --glass-rim:      inset 0.5px 0.5px 1px rgba(255, 255, 255, 0.12);
+            --glass-depth:    0 20px 40px rgba(0, 0, 0, 0.50);
         }
 
         *, *::before, *::after {
@@ -58,15 +65,33 @@
             -moz-osx-font-smoothing: grayscale;
         }
 
-        /* Subtle dot-grid pattern */
+        /* Volumetric ambient lights */
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background:
+                radial-gradient(ellipse 80% 60% at 15% 20%, rgba(0, 180, 216, 0.08) 0%, transparent 70%),
+                radial-gradient(ellipse 70% 50% at 85% 75%, rgba(230, 57, 70, 0.05) 0%, transparent 65%),
+                radial-gradient(ellipse 50% 40% at 50% 50%, rgba(0, 180, 216, 0.03) 0%, transparent 60%);
+            pointer-events: none;
+            z-index: -2;
+        }
+
+        /* Military-grade scanline overlay (1px microscopic) */
         body::after {
             content: '';
             position: fixed;
             inset: 0;
-            background-image: radial-gradient(rgba(255,255,255,0.03) 1px, transparent 1px);
-            background-size: 32px 32px;
+            background: repeating-linear-gradient(
+                0deg,
+                transparent,
+                transparent 1px,
+                rgba(0, 0, 0, 0.02) 1px,
+                rgba(0, 0, 0, 0.02) 2px
+            );
             pointer-events: none;
-            z-index: -1;
+            z-index: 9999;
         }
 
         /* ═══════════════════════════════════════════════
@@ -205,18 +230,27 @@
         }
 
         .card {
-            background: var(--bg-surface);
-            backdrop-filter: blur(24px) saturate(1.2);
-            -webkit-backdrop-filter: blur(24px) saturate(1.2);
+            background: var(--glass-bg);
+            backdrop-filter: var(--glass-blur);
+            -webkit-backdrop-filter: var(--glass-blur);
             border: 1px solid var(--border-subtle);
             border-radius: var(--radius);
             padding: 22px 24px;
-            transition: background var(--ease), border-color var(--ease);
+            box-shadow:
+                var(--glass-rim),
+                var(--glass-depth);
+            transition:
+                background var(--ease),
+                border-color var(--ease),
+                box-shadow var(--ease);
         }
 
         .card:hover {
-            background: var(--bg-surface-hover);
+            background: linear-gradient(135deg, rgba(255,255,255,0.045) 0%, rgba(255,255,255,0.015) 100%);
             border-color: var(--border-hover);
+            box-shadow:
+                inset 0.5px 0.5px 1px rgba(255, 255, 255, 0.18),
+                0 24px 48px rgba(0, 0, 0, 0.55);
         }
 
         .card-title {
@@ -234,7 +268,10 @@
             font-weight: 700;
             color: var(--accent);
             line-height: 1;
-            transition: color var(--ease);
+            text-shadow:
+                0 0 10px var(--accent-bloom),
+                0 0 20px var(--accent-bloom-far);
+            transition: color var(--ease), text-shadow var(--ease);
         }
 
         .metric-sub {
@@ -295,15 +332,16 @@
             font-size: 0.8rem;
             color: var(--accent);
             font-weight: 500;
+            text-shadow: 0 0 8px var(--accent-bloom-far);
         }
 
         /* ═══════════════════════════════════════════════
            THREAT MAP CONTAINER
         ═══════════════════════════════════════════════ */
         #threat-map-container {
-            background: var(--bg-surface);
-            backdrop-filter: blur(24px) saturate(1.2);
-            -webkit-backdrop-filter: blur(24px) saturate(1.2);
+            background: var(--glass-bg);
+            backdrop-filter: var(--glass-blur);
+            -webkit-backdrop-filter: var(--glass-blur);
             border: 1px solid var(--border-subtle);
             border-radius: var(--radius);
             padding: 28px;
@@ -312,6 +350,9 @@
             min-height: 420px;
             position: relative;
             overflow: hidden;
+            box-shadow:
+                var(--glass-rim),
+                var(--glass-depth);
         }
 
         .map-header {
@@ -393,12 +434,15 @@
            EVENT STREAM — bottom section
         ═══════════════════════════════════════════════ */
         .event-stream-section {
-            background: var(--bg-surface);
-            backdrop-filter: blur(24px) saturate(1.2);
-            -webkit-backdrop-filter: blur(24px) saturate(1.2);
+            background: var(--glass-bg);
+            backdrop-filter: var(--glass-blur);
+            -webkit-backdrop-filter: var(--glass-blur);
             border: 1px solid var(--border-subtle);
             border-radius: var(--radius);
             overflow: hidden;
+            box-shadow:
+                var(--glass-rim),
+                var(--glass-depth);
         }
 
         .event-stream-header {
