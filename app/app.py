@@ -4,6 +4,7 @@ import platform
 import datetime
 import re
 import os
+import random
 
 app = Flask(__name__)
 
@@ -143,6 +144,42 @@ def analyze_payload():
         })
     except Exception as e:
         return jsonify({"status": "error", "message": str(e)}), 400
+
+@app.route('/api/traffic')
+def traffic():
+    """Simulated HTTP packet stream for the network sniffer panel."""
+    methods = ['GET', 'GET', 'GET', 'POST', 'POST', 'PUT', 'DELETE', 'HEAD']
+    paths = [
+        '/api/metrics', '/api/threats', '/health', '/', '/login',
+        '/api/users', '/dashboard', '/static/app.js', '/favicon.ico',
+        '/api/v2/status', '/.env', '/wp-admin', '/admin/config',
+        '/api/analyze', '/robots.txt', '/sitemap.xml', '/graphql'
+    ]
+    agents = [
+        'Mozilla/5.0', 'curl/7.88', 'Python-urllib/3.11',
+        'Googlebot/2.1', 'Go-http-client/2.0', 'PostmanRuntime/7.32',
+        'Nmap-NSE', 'sqlmap/1.7', 'Wget/1.21', 'axios/1.4'
+    ]
+    # Weighted status codes: 200 common, errors rare
+    status_pool = [200]*50 + [301]*5 + [304]*8 + [404]*10 + [403]*6 + [500]*3 + [502]*2
+
+    count = random.randint(3, 8)
+    packets = []
+    for _ in range(count):
+        status = random.choice(status_pool)
+        method = random.choice(methods)
+        path = random.choice(paths)
+        latency = round(random.uniform(0.5, 280.0), 1) if status != 500 else round(random.uniform(800, 3000), 1)
+        agent = random.choice(agents)
+        packets.append({
+            'status': status,
+            'method': method,
+            'path': path,
+            'latency': latency,
+            'agent': agent
+        })
+
+    return jsonify({'packets': packets})
 
 @app.route('/health')
 def health():
