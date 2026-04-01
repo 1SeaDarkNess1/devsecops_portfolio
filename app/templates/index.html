@@ -127,6 +127,7 @@
                 0 0 40px rgba(0, 229, 255, 0.08);
             position: relative;
             display: inline-block;
+            min-height: 1.2em;
         }
 
         h1::after {
@@ -136,6 +137,39 @@
             height: 1px;
             margin: 10px auto 0;
             background: linear-gradient(90deg, transparent, var(--cyan-glow), transparent);
+        }
+
+        /* ═══════════════════════════════════════════════
+           TYPEWRITER CURSOR
+        ═══════════════════════════════════════════════ */
+        .typewriter-cursor {
+            display: inline-block;
+            width: 2px;
+            height: 1em;
+            background: var(--cyan);
+            margin-left: 3px;
+            vertical-align: text-bottom;
+            animation: cursorBlink 0.7s step-end infinite;
+            box-shadow: 0 0 6px var(--cyan-glow), 0 0 12px var(--cyan-dim);
+        }
+
+        @keyframes cursorBlink {
+            0%, 100% { opacity: 1; }
+            50%      { opacity: 0; }
+        }
+
+        .boot-line {
+            font-size: 11px;
+            letter-spacing: 2px;
+            color: var(--neon-green);
+            margin-top: 8px;
+            opacity: 0;
+            transition: opacity 0.4s ease;
+            text-shadow: 0 0 6px rgba(57, 255, 20, 0.4);
+        }
+
+        .boot-line.visible {
+            opacity: 1;
         }
 
         .subtitle {
@@ -292,7 +326,7 @@
         .progress-fill {
             height: 100%;
             border-radius: 8px;
-            transition: width 0.6s cubic-bezier(0.22, 1, 0.36, 1),
+            transition: width 0.5s ease-in-out,
                         background var(--transition),
                         box-shadow var(--transition);
             position: relative;
@@ -430,13 +464,82 @@
            COUNTER-UP FLASH
         ═══════════════════════════════════════════════ */
         .metric-value.counting {
-            animation: counterFlash 0.4s ease;
+            animation: counterFlash 0.5s ease;
         }
 
         @keyframes counterFlash {
             0%   { opacity: 0.4; transform: scale(0.95); }
             50%  { opacity: 1; transform: scale(1.04); text-shadow: 0 0 20px var(--cyan-glow), 0 0 40px var(--cyan-dim); }
             100% { opacity: 1; transform: scale(1); }
+        }
+
+        /* ═══════════════════════════════════════════════
+           GLITCH EFFECT
+        ═══════════════════════════════════════════════ */
+        .glitch {
+            position: relative;
+        }
+
+        .glitch.glitching {
+            animation: glitchAnim 0.3s linear;
+        }
+
+        @keyframes glitchAnim {
+            0%   { transform: translate(0); filter: none; }
+            10%  { transform: translate(-2px, 1px); filter: hue-rotate(90deg); }
+            20%  { transform: translate(2px, -1px); filter: hue-rotate(-90deg) saturate(2); }
+            30%  { transform: translate(-1px, -2px); filter: hue-rotate(45deg); }
+            40%  { transform: translate(1px, 2px) skewX(1deg); filter: none; }
+            50%  { transform: translate(-2px, 0px); filter: hue-rotate(-45deg) brightness(1.5); }
+            60%  { transform: translate(2px, 1px) skewX(-0.5deg); filter: saturate(3); }
+            70%  { transform: translate(0, -1px); filter: hue-rotate(180deg); }
+            80%  { transform: translate(-1px, 2px); filter: none; }
+            90%  { transform: translate(1px, -1px); filter: hue-rotate(-30deg) brightness(1.2); }
+            100% { transform: translate(0); filter: none; }
+        }
+
+        /* Pseudo-element glitch layers */
+        .glitch.glitching::before,
+        .glitch.glitching::after {
+            content: attr(data-text);
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            pointer-events: none;
+        }
+
+        .glitch.glitching::before {
+            color: var(--cyan);
+            animation: glitchLayer1 0.3s linear;
+            clip-path: inset(0 0 60% 0);
+        }
+
+        .glitch.glitching::after {
+            color: var(--magenta);
+            animation: glitchLayer2 0.3s linear;
+            clip-path: inset(60% 0 0 0);
+        }
+
+        @keyframes glitchLayer1 {
+            0%   { transform: translate(0); }
+            25%  { transform: translate(3px, -1px); }
+            50%  { transform: translate(-2px, 1px); }
+            75%  { transform: translate(1px, 2px); }
+            100% { transform: translate(0); }
+        }
+
+        @keyframes glitchLayer2 {
+            0%   { transform: translate(0); }
+            25%  { transform: translate(-3px, 1px); }
+            50%  { transform: translate(2px, -2px); }
+            75%  { transform: translate(-1px, -1px); }
+            100% { transform: translate(0); }
         }
 
         /* ═══════════════════════════════════════════════
@@ -476,7 +579,8 @@
     <div class="scanlines" aria-hidden="true"></div>
 
     <div class="header-group">
-        <h1>⚡ SYSTEM MONITOR</h1>
+        <h1 id="main-title"><span class="typewriter-cursor"></span></h1>
+        <div class="boot-line" id="boot-status"></div>
         <div class="subtitle" id="hostname">Loading...</div>
         <div class="lab-badge">Laboratorul BBM DevSecOps</div>
     </div>
@@ -530,13 +634,68 @@
         </div>
     </div>
 
-    <div class="status">
+    <div class="status glitch" id="live-status" data-text="Live — actualizat la fiecare 3 secunde">
         <span class="dot"></span>
-        Live — actualizat la fiecare 3 secunde
+        <span id="status-text">Live — actualizat la fiecare 3 secunde</span>
     </div>
 
     <script>
-        // ─── Counter-Up Animation Helper ───
+        // ═══════════════════════════════════════════════
+        //  1. TYPEWRITER BOOT SEQUENCE
+        // ═══════════════════════════════════════════════
+        (function bootSequence() {
+            const titleEl = document.getElementById('main-title');
+            const bootLine = document.getElementById('boot-status');
+            const fullText = '⚡ SYSTEM MONITOR';
+            const bootMsg = '> Sistem Securizat... [ONLINE]';
+            let charIndex = 0;
+
+            // Find or create the cursor span
+            const cursor = titleEl.querySelector('.typewriter-cursor');
+
+            function typeTitle() {
+                if (charIndex < fullText.length) {
+                    // Insert character before the cursor
+                    const textNode = document.createTextNode(fullText[charIndex]);
+                    titleEl.insertBefore(textNode, cursor);
+                    charIndex++;
+                    // Vary speed slightly for realism
+                    const delay = 40 + Math.random() * 60;
+                    setTimeout(typeTitle, delay);
+                } else {
+                    // Title done → type the boot status line
+                    setTimeout(typeBootLine, 300);
+                }
+            }
+
+            let bootIndex = 0;
+            function typeBootLine() {
+                bootLine.classList.add('visible');
+                if (bootIndex < bootMsg.length) {
+                    bootLine.textContent = bootMsg.substring(0, bootIndex + 1) + '_';
+                    bootIndex++;
+                    const delay = 25 + Math.random() * 35;
+                    setTimeout(typeBootLine, delay);
+                } else {
+                    // Final blinking underscore
+                    bootLine.textContent = bootMsg;
+                    let blinkState = true;
+                    setInterval(() => {
+                        bootLine.textContent = bootMsg + (blinkState ? '_' : '');
+                        blinkState = !blinkState;
+                    }, 500);
+                }
+            }
+
+            // Start typing after a brief delay
+            setTimeout(typeTitle, 400);
+        })();
+
+        // ═══════════════════════════════════════════════
+        //  2. FLUID COUNTER-UP (500ms easeOutExpo)
+        // ═══════════════════════════════════════════════
+        const counterAnimations = new Map(); // track per-element RAF ids
+
         function animateCounter(element, targetValue, suffix) {
             const current = parseFloat(element.textContent) || 0;
             const target = parseFloat(targetValue);
@@ -544,27 +703,40 @@
                 element.textContent = targetValue + suffix;
                 return;
             }
-            const duration = 400;
+            // Cancel any running animation on this element
+            if (counterAnimations.has(element)) {
+                cancelAnimationFrame(counterAnimations.get(element));
+            }
+
+            const duration = 500;
             const startTime = performance.now();
+            element.classList.remove('counting');
+            // Force reflow to restart animation
+            void element.offsetWidth;
             element.classList.add('counting');
 
             function step(now) {
                 const elapsed = now - startTime;
                 const progress = Math.min(elapsed / duration, 1);
-                // easeOutExpo
+                // easeOutExpo for fluid deceleration
                 const eased = progress === 1 ? 1 : 1 - Math.pow(2, -10 * progress);
-                const value = Math.round(current + (target - current) * eased);
-                element.textContent = value + suffix;
+                const value = current + (target - current) * eased;
+                // Show one decimal during animation for fluidity
+                element.textContent = (progress < 1 ? value.toFixed(1) : target) + suffix;
                 if (progress < 1) {
-                    requestAnimationFrame(step);
+                    counterAnimations.set(element, requestAnimationFrame(step));
                 } else {
                     element.textContent = target + suffix;
-                    setTimeout(() => element.classList.remove('counting'), 100);
+                    counterAnimations.delete(element);
+                    setTimeout(() => element.classList.remove('counting'), 150);
                 }
             }
-            requestAnimationFrame(step);
+            counterAnimations.set(element, requestAnimationFrame(step));
         }
 
+        // ═══════════════════════════════════════════════
+        //  3. CORE METRICS LOGIC (fetch preserved)
+        // ═══════════════════════════════════════════════
         function getColor(percent) {
             if (percent < 60) return 'ok';
             if (percent < 85) return 'warn';
@@ -618,6 +790,27 @@
 
         updateMetrics();
         setInterval(updateMetrics, 3000);
+
+        // ═══════════════════════════════════════════════
+        //  4. GLITCH EFFECT – Random CRT distortion
+        // ═══════════════════════════════════════════════
+        (function initGlitch() {
+            const glitchEl = document.getElementById('live-status');
+
+            function triggerGlitch() {
+                glitchEl.classList.add('glitching');
+                // Remove after animation completes (300ms)
+                setTimeout(() => {
+                    glitchEl.classList.remove('glitching');
+                }, 300);
+                // Schedule next glitch at random interval (4–8 seconds)
+                const nextDelay = 4000 + Math.random() * 4000;
+                setTimeout(triggerGlitch, nextDelay);
+            }
+
+            // First glitch after 5 seconds
+            setTimeout(triggerGlitch, 5000);
+        })();
     </script>
 </body>
 </html>
