@@ -651,6 +651,114 @@
             30%      { opacity: 0.6; }
             60%      { opacity: 0.85; }
         }
+
+        /* ═══════════════════════════════════════════════
+           WAF PAYLOAD ANALYZER
+        ═══════════════════════════════════════════════ */
+        .waf-input-group {
+            display: flex;
+            gap: 10px;
+            align-items: flex-end;
+        }
+
+        .waf-input {
+            flex: 1;
+            background: transparent;
+            border: none;
+            border-bottom: 1px solid rgba(226, 232, 240, 0.15);
+            color: var(--text-primary);
+            font-family: var(--font-mono);
+            font-size: 0.8rem;
+            padding: 8px 2px;
+            outline: none;
+            transition: border-color var(--ease), box-shadow var(--ease);
+        }
+
+        .waf-input::placeholder {
+            color: var(--text-tertiary);
+            font-style: italic;
+        }
+
+        .waf-input:focus {
+            border-bottom-color: var(--accent);
+            box-shadow: 0 1px 8px rgba(0, 180, 216, 0.15);
+        }
+
+        .waf-btn {
+            background: transparent;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            color: var(--text-secondary);
+            font-family: var(--font-mono);
+            font-size: 0.65rem;
+            font-weight: 600;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            padding: 8px 14px;
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            white-space: nowrap;
+            transition: background var(--ease), color var(--ease), border-color var(--ease);
+        }
+
+        .waf-btn:hover {
+            background: rgba(0, 180, 216, 0.10);
+            color: var(--accent);
+            border-color: rgba(0, 180, 216, 0.20);
+        }
+
+        .waf-btn:active {
+            transform: scale(0.97);
+        }
+
+        #waf-result-display {
+            display: none;
+            margin-top: 14px;
+            padding: 10px 12px;
+            border-radius: var(--radius-sm);
+            font-family: var(--font-mono);
+            font-size: 0.75rem;
+            line-height: 1.5;
+            animation: fadeIn 0.3s ease;
+        }
+
+        #waf-result-display.waf-safe {
+            display: block;
+            color: var(--green);
+            background: rgba(46, 196, 182, 0.04);
+            border-left: 2px solid rgba(46, 196, 182, 0.3);
+            text-shadow: 0 0 8px rgba(46, 196, 182, 0.15);
+        }
+
+        #waf-result-display.waf-critical {
+            display: block;
+            color: var(--crimson);
+            background: rgba(230, 57, 70, 0.05);
+            border-left: 2px solid var(--crimson);
+            text-shadow: 0 0 8px rgba(230, 57, 70, 0.15);
+        }
+
+        #waf-result-display.waf-analyzing {
+            display: block;
+            color: var(--text-tertiary);
+            background: transparent;
+            border-left: 2px solid rgba(255, 255, 255, 0.06);
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            10%      { transform: translateX(-4px) rotate(-0.5deg); }
+            20%      { transform: translateX(4px) rotate(0.5deg); }
+            30%      { transform: translateX(-3px); }
+            40%      { transform: translateX(3px); }
+            50%      { transform: translateX(-2px) rotate(-0.3deg); }
+            60%      { transform: translateX(2px) rotate(0.3deg); }
+            70%      { transform: translateX(-1px); }
+            80%      { transform: translateX(1px); }
+        }
+
+        .card.shaking {
+            animation: shake 0.4s ease;
+        }
     </style>
 </head>
 <body>
@@ -723,6 +831,15 @@
                         <span>OS</span>
                         <span id="os">--</span>
                     </div>
+                </div>
+
+                <div class="card" id="card-waf">
+                    <div class="card-title">WAF Payload Analyzer</div>
+                    <div class="waf-input-group">
+                        <input type="text" class="waf-input" id="waf-input" placeholder="> Inject payload here..." autocomplete="off" spellcheck="false">
+                        <button class="waf-btn" id="waf-btn">Execute</button>
+                    </div>
+                    <div id="waf-result-display"></div>
                 </div>
             </div>
 
@@ -1392,6 +1509,85 @@
                 setTimeout(fireSimAttack, 2000);
             }
 
+        })();
+
+        // ═══════════════════════════════════════════════
+        //  6. WAF PAYLOAD ANALYZER (Interactive Sandbox)
+        // ═══════════════════════════════════════════════
+        (function initWAF() {
+            const input   = document.getElementById('waf-input');
+            const btn     = document.getElementById('waf-btn');
+            const result  = document.getElementById('waf-result-display');
+            const card    = document.getElementById('card-waf');
+            let dismissTimer = null;
+
+            function resetResult() {
+                result.className = '';
+                result.style.display = 'none';
+                result.textContent = '';
+            }
+
+            async function analyzePayload() {
+                const payload = input.value.trim();
+                if (!payload) return;
+
+                // Clear previous timer
+                if (dismissTimer) clearTimeout(dismissTimer);
+
+                // Show analyzing state
+                resetResult();
+                result.className = 'waf-analyzing';
+                result.textContent = '⟩ Analyzing payload...';
+                result.style.display = 'block';
+                btn.disabled = true;
+
+                try {
+                    const res = await fetch('/api/analyze', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ payload: payload })
+                    });
+                    const data = await res.json();
+
+                    resetResult();
+
+                    if (data.level === 'CRITICAL') {
+                        result.className = 'waf-critical';
+                        result.textContent = '[ BLOCKED ] Semnătură detectată: ' + (data.type || 'Unknown');
+                        // Shake the card
+                        card.classList.remove('shaking');
+                        void card.offsetWidth; // force reflow
+                        card.classList.add('shaking');
+                        card.addEventListener('animationend', () => {
+                            card.classList.remove('shaking');
+                        }, { once: true });
+                    } else {
+                        result.className = 'waf-safe';
+                        result.textContent = '[ OK ] Payload validat. Sistem sigur.';
+                    }
+
+                    result.style.display = 'block';
+                    input.value = '';
+
+                    // Auto-dismiss after 6 seconds
+                    dismissTimer = setTimeout(resetResult, 6000);
+
+                } catch (e) {
+                    resetResult();
+                    result.className = 'waf-critical';
+                    result.textContent = '[ ERROR ] Conexiune eșuată.';
+                    result.style.display = 'block';
+                    dismissTimer = setTimeout(resetResult, 6000);
+                    console.error('[WAF] Fetch failed:', e);
+                } finally {
+                    btn.disabled = false;
+                }
+            }
+
+            btn.addEventListener('click', analyzePayload);
+            input.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') analyzePayload();
+            });
         })();
     </script>
 </body>
