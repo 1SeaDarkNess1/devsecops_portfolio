@@ -1099,6 +1099,77 @@
             color: var(--green);
             font-weight: 600;
         }
+
+        /* ═══════════════════════════════════════════════
+           CHAOS ENGINEERING
+        ═══════════════════════════════════════════════ */
+        #btn-chaos {
+            background: transparent;
+            border: 1px solid var(--crimson);
+            color: var(--crimson);
+            font-family: var(--font-mono);
+            font-size: 0.65rem;
+            font-weight: 600;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            padding: 8px 14px;
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            white-space: nowrap;
+            transition: background var(--ease), color var(--ease), box-shadow var(--ease);
+            width: 100%;
+            outline: none;
+        }
+
+        #btn-chaos:hover:not(:disabled) {
+            background: rgba(230, 57, 70, 0.15);
+            box-shadow: 0 0 12px rgba(230, 57, 70, 0.4);
+        }
+
+        #btn-chaos:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            border-style: dashed;
+        }
+
+        #chaos-status {
+            font-family: var(--font-mono);
+            font-size: 0.55rem;
+            text-transform: none;
+            letter-spacing: 0;
+            display: inline-block;
+            font-weight: 600;
+        }
+
+        .chaos-alert {
+            color: var(--crimson);
+            animation: cursorBlink 1s step-end infinite;
+        }
+
+        .chaos-ok {
+            color: var(--green);
+        }
+
+        @keyframes pulse-alert {
+            0% { box-shadow: var(--glass-rim), var(--glass-depth), 0 0 0 0 rgba(230, 57, 70, 0.3); }
+            70% { box-shadow: var(--glass-rim), var(--glass-depth), 0 0 0 10px rgba(230, 57, 70, 0); border-color: rgba(230, 57, 70, 0.5); }
+            100% { box-shadow: var(--glass-rim), var(--glass-depth), 0 0 0 0 rgba(230, 57, 70, 0); }
+        }
+
+        .card.alert-mode {
+            animation: pulse-alert 2s infinite;
+            border-color: rgba(230, 57, 70, 0.6);
+            background: linear-gradient(135deg, rgba(230, 57, 70, 0.08) 0%, rgba(230, 57, 70, 0.02) 100%);
+        }
+
+        .card.alert-mode .metric-value {
+            color: var(--crimson);
+            text-shadow: 0 0 10px rgba(230, 57, 70, 0.5), 0 0 20px rgba(230, 57, 70, 0.3);
+        }
+
+        .card.alert-mode .progress-fill {
+            background: var(--crimson) !important;
+        }
     </style>
 </head>
 
@@ -1192,6 +1263,14 @@
                         <button class="waf-btn" id="dlp-btn">ENCRYPT</button>
                     </div>
                     <div id="crypto-result-display"></div>
+                </div>
+
+                <div class="card" id="card-chaos">
+                    <div class="card-title" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                        <span>CHAOS ENGINEERING</span>
+                        <span id="chaos-status"></span>
+                    </div>
+                    <button id="btn-chaos">INITIATE NODE FAILURE</button>
                 </div>
             </div>
 
@@ -1372,6 +1451,13 @@
                     d.hostname + ' · ' + d.os;
 
                 // CPU
+                const cpuCard = document.getElementById('card-cpu');
+                if (d.cpu.status === 'CRITICAL') {
+                    cpuCard.classList.add('alert-mode');
+                } else {
+                    cpuCard.classList.remove('alert-mode');
+                }
+
                 animateCounter(document.getElementById('cpu-percent'), d.cpu.percent, '%');
                 document.getElementById('cpu-cores').textContent =
                     d.cpu.cores + ' cores';
@@ -2065,6 +2151,53 @@
             input.addEventListener('keydown', (e) => {
                 if (e.key === 'Enter') encryptData();
             });
+        })();
+
+        // ═══════════════════════════════════════════════
+        //  9. CHAOS ENGINEERING (Node Failure Simulation)
+        // ═══════════════════════════════════════════════
+        (function initChaos() {
+            const btn = document.getElementById('btn-chaos');
+            const status = document.getElementById('chaos-status');
+
+            async function initiateFailure() {
+                // UI state change
+                btn.textContent = '[ SYSTEM OVERLOAD ]';
+                btn.disabled = true;
+                status.className = 'chaos-alert';
+                status.textContent = '[ ALERT ] Auto-Scaling Engaged...';
+
+                try {
+                    // Send POST request
+                    await fetch('/api/chaos', { method: 'POST' });
+                } catch(e) {
+                    console.error('[Chaos] Error invoking failure:', e);
+                }
+
+                // Simulate recovery after 8 seconds
+                setTimeout(() => {
+                    btn.textContent = 'INITIATE NODE FAILURE';
+                    btn.disabled = false;
+                    status.className = 'chaos-ok';
+                    status.textContent = '[ OK ] Node replaced. System stable.';
+                    
+                    // Manually clear alert mode to be instantly responsive
+                    const cpuCard = document.getElementById('card-cpu');
+                    if (cpuCard) {
+                        cpuCard.classList.remove('alert-mode');
+                    }
+
+                    // Clear the OK message after 5 seconds to keep UI clean
+                    setTimeout(() => {
+                        if(status.className === 'chaos-ok') {
+                            status.textContent = '';
+                            status.className = '';
+                        }
+                    }, 5000);
+                }, 8000);
+            }
+
+            btn.addEventListener('click', initiateFailure);
         })();
     </script>
 </body>
