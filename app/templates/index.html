@@ -536,13 +536,14 @@
             white-space: nowrap;
             overflow: hidden;
             padding: 2px 0;
-            animation: fadeIn 0.5s ease;
+            opacity: 0;
+            animation: fadeIn 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
         }
 
         @keyframes fadeIn {
             from {
                 opacity: 0;
-                transform: translateY(4px);
+                transform: translateY(8px);
             }
 
             to {
@@ -765,14 +766,15 @@
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
-            animation: pktSlideIn 0.35s ease;
-            opacity: 0.7;
+            opacity: 0;
+            transform: translateY(10px) translateX(5px);
+            animation: pktSlideIn 0.4s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
         }
 
         @keyframes pktSlideIn {
             to {
                 opacity: 0.7;
-                transform: translateY(0);
+                transform: translateY(0) translateX(0);
             }
         }
 
@@ -2046,7 +2048,7 @@
                 try {
                     const res = await fetch('/api/traffic');
                     const data = await res.json();
-                    const packets = data.packets || [];
+                    const packets = data.stream || data.packets || [];
 
                     // Build fragment (batch DOM writes)
                     const frag = document.createDocumentFragment();
