@@ -668,12 +668,24 @@
             animation-delay: 0.20s;
         }
 
+        .sidebar .card:nth-child(5) {
+            animation-delay: 0.25s;
+        }
+
+        .sidebar .card:nth-child(6) {
+            animation-delay: 0.30s;
+        }
+
+        .sidebar .card:nth-child(7) {
+            animation-delay: 0.35s;
+        }
+
         #threat-map-container {
             animation-delay: 0.12s;
         }
 
         .event-stream-section {
-            animation-delay: 0.25s;
+            animation-delay: 0.30s;
         }
 
         @keyframes fadeUp {
@@ -1153,13 +1165,15 @@
         }
 
         @keyframes pulse-alert {
-            0% { box-shadow: var(--glass-rim), var(--glass-depth), 0 0 0 0 rgba(230, 57, 70, 0.3); }
-            70% { box-shadow: var(--glass-rim), var(--glass-depth), 0 0 0 10px rgba(230, 57, 70, 0); border-color: rgba(230, 57, 70, 0.5); }
-            100% { box-shadow: var(--glass-rim), var(--glass-depth), 0 0 0 0 rgba(230, 57, 70, 0); }
+            0%   { box-shadow: var(--glass-rim), var(--glass-depth), 0 0 0 0 rgba(230, 57, 70, 0.25); }
+            50%  { box-shadow: var(--glass-rim), var(--glass-depth), 0 0 18px 4px rgba(230, 57, 70, 0.15); border-color: rgba(230, 57, 70, 0.7); }
+            100% { box-shadow: var(--glass-rim), var(--glass-depth), 0 0 0 0 rgba(230, 57, 70, 0.25); }
         }
 
         .card.alert-mode {
-            animation: pulse-alert 2s infinite;
+            opacity: 1 !important;
+            transform: translateY(0) !important;
+            animation: pulse-alert 2s ease-in-out infinite;
             border-color: rgba(230, 57, 70, 0.6);
             background: linear-gradient(135deg, rgba(230, 57, 70, 0.08) 0%, rgba(230, 57, 70, 0.02) 100%);
         }
@@ -1551,13 +1565,15 @@
             function resize() {
                 const rect = canvas.parentElement.getBoundingClientRect();
                 const headerH = canvas.parentElement.querySelector('.map-header')?.offsetHeight || 0;
-                const w = rect.width - 56; // padding
-                const h = rect.height - headerH - 56;
+                const padH = 48; // vertical padding
+                const padW = 48; // horizontal padding
+                const w = rect.width - padW;
+                const h = rect.height - headerH - padH;
                 const dpr = Math.min(window.devicePixelRatio || 1, 2);
                 canvas.width = w * dpr;
-                canvas.height = Math.max(h, 240) * dpr;
+                canvas.height = Math.max(h, 280) * dpr;
                 canvas.style.width = w + 'px';
-                canvas.style.height = Math.max(h, 240) + 'px';
+                canvas.style.height = Math.max(h, 280) + 'px';
                 ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
             }
             resize();
@@ -1591,8 +1607,8 @@
 
             let globeRotation = 0;
 
-            function drawGlobe(cx, cy, radius, time) {
-                globeRotation += 0.003;
+            function drawGlobe(cx, cy, radius, delta) {
+                globeRotation += 0.003 * delta;
                 const fov = 600;
 
                 // Ambient glow behind globe
@@ -1701,11 +1717,11 @@
                 trailColors[s] = `rgba(230,57,70,${a})`;
             }
 
-            function drawArcs(cx, cy, radius) {
+            function drawArcs(cx, cy, radius, delta) {
                 let i = arcs.length;
                 while (i--) {
                     const a = arcs[i];
-                    a.age++;
+                    a.age += delta;
 
                     // Force-kill stale arcs (safety valve: ~3.3s at 60fps)
                     if (a.age > 200) {
@@ -1720,7 +1736,7 @@
                     }
 
                     if (a.alive) {
-                        a.progress += a.speed;
+                        a.progress += a.speed * delta;
 
                         // Draw head FIRST (only element that gets shadow)
                         const hp = Math.min(a.progress, 1);
@@ -1761,8 +1777,8 @@
 
                     // Ripple (inline — no sub-object allocation)
                     if (a.rippleAlpha > 0) {
-                        a.rippleRadius += 1.5;
-                        a.rippleAlpha -= 0.018;
+                        a.rippleRadius += 1.5 * delta;
+                        a.rippleAlpha -= 0.018 * delta;
                         if (a.rippleAlpha > 0) {
                             ctx.strokeStyle = `rgba(230,57,70,${a.rippleAlpha.toFixed(2)})`;
                             ctx.lineWidth = 0.8;
@@ -1850,19 +1866,26 @@
             }
 
             // ===========================
-            //  D. RENDER LOOP
+            //  D. RENDER LOOP (frame-rate independent)
             // ===========================
+            let lastFrameTime = 0;
+
             function render(time) {
+                // Delta = ratio vs 60fps baseline (16.667ms)
+                const dt = lastFrameTime ? (time - lastFrameTime) : 16.667;
+                lastFrameTime = time;
+                const delta = Math.min(dt / 16.667, 3); // clamp to avoid spiral on tab-switch
+
                 const cw = parseFloat(canvas.style.width) || 400;
                 const ch = parseFloat(canvas.style.height) || 300;
                 ctx.clearRect(0, 0, cw, ch);
 
                 const cx = cw * 0.5;
                 const cy = ch * 0.5;
-                const radius = Math.min(cw, ch) * 0.32;
+                const radius = Math.min(cw, ch) * 0.38;
 
-                drawGlobe(cx, cy, radius, time);
-                drawArcs(cx, cy, radius);
+                drawGlobe(cx, cy, radius, delta);
+                drawArcs(cx, cy, radius, delta);
 
                 requestAnimationFrame(render);
             }
@@ -2056,11 +2079,13 @@
                         const p = packets[i];
                         const line = document.createElement('div');
                         line.className = 'pkt-line status-' + p.status;
+                        // Strip duplicate 'ms' — backend may already include it
+                        const lat = String(p.latency).replace(/ms$/i, '');
                         line.innerHTML =
                             '<span class="pkt-status">' + p.status + '</span>' +
                             '<span class="pkt-method">' + p.method + '</span> ' +
                             '<span class="pkt-path">' + p.path + '</span>' +
-                            '<span class="pkt-latency">' + p.latency + 'ms</span>' +
+                            '<span class="pkt-latency">' + lat + 'ms</span>' +
                             '<span class="pkt-agent">' + p.agent + '</span>';
                         frag.appendChild(line);
                     }
