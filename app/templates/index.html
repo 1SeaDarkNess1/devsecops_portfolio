@@ -112,7 +112,7 @@
         /* When sniffer is visible, add right padding */
         @media (min-width: 1281px) {
             .dashboard {
-                margin-right: 320px;
+                margin-right: 290px;
                 margin-left: auto;
                 max-width: 1100px;
             }
@@ -742,14 +742,21 @@
         ═══════════════════════════════════════════════ */
         #packet-sniffer {
             position: fixed;
-            right: 16px;
-            top: 90px;
+            right: 12px;
+            top: 40px;
             bottom: 40px;
-            width: 260px;
+            width: 280px;
             z-index: 10;
             pointer-events: none;
             display: flex;
             flex-direction: column;
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px) saturate(160%);
+            -webkit-backdrop-filter: blur(20px) saturate(160%);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius);
+            padding: 16px 14px;
+            box-shadow: var(--glass-rim), var(--glass-depth);
         }
 
         .sniffer-title {
@@ -759,8 +766,45 @@
             letter-spacing: 2.5px;
             text-transform: uppercase;
             color: var(--text-tertiary);
+            margin-bottom: 12px;
+            opacity: 0.6;
+        }
+
+        .sniffer-stats {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
             margin-bottom: 10px;
-            opacity: 0.5;
+            border-top: 1px solid var(--border-subtle);
+            border-bottom: 1px solid var(--border-subtle);
+        }
+
+        .sniffer-stat {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 2px;
+        }
+
+        .sniffer-stat-value {
+            font-family: var(--font-mono);
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: var(--accent);
+            text-shadow: 0 0 8px var(--accent-bloom-far);
+            transition: color 0.3s ease;
+        }
+
+        .sniffer-stat-label {
+            font-family: var(--font-mono);
+            font-size: 0.5rem;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            color: var(--text-tertiary);
+        }
+
+        .sniffer-stat-value.stat-err {
+            color: var(--crimson);
         }
 
         #traffic-stream {
@@ -1351,6 +1395,24 @@
     <!-- ═══ PACKET SNIFFER (Data Waterfall) ═══ -->
     <div id="packet-sniffer">
         <div class="sniffer-title">Network Stream // Port 443</div>
+        <div class="sniffer-stats">
+            <div class="sniffer-stat">
+                <span class="sniffer-stat-value" id="sniffer-total">0</span>
+                <span class="sniffer-stat-label">Req/s</span>
+            </div>
+            <div class="sniffer-stat">
+                <span class="sniffer-stat-value" id="sniffer-ok">0</span>
+                <span class="sniffer-stat-label">Pass</span>
+            </div>
+            <div class="sniffer-stat">
+                <span class="sniffer-stat-value stat-err" id="sniffer-err">0</span>
+                <span class="sniffer-stat-label">Drop</span>
+            </div>
+            <div class="sniffer-stat">
+                <span class="sniffer-stat-value" id="sniffer-latency">0</span>
+                <span class="sniffer-stat-label">Avg ms</span>
+            </div>
+        </div>
         <div id="traffic-stream"></div>
     </div>
 
@@ -1882,7 +1944,7 @@
 
                 const cx = cw * 0.5;
                 const cy = ch * 0.5;
-                const radius = Math.min(cw, ch) * 0.38;
+                const radius = Math.min(cw, ch) * 0.30;
 
                 drawGlobe(cx, cy, radius, delta);
                 drawArcs(cx, cy, radius, delta);
@@ -2065,13 +2127,29 @@
         (function initPacketSniffer() {
             const stream = document.getElementById('traffic-stream');
             if (!stream) return;
-            const MAX_LINES = 25;
+            const MAX_LINES = 30;
+
+            // Stats DOM refs
+            const elTotal = document.getElementById('sniffer-total');
+            const elOk = document.getElementById('sniffer-ok');
+            const elErr = document.getElementById('sniffer-err');
+            const elLat = document.getElementById('sniffer-latency');
+
+            // Cumulative counters
+            let totalReqs = 0;
+            let totalOk = 0;
+            let totalErr = 0;
 
             async function pollTraffic() {
                 try {
                     const res = await fetch('/api/traffic');
                     const data = await res.json();
                     const packets = data.stream || data.packets || [];
+
+                    // Calculate batch stats
+                    let batchLatency = 0;
+                    let batchOk = 0;
+                    let batchErr = 0;
 
                     // Build fragment (batch DOM writes)
                     const frag = document.createDocumentFragment();
@@ -2080,13 +2158,23 @@
                         const line = document.createElement('div');
                         line.className = 'pkt-line status-' + p.status;
                         // Strip duplicate 'ms' — backend may already include it
-                        const lat = String(p.latency).replace(/ms$/i, '');
+                        const lat = parseInt(String(p.latency).replace(/ms$/i, ''), 10) || 0;
+                        batchLatency += lat;
+
+                        if (p.status >= 400) {
+                            batchErr++;
+                        } else {
+                            batchOk++;
+                        }
+
+                        // Show IP if available
+                        const ipStr = p.ip ? '<span class="pkt-agent">' + p.ip + '</span> ' : '';
                         line.innerHTML =
                             '<span class="pkt-status">' + p.status + '</span>' +
                             '<span class="pkt-method">' + p.method + '</span> ' +
                             '<span class="pkt-path">' + p.path + '</span>' +
-                            '<span class="pkt-latency">' + lat + 'ms</span>' +
-                            '<span class="pkt-agent">' + p.agent + '</span>';
+                            '<span class="pkt-latency">' + lat + 'ms</span> ' +
+                            ipStr;
                         frag.appendChild(line);
                     }
 
@@ -2102,6 +2190,17 @@
                         stream.removeChild(stream.lastChild);
                     }
 
+                    // Update stats
+                    totalReqs += packets.length;
+                    totalOk += batchOk;
+                    totalErr += batchErr;
+                    const avgLat = packets.length ? Math.round(batchLatency / packets.length) : 0;
+
+                    if (elTotal) elTotal.textContent = packets.length;
+                    if (elOk) elOk.textContent = totalOk;
+                    if (elErr) elErr.textContent = totalErr;
+                    if (elLat) elLat.textContent = avgLat;
+
                 } catch (e) {
                     // Silent fail — sniffer is decorative
                 }
@@ -2110,7 +2209,6 @@
             // Poll every 1 second
             pollTraffic();
             setInterval(pollTraffic, 1000);
-
 
         })();
 
