@@ -1071,6 +1071,34 @@
         .card.shaking {
             animation: shake 0.4s ease;
         }
+
+        /* ═══════════════════════════════════════════════
+           ZERO-TRUST DLP VAULT
+        ═══════════════════════════════════════════════ */
+        #crypto-result-display {
+            display: none;
+            margin-top: 14px;
+            padding: 10px 12px;
+            border-radius: var(--radius-sm);
+            font-family: var(--font-mono);
+            font-size: 0.8rem;
+            line-height: 1.5;
+            word-wrap: break-word;
+            color: var(--accent); /* Teal #00b4d8 */
+            text-shadow: 0 0 8px var(--accent-bloom); /* Subtle glow */
+            border-left: 2px solid var(--accent);
+            background: rgba(0, 180, 216, 0.04);
+            animation: fadeIn 0.3s ease;
+        }
+
+        .dlp-tag {
+            display: inline-block;
+            margin-top: 8px;
+            font-family: var(--font-mono);
+            font-size: 0.70rem;
+            color: var(--green);
+            font-weight: 600;
+        }
     </style>
 </head>
 
@@ -1154,6 +1182,16 @@
                         <button class="waf-btn" id="waf-btn">Execute</button>
                     </div>
                     <div id="waf-result-display"></div>
+                </div>
+
+                <div class="card" id="card-dlp">
+                    <div class="card-title">ZERO-TRUST DLP VAULT</div>
+                    <div class="waf-input-group" id="dlp-input-group">
+                        <input type="password" class="waf-input" id="dlp-input" placeholder="> Enter sensitive data..."
+                            autocomplete="off" spellcheck="false">
+                        <button class="waf-btn" id="dlp-btn">ENCRYPT</button>
+                    </div>
+                    <div id="crypto-result-display"></div>
                 </div>
             </div>
 
@@ -1961,7 +1999,72 @@
             setInterval(pollTraffic, 1000);
 
 
+        })();
 
+        // ═══════════════════════════════════════════════
+        //  8. ZERO-TRUST DLP VAULT (Encryption Animation)
+        // ═══════════════════════════════════════════════
+        (function initDLP() {
+            const inputGroup = document.getElementById('dlp-input-group');
+            const input = document.getElementById('dlp-input');
+            const btn = document.getElementById('dlp-btn');
+            const result = document.getElementById('crypto-result-display');
+            let resetTimer = null;
+            let scrambleInterval = null;
+
+            async function encryptData() {
+                const text = input.value;
+                if (!text) return;
+
+                // 1. Hide input, show result
+                inputGroup.style.display = 'none';
+                result.style.display = 'block';
+                result.textContent = '';
+                
+                if (resetTimer) clearTimeout(resetTimer);
+                if (scrambleInterval) clearInterval(scrambleInterval);
+
+                // 2. Visual Scramble Effect
+                const hexChars = '0123456789ABCDEF';
+                scrambleInterval = setInterval(() => {
+                    let scrambleArr = [];
+                    for(let i = 0; i < 64; i++) {
+                        scrambleArr.push(hexChars[Math.floor(Math.random() * hexChars.length)]);
+                    }
+                    result.textContent = scrambleArr.join('');
+                }, 50);
+
+                // 3. Real Encryption (SHA-256)
+                let hashHex = '';
+                try {
+                    const msgBuffer = new TextEncoder().encode(text);
+                    const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
+                    const hashArray = Array.from(new Uint8Array(hashBuffer));
+                    hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('').toUpperCase();
+                } catch(e) {
+                    hashHex = 'ENCRYPTION_FAILED';
+                    console.error('[DLP] Encryption error:', e);
+                }
+
+                // 4. Stop scramble after 1.5s and show real hash
+                setTimeout(() => {
+                    clearInterval(scrambleInterval);
+                    result.innerHTML = hashHex + '<br><span class="dlp-tag">[ SECURED: SHA-256 ]</span>';
+                    
+                    // 5. Reset after 8s
+                    resetTimer = setTimeout(() => {
+                        result.style.display = 'none';
+                        result.textContent = '';
+                        input.value = '';
+                        inputGroup.style.display = 'flex';
+                    }, 8000);
+                }, 1500);
+            }
+
+            btn.addEventListener('click', encryptData);
+            input.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') encryptData();
+            });
         })();
     </script>
 </body>
