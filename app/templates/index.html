@@ -93,13 +93,17 @@
         /* ═══════════════════════════════════════════════
            BASE
         ═══════════════════════════════════════════════ */
+        html, body {
+            overflow-x: hidden;
+            overflow-y: auto;
+            min-height: 300vh;
+        }
+
         body {
             background: var(--bg-obsidian);
             color: var(--text-primary);
             font-family: var(--font-ui);
-            min-height: 300vh;
             padding: 0;
-            overflow-x: hidden;
             position: relative;
             font-size: 14px;
             line-height: 1.5;
@@ -2562,7 +2566,7 @@
         // ═══════════════════════════════════════════════
         //  10. SCROLLYTELLING (GSAP)
         // ═══════════════════════════════════════════════
-        (function initScrollytelling() {
+        document.addEventListener("DOMContentLoaded", () => {
             gsap.registerPlugin(ScrollTrigger);
 
             gsap.set("#ui-layer", { autoAlpha: 0 });
@@ -2602,7 +2606,7 @@
                     ease: "back.out(1.2)"
                 }, "<");
 
-        })();
+        });
     </script>
 </body>
 
