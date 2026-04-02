@@ -132,7 +132,13 @@
         .left-column, .right-column { pointer-events: auto; }
         .left-column { width: 380px; display: flex !important; flex-direction: column !important; justify-content: flex-start !important; align-items: stretch; gap: 2rem !important; height: 100% !important; overflow-y: auto; padding-right: 15px; padding-bottom: 100px !important; mask-image: linear-gradient(to bottom, black 90%, transparent); -webkit-mask-image: linear-gradient(to bottom, black 90%, transparent); }
         .left-column::-webkit-scrollbar { display: none; }
-        .right-column { width: 500px !important; max-width: 35vw; }
+        .right-column { 
+            width: 500px !important; max-width: 35vw; 
+            height: calc(100vh - 4rem) !important;
+            max-height: calc(100vh - 4rem) !important;
+            display: flex !important;
+            flex-direction: column !important;
+        }
 
         /* Volumetric ambient lights */
         body::before {
@@ -950,7 +956,12 @@
             position: relative;
             width: 100% !important;
             box-sizing: border-box !important;
-            height: calc(100vh - 4rem) !important; /* Il blocheaza de sus pana jos */
+            flex: 1 1 0 !important; /* Creste si scade, dar pleaca de la zero */
+            min-height: 0 !important; /* CRITIC: Impiedica textul sa sparga cutia */
+            height: 100% !important;
+            max-height: 100% !important;
+            overflow: hidden !important; /* Orice iese din cutie, e ascuns */
+            margin: 0 !important;
             display: flex !important;
             flex-direction: column !important;
             justify-content: flex-start !important;
@@ -1005,7 +1016,8 @@
         }
 
         #traffic-stream {
-            flex-grow: 1 !important; /* Ia tot spatiul disponibil */
+            flex: 1 1 0 !important;
+            min-height: 0 !important; /* CRITIC */
             overflow-y: hidden !important; /* Fara scrollbar */
             display: flex;
             flex-direction: column;
