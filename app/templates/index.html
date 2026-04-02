@@ -101,9 +101,14 @@
         #canvas-container {
             position: fixed !important; top: 0; left: 0; width: 100vw; height: 100vh;
             z-index: 0; pointer-events: none;
+            display: flex !important;
+            justify-content: center !important;
+            align-items: center !important;
         }
         canvas {
             width: 100%; height: 100%; display: block;
+            transform-origin: center center !important;
+            margin: auto !important;
         }
 
         #boot-text {
@@ -307,18 +312,19 @@
         /* 1. THE APPLE-GRADE LIQUID GLASS (Volum, Reflexie, Adancime) */
         .card, .waf-container, #packet-sniffer, #threat-map-container, .event-stream-section {
             position: relative;
-            background: rgba(15, 20, 35, 0.15) !important; /* Fundal super clar */
-            backdrop-filter: blur(48px) saturate(250%) !important;
-            -webkit-backdrop-filter: blur(48px) saturate(250%) !important;
+            background: rgba(8, 12, 18, 0.35) !important; /* Baza mai intunecata pentru contrast */
+            backdrop-filter: blur(60px) saturate(220%) contrast(110%) !important;
+            -webkit-backdrop-filter: blur(60px) saturate(220%) contrast(110%) !important;
             border-radius: 20px !important;
             border: 1px solid rgba(255, 255, 255, 0.05) !important;
             
-            /* Secretul volumului 3D: Reflexii si umbre interne */
+            /* Iluzie optica: Margini iridescente (Cyan si Magenta) + Grosimea sticlei */
             box-shadow: 
-                inset 0 1.5px 2px rgba(255, 255, 255, 0.25), /* Lumina pe muchia de sus */
-                inset 0 -1.5px 2px rgba(0, 0, 0, 0.5), /* Umbra interna jos */
-                inset 1px 0 2px rgba(255, 255, 255, 0.05), /* Reflexie stanga */
-                0 30px 60px -15px rgba(0, 0, 0, 0.9) !important; /* Drop shadow adanc */
+                inset 0 1px 1.5px rgba(255, 255, 255, 0.4), /* Reflexie top */
+                inset 0 -1px 1.5px rgba(0, 0, 0, 0.8), /* Umbra bottom */
+                inset 1.5px 0 2px rgba(0, 255, 255, 0.08), /* Aberatie Cyan */
+                inset -1.5px 0 2px rgba(255, 0, 255, 0.08), /* Aberatie Magenta */
+                0 40px 80px -20px rgba(0, 0, 0, 0.95) !important;
                 
             overflow: hidden !important;
             flex: 0 0 auto !important; height: max-content !important; padding: 1.5rem !important;
@@ -333,11 +339,13 @@
             margin-top: 10px;
         }
 
-        /* 2. THE SURFACE GLARE (Reflexia oblica pe geam) */
+        /* 2. THE FROSTED GLASS TEXTURE (Micro-noise generat dinamic prin SVG) */
         .card::after, .waf-container::after, #packet-sniffer::after, #threat-map-container::after, .event-stream-section::after {
             content: ''; position: absolute; inset: 0;
-            background: linear-gradient(115deg, rgba(255,255,255,0.12) 0%, transparent 35%, transparent 100%);
-            z-index: 1; pointer-events: none; border-radius: inherit;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+            opacity: 0.04; /* Extraordinar de subtil, doar cat sa dea textura tactila */
+            pointer-events: none; z-index: 5; border-radius: inherit;
+            mix-blend-mode: overlay;
         }
 
         /* 3. TRUE LIQUID MESH (Trei surse de lumina care se misca organic) */
@@ -908,18 +916,10 @@
         #packet-sniffer {
             position: relative;
             width: 280px;
-            display: flex;
-            flex-direction: column;
-            background: linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.01) 100%), radial-gradient(ellipse at 50% 50%, rgba(255, 255, 255, 0.04) 0%, transparent 60%);
-            background-size: 200% 200%;
-            backdrop-filter: blur(24px) saturate(150%);
-            -webkit-backdrop-filter: blur(24px) saturate(150%);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            /* surface tension */
-            border-radius: var(--radius);
-            padding: 16px 14px;
-            box-shadow: var(--glass-rim), var(--glass-depth);
-            animation: light-shift 11s ease-in-out infinite, liquid-morph 9.5s ease-in-out infinite 0.6s;
+            height: calc(100vh - 4rem) !important; /* Il blocheaza de sus pana jos */
+            display: flex !important;
+            flex-direction: column !important;
+            justify-content: flex-start !important;
         }
 
         .sniffer-title {
@@ -971,10 +971,13 @@
         }
 
         #traffic-stream {
-            flex: 1;
-            overflow-y: hidden;
-            -webkit-mask-image: linear-gradient(to bottom, transparent, black 8%, black 92%, transparent);
-            mask-image: linear-gradient(to bottom, transparent, black 8%, black 92%, transparent);
+            flex-grow: 1 !important; /* Ia tot spatiul disponibil */
+            overflow-y: hidden !important; /* Fara scrollbar */
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            mask-image: linear-gradient(to bottom, black 85%, transparent 100%);
+            -webkit-mask-image: linear-gradient(to bottom, black 85%, transparent 100%);
         }
 
         .pkt-line {
