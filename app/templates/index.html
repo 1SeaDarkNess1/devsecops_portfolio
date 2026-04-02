@@ -88,76 +88,45 @@
         /* ═══════════════════════════════════════════════
            BASE
         ═══════════════════════════════════════════════ */
+        /* 1. RESET SI HUD LOCK-IN (Fara scroll aiurea pe ecran) */
         html, body {
-            min-height: 400vh;
-            overflow-x: hidden;
-            overflow-y: auto;
-            background: #050507;
+            margin: 0; padding: 0;
+            width: 100%; min-height: 200vh !important; 
+            background-color: #030305;
+            overflow-x: hidden; overflow-y: auto;
+            font-family: 'JetBrains Mono', monospace;
+            color: #e2e8f0;
         }
 
-        body {
-            background: var(--bg-obsidian);
-            color: var(--text-primary);
-            font-family: var(--font-ui);
-            padding: 0;
-            position: relative;
-            font-size: 14px;
-            line-height: 1.5;
-            -webkit-font-smoothing: antialiased;
-            -moz-osx-font-smoothing: grayscale;
+        #canvas-container {
+            position: fixed !important; top: 0; left: 0; width: 100vw; height: 100vh;
+            z-index: 0; pointer-events: none;
+        }
+        canvas {
+            width: 100%; height: 100%; display: block;
         }
 
         #boot-text {
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            font-family: var(--font-mono);
-            font-size: clamp(1.2rem, 2.5vw, 2rem);
-            font-weight: 500;
-            color: var(--text-primary);
-            text-align: center;
-            z-index: 50;
-            opacity: 1;
-            margin: 0;
-            letter-spacing: 2px;
-            text-shadow: 0 0 10px rgba(255, 255, 255, 0.2);
-            white-space: nowrap !important;
-            width: 100%;
+            position: fixed; top: 50%; left: 50%;
+            transform: translate(-50%, -50%); /* Centrare matematica absoluta */
+            z-index: 5; white-space: nowrap;
+            font-size: clamp(1rem, 2vw, 1.5rem);
+            color: rgba(255, 255, 255, 0.9);
+            letter-spacing: 4px; text-transform: uppercase;
+            text-shadow: 0 0 20px rgba(0, 180, 216, 0.4);
         }
 
         #main-dashboard {
-            position: fixed !important; /* CRITIC: Tine totul pe ecran */
-            top: 0; left: 0;
-            width: 100vw; height: 100vh;
-            box-sizing: border-box;
-            z-index: 10;
-            padding: 2rem;
-            display: flex;
-            justify-content: space-between;
-            pointer-events: none; /* Lasa scroll-ul principal sa functioneze pentru GSAP */
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            box-sizing: border-box; padding: 2rem 3rem;
+            z-index: 10; display: flex; justify-content: space-between;
+            pointer-events: none; /* Scroll-ul principal trece prin el */
         }
 
-        .left-column {
-            height: 100%;
-            overflow-y: auto; /* Permite scroll intern doar pe carduri */
-            pointer-events: auto !important; /* Permite click pe butoane */
-            padding-right: 15px;
-            display: flex;
-            flex-direction: column;
-            gap: 1.5rem;
-            width: 380px;
-            mask-image: linear-gradient(to bottom, black 90%, transparent); /* Fade elegant la baza */
-            -webkit-mask-image: linear-gradient(to bottom, black 90%, transparent);
-        }
-
-        .left-column::-webkit-scrollbar {
-            display: none; /* Ascunde scrollbar-ul pentru un look Enterprise */
-        }
-
-        .right-column {
-            pointer-events: auto !important;
-        }
+        .left-column, .right-column { pointer-events: auto; }
+        .left-column { width: 380px; display: flex; flex-direction: column; gap: 1.5rem; height: 100%; overflow-y: auto; padding-right: 15px; mask-image: linear-gradient(to bottom, black 90%, transparent); -webkit-mask-image: linear-gradient(to bottom, black 90%, transparent); }
+        .left-column::-webkit-scrollbar { display: none; }
+        .right-column { width: 380px; }
 
         /* Volumetric ambient lights */
         body::before {
@@ -335,24 +304,64 @@
             gap: 16px;
         }
 
-        .card {
-            background: linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.01) 100%), radial-gradient(ellipse at 50% 50%, rgba(255, 255, 255, 0.04) 0%, transparent 60%);
-            background-size: 200% 200%;
-            backdrop-filter: blur(24px) saturate(150%);
-            -webkit-backdrop-filter: blur(24px) saturate(150%);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            border-radius: var(--radius);
-            padding: 22px 24px;
-            box-shadow: var(--glass-rim), var(--glass-depth);
-            transition: background var(--ease), border-color var(--ease), box-shadow var(--ease);
-            animation: light-shift 8s ease-in-out infinite, liquid-morph 8s ease-in-out infinite;
+        /* 2. THE TRUE LIQUID GLASS ENGINE */
+        .card, .waf-container, #packet-sniffer, #threat-map-container, .event-stream-section {
+            position: relative;
+            background: rgba(10, 15, 30, 0.4) !important; /* Baza translucida */
+            backdrop-filter: blur(40px) saturate(200%) !important;
+            -webkit-backdrop-filter: blur(40px) saturate(200%) !important;
+            border-radius: 28px !important; /* Forme organice, dar ordonate */
+            border: 1px solid rgba(255, 255, 255, 0.1) !important;
+            border-top: 1px solid rgba(255, 255, 255, 0.2) !important; /* Edge highlight */
+            box-shadow: 
+                0 30px 60px rgba(0, 0, 0, 0.6), /* Umbra de adancime */
+                inset 0 0 0 1px rgba(255, 255, 255, 0.05) !important; /* Tensiunea apei */
+            padding: 1.5rem !important;
+            overflow: hidden !important; /* Tine reflexiile inauntru */
+            color: #e2e8f0;
+            animation: none !important; /* Dezactivăm animațiile vechi care pot intra în conflict */
         }
 
-            .card:hover {
-                background: linear-gradient(135deg, rgba(255, 255, 255, 0.045) 0%, rgba(255, 255, 255, 0.015) 100%);
-                border-color: var(--border-hover);
-                box-shadow: inset 0.5px 0.5px 1px rgba(255, 255, 255, 0.18), 0 24px 48px rgba(0, 0, 0, 0.55);
-            }
+        /* 3. ANIMATED REFRACTION (Lumina lichida care se misca in interior) */
+        .card::before, .waf-container::before, #packet-sniffer::before, #threat-map-container::before, .event-stream-section::before {
+            content: '';
+            position: absolute; top: -50%; left: -50%; width: 200%; height: 200%;
+            background: 
+                radial-gradient(circle at 30% 70%, rgba(0, 180, 216, 0.15) 0%, transparent 50%),
+                radial-gradient(circle at 70% 30%, rgba(230, 57, 70, 0.05) 0%, transparent 50%);
+            animation: liquid-flow 12s infinite linear;
+            z-index: -1; pointer-events: none;
+        }
+
+        @keyframes liquid-flow {
+            0% { transform: rotate(0deg) scale(1); }
+            50% { transform: rotate(180deg) scale(1.1); }
+            100% { transform: rotate(360deg) scale(1); }
+        }
+
+        /* 4. REPARARE ELEMENTE INTERNE (Aliniament perfect) */
+        input[type="text"], input[type="password"] {
+            width: 100%; box-sizing: border-box; background: transparent;
+            border: none; border-bottom: 1px solid rgba(255, 255, 255, 0.2) !important;
+            color: #fff; padding: 0.5rem 0; margin-bottom: 1rem;
+            font-family: inherit; font-size: 0.9rem; outline: none;
+            transition: border-color 0.3s ease;
+        }
+        input[type="text"]:focus, input[type="password"]:focus { border-bottom: 1px solid #00b4d8 !important; }
+
+        button, .waf-btn {
+            width: 100%; padding: 0.8rem !important; border-radius: 12px !important;
+            background: rgba(0, 180, 216, 0.1) !important; border: 1px solid rgba(0, 180, 216, 0.3) !important;
+            color: #00b4d8 !important; font-weight: bold; letter-spacing: 1px; cursor: pointer;
+            transition: all 0.3s ease !important;
+            margin-bottom: 8px;
+        }
+        button:hover, .waf-btn:hover { background: rgba(0, 180, 216, 0.2) !important; box-shadow: 0 0 15px rgba(0, 180, 216, 0.3) !important; }
+
+        #btn-chaos {
+            background: rgba(230, 57, 70, 0.1) !important; border-color: rgba(230, 57, 70, 0.3) !important; color: #e63946 !important;
+        }
+        #btn-chaos:hover { background: rgba(230, 57, 70, 0.2) !important; box-shadow: 0 0 15px rgba(230, 57, 70, 0.3) !important; }
 
         .card-title {
             font-size: 0.65rem;
@@ -544,15 +553,7 @@
                 color: var(--text-secondary);
             }
 
-        canvas, #canvas-container {
-            position: fixed !important;
-            top: 0; left: 0;
-            width: 100vw !important;
-            height: 100vh !important;
-            z-index: 0 !important;
-            pointer-events: none;
-            display: block;
-        }
+        /* Removed duplicated canvas css */
 
         /* Log fade-out for rotation */
         .log-line.fading {
