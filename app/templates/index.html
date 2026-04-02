@@ -310,22 +310,23 @@
             gap: 16px;
         }
 
-        /* 1. THE APPLE-GRADE LIQUID GLASS (Volum, Reflexie, Adancime) */
+        /* 2. STICLA CRISTAL (Contrast ridicat si margini taioase) */
         .card, .waf-container, #packet-sniffer, #threat-map-container, .event-stream-section {
             position: relative;
-            background: rgba(8, 12, 18, 0.35) !important; /* Baza mai intunecata pentru contrast */
-            backdrop-filter: blur(60px) saturate(220%) contrast(110%) !important;
-            -webkit-backdrop-filter: blur(60px) saturate(220%) contrast(110%) !important;
+            background: rgba(5, 8, 14, 0.4) !important; /* Baza un pic mai inchisa pentru a face neonul sa sara in ochi */
+            backdrop-filter: blur(45px) saturate(250%) contrast(120%) brightness(110%) !important;
+            -webkit-backdrop-filter: blur(45px) saturate(250%) contrast(120%) brightness(110%) !important;
             border-radius: 20px !important;
             border: 1px solid rgba(255, 255, 255, 0.05) !important;
             
-            /* Iluzie optica: Margini iridescente (Cyan si Magenta) + Grosimea sticlei */
+            /* Muchii ascutite si reflexii mai vizibile */
             box-shadow: 
-                inset 0 1px 1.5px rgba(255, 255, 255, 0.4), /* Reflexie top */
-                inset 0 -1px 1.5px rgba(0, 0, 0, 0.8), /* Umbra bottom */
-                inset 1.5px 0 2px rgba(0, 255, 255, 0.08), /* Aberatie Cyan */
-                inset -1.5px 0 2px rgba(255, 0, 255, 0.08), /* Aberatie Magenta */
-                0 40px 80px -20px rgba(0, 0, 0, 0.95) !important;
+                inset 0 1.5px 2px rgba(255, 255, 255, 0.5), /* Lumina puternica pe muchia de sus */
+                inset 0 -1.5px 3px rgba(0, 0, 0, 0.9), /* Umbra groasa jos */
+                inset 1.5px 0 2px rgba(0, 229, 255, 0.2), /* Aberatie Cyan mai puternica */
+                inset -1.5px 0 2px rgba(255, 51, 102, 0.2), /* Aberatie Magenta mai puternica */
+                0 40px 80px -20px rgba(0, 0, 0, 0.99) !important;
+            color: #f8fafc; /* Text principal un alb mai stralucitor */
                 
             overflow: hidden !important;
             flex: 0 0 auto !important; height: auto !important; min-height: min-content !important; padding: 1.5rem !important; margin: 0 !important;
@@ -370,16 +371,16 @@
             mix-blend-mode: overlay;
         }
 
-        /* 3. TRUE LIQUID MESH (Trei surse de lumina care se misca organic) */
+        /* 1. LIQUID MESH PE STEROIZI (Culori Neon Vibrante) */
         .card::before, .waf-container::before, #packet-sniffer::before, #threat-map-container::before, .event-stream-section::before {
             content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%;
             background: 
-                radial-gradient(circle at 50% 50%, rgba(0, 180, 216, 0.25) 0%, transparent 60%),
-                radial-gradient(circle at 80% 20%, rgba(138, 43, 226, 0.15) 0%, transparent 50%),
-                radial-gradient(circle at 20% 80%, rgba(230, 57, 70, 0.15) 0%, transparent 50%);
-            filter: blur(24px); /* Topeste gradientul pentru a parea lichid gros */
+                radial-gradient(circle at 50% 50%, rgba(0, 229, 255, 0.45) 0%, transparent 60%), /* Neon Cyan */
+                radial-gradient(circle at 80% 20%, rgba(188, 19, 254, 0.35) 0%, transparent 50%), /* Neon Purple */
+                radial-gradient(circle at 20% 80%, rgba(255, 51, 102, 0.30) 0%, transparent 50%); /* Neon Red/Pink */
+            filter: blur(20px); /* Blur un pic mai mic ca sa pastreze culorile conturate */
             animation: liquid-depth 18s infinite ease-in-out alternate;
-            mix-blend-mode: screen; /* Ilumineaza culorile intunecate */
+            mix-blend-mode: color-dodge; /* Face culorile sa 'arda' mai intens sub sticla */
             z-index: 0; pointer-events: none;
         }
 
@@ -405,19 +406,29 @@
         }
         input[type="text"]:focus, input[type="password"]:focus { border-bottom: 1px solid #00b4d8 !important; }
 
+        /* 3. NEON TEXT GLOW (Pentru butoane si accente) */
         button, .waf-btn {
             width: 100%; padding: 0.8rem !important; border-radius: 12px !important;
-            background: rgba(0, 180, 216, 0.1) !important; border: 1px solid rgba(0, 180, 216, 0.3) !important;
-            color: #00b4d8 !important; font-weight: bold; letter-spacing: 1px; cursor: pointer;
+            background: rgba(0, 180, 216, 0.1) !important; border: 1px solid rgba(0, 229, 255, 0.4) !important;
+            color: #00e5ff !important; font-weight: bold; letter-spacing: 1px; cursor: pointer;
             transition: all 0.3s ease !important;
             margin-bottom: 8px;
+            text-shadow: 0 0 8px rgba(0, 229, 255, 0.5);
         }
-        button:hover, .waf-btn:hover { background: rgba(0, 180, 216, 0.2) !important; box-shadow: 0 0 15px rgba(0, 180, 216, 0.3) !important; }
+        button:hover, .waf-btn:hover { 
+            background: rgba(0, 229, 255, 0.15) !important; 
+            box-shadow: 0 0 20px rgba(0, 229, 255, 0.4) !important; 
+        }
 
         #btn-chaos {
-            background: rgba(230, 57, 70, 0.1) !important; border-color: rgba(230, 57, 70, 0.3) !important; color: #e63946 !important;
+            background: rgba(230, 57, 70, 0.1) !important; border-color: rgba(255, 51, 102, 0.4) !important; 
+            color: #ff3366 !important;
+            text-shadow: 0 0 8px rgba(255, 51, 102, 0.5);
         }
-        #btn-chaos:hover { background: rgba(230, 57, 70, 0.2) !important; box-shadow: 0 0 15px rgba(230, 57, 70, 0.3) !important; }
+        #btn-chaos:hover { 
+            background: rgba(255, 51, 102, 0.15) !important; 
+            box-shadow: 0 0 20px rgba(255, 51, 102, 0.4) !important; 
+        }
 
         .card-title {
             font-size: 0.65rem;
