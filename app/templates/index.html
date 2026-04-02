@@ -1434,6 +1434,60 @@
             .card.alert-mode .progress-fill {
                 background: var(--crimson) !important;
             }
+
+        /* =========================================
+           1. THE CRT HARDWARE OVERLAY 
+           ========================================= */
+        body::after {
+            content: " ";
+            display: block;
+            position: fixed;
+            top: 0; left: 0; bottom: 0; right: 0;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.1) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.03), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.03));
+            z-index: 999; /* Sta peste absolut tot */
+            background-size: 100% 3px, 6px 100%;
+            pointer-events: none; /* CRITIC: ca sa poti da click pe butoane prin el */
+            animation: scanline 10s linear infinite;
+        }
+        @keyframes scanline {
+            0% { background-position: 0 0; }
+            100% { background-position: 0 100vh; }
+        }
+
+        /* =========================================
+           2. TACTICAL HOVER EFFECTS 
+           ========================================= */
+        .card, .waf-container {
+            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.4s ease, border-color 0.4s ease !important;
+        }
+        .card:hover, .waf-container:hover {
+            transform: translateY(-4px) scale(1.01) !important;
+            border-top-color: rgba(0, 229, 255, 0.5) !important; /* Glow neon pe muchie cand pui mouse-ul */
+            box-shadow: 
+                inset 0 1.5px 4px rgba(255, 255, 255, 0.6),
+                0 45px 90px -20px rgba(0, 229, 255, 0.15) !important; /* Arunca o lumina albastra dedesubt */
+        }
+
+        /* =========================================
+           3. CYBER-GLITCH PE BUTONUL DE CHAOS 
+           ========================================= */
+        #btn-chaos {
+            position: relative;
+            overflow: hidden;
+        }
+        #btn-chaos:hover {
+            animation: glitch-skew 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94) both infinite alternate;
+            background: rgba(255, 51, 102, 0.25) !important;
+            color: #fff !important;
+        }
+        @keyframes glitch-skew {
+            0% { transform: skew(0deg); text-shadow: 2px 0px rgba(0,229,255,0.8), -2px 0px rgba(255,51,102,0.8); }
+            20% { transform: skew(-10deg); text-shadow: -2px 0px rgba(0,229,255,0.8), 2px 0px rgba(255,51,102,0.8); }
+            40% { transform: skew(10deg); text-shadow: 2px 0px rgba(0,229,255,0.8), -2px 0px rgba(255,51,102,0.8); }
+            60% { transform: skew(-5deg); text-shadow: -2px 0px rgba(0,229,255,0.8), 2px 0px rgba(255,51,102,0.8); }
+            80% { transform: skew(5deg); text-shadow: 2px 0px rgba(0,229,255,0.8), -2px 0px rgba(255,51,102,0.8); }
+            100% { transform: skew(0deg); text-shadow: none; }
+        }
     </style>
 </head>
 
