@@ -124,7 +124,7 @@
         }
 
         .left-column, .right-column { pointer-events: auto; }
-        .left-column { width: 380px; display: flex; flex-direction: column; gap: 1.5rem; height: 100%; overflow-y: auto; padding-right: 15px; padding-bottom: 100px !important; mask-image: linear-gradient(to bottom, black 90%, transparent); -webkit-mask-image: linear-gradient(to bottom, black 90%, transparent); }
+        .left-column { width: 380px; display: flex; flex-direction: column; justify-content: flex-start !important; align-items: stretch; gap: 1.5rem; height: 100%; overflow-y: auto; padding-right: 15px; padding-bottom: 100px !important; mask-image: linear-gradient(to bottom, black 90%, transparent); -webkit-mask-image: linear-gradient(to bottom, black 90%, transparent); }
         .left-column::-webkit-scrollbar { display: none; }
         .right-column { width: 380px; }
 
@@ -320,12 +320,18 @@
             overflow: hidden !important; /* Tine reflexiile inauntru */
             color: #e2e8f0;
             animation: none !important; /* Dezactivăm animațiile vechi care pot intra în conflict */
-            flex-shrink: 0 !important; /* CRITIC: Interzice strivirea pe verticala */
-            height: auto !important; /* Lasa continutul sa dicteze inaltimea */
-            min-height: min-content;
+            flex: 0 0 auto !important; /* flex-grow: 0, flex-shrink: 0 */
+            height: max-content !important; /* Ia inaltimea strict a textului din interior */
+            min-height: auto !important;
             display: flex;
             flex-direction: column;
             z-index: 1;
+        }
+
+        #threat-log-container {
+            max-height: 250px;
+            overflow-y: auto;
+            margin-top: 10px;
         }
 
         .card > *, .waf-container > *, #packet-sniffer > *, #threat-map-container > *, .event-stream-section > * {
