@@ -152,9 +152,7 @@
         .right-column { 
             width: 500px !important; max-width: 35vw; 
             height: calc(100vh - 4rem) !important;
-            max-height: calc(100vh - 4rem) !important;
-            display: flex !important;
-            flex-direction: column !important;
+            display: block !important; /* Scoatem Flexbox-ul de aici ca sa nu mai distruga inaltimile */
         }
 
         /* Volumetric ambient lights */
@@ -970,18 +968,14 @@
            PACKET SNIFFER (Data Waterfall)
         ═══════════════════════════════════════════════ */
         #packet-sniffer {
-            position: relative;
             width: 100% !important;
             box-sizing: border-box !important;
-            flex: 1 1 0 !important; /* Creste si scade, dar pleaca de la zero */
-            min-height: 0 !important; /* CRITIC: Impiedica textul sa sparga cutia */
-            height: 100% !important;
-            max-height: 100% !important;
-            overflow: hidden !important; /* Orice iese din cutie, e ascuns */
             margin: 0 !important;
+            height: 100% !important;
             display: flex !important;
             flex-direction: column !important;
-            justify-content: flex-start !important;
+            position: relative;
+            overflow: hidden !important;
         }
 
         .sniffer-title {
@@ -1033,14 +1027,16 @@
         }
 
         #traffic-stream {
-            flex: 1 1 0 !important;
-            min-height: 0 !important; /* CRITIC */
-            overflow-y: hidden !important; /* Fara scrollbar */
+            flex-grow: 1 !important;
+            height: auto !important;
+            overflow: hidden !important; /* Fara scroll, curge automat */
             display: flex;
             flex-direction: column;
-            justify-content: flex-start;
-            mask-image: linear-gradient(to bottom, black 85%, transparent 100%);
-            -webkit-mask-image: linear-gradient(to bottom, black 85%, transparent 100%);
+            justify-content: flex-end; /* Elementele noi apar jos si imping in sus */
+            
+            /* Efect de dizolvare eleganta a log-urilor vechi in partea de sus */
+            mask-image: linear-gradient(to bottom, transparent 0%, black 15%, black 100%);
+            -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 15%, black 100%);
         }
 
         /* 4. Optimizam textul din log-uri sa foloseasca noul spatiu */
@@ -1551,6 +1547,42 @@
             0% { box-shadow: inset 0 0 50px rgba(255, 51, 102, 0.2); }
             100% { box-shadow: inset 0 0 150px rgba(255, 51, 102, 0.6); }
         }
+        /* 3. Matrix Decryption Entry (Animatie de intrare pentru log-uri noi) */
+        #traffic-stream span {
+            display: block;
+            width: 100%;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            animation: cyber-log-entry 0.35s cubic-bezier(0.1, 0.8, 0.2, 1) forwards;
+            border-left: 2px solid transparent;
+            padding-left: 5px;
+            margin-bottom: 2px;
+        }
+
+        @keyframes cyber-log-entry {
+            0% { opacity: 0; transform: translateX(-15px); filter: blur(5px); border-left-color: #00e5ff; }
+            100% { opacity: 1; transform: translateX(0); filter: blur(0); border-left-color: transparent; }
+        }
+
+        /* 4. The Sweeping Laser Scanner (Linia de diagnoza) */
+        .cyber-scanner {
+            position: absolute;
+            left: 0; width: 100%; height: 2px;
+            background: #00e5ff;
+            box-shadow: 0 0 20px 3px rgba(0, 229, 255, 0.6);
+            opacity: 0.4;
+            z-index: 50;
+            pointer-events: none;
+            animation: scan-sweep 6s ease-in-out infinite alternate;
+        }
+
+        @keyframes scan-sweep {
+            0% { top: 5%; opacity: 0; }
+            10% { opacity: 0.6; }
+            90% { opacity: 0.6; }
+            100% { top: 95%; opacity: 0; }
+        }
     </style>
 </head>
 
@@ -1711,6 +1743,7 @@
 
         <div class="right-column">
             <div id="packet-sniffer">
+                <div class="cyber-scanner"></div>
                 <div class="sniffer-title" title="Simulated HTTP traffic stream — /api/traffic endpoint">Network Stream // Port 443</div>
                 <div class="sniffer-stats">
                     <div class="sniffer-stat">
