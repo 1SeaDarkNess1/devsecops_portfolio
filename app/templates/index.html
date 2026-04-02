@@ -12,8 +12,12 @@
     <link
         href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@300;400;500;700&display=swap"
         rel="stylesheet">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"
+        integrity="sha512-16esztaSRplJROstbIIdwX3N97V1+pZvV33ABoG1H2OyTttBxEGIR88X8I0m5wTjo59XGjjdOAM9B8pVE8sBkA=="
+        crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"
+        integrity="sha512-ic9xk50e8w/u2R5DeyR5n+k1eZ2sUvKk2R3R2Q2w+v2R2R2R2R2R2R2R2R2R2R2R2R2R2R2R2R2R2R2R2Q=="
+        crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     <style>
         /* ═══════════════════════════════════════════════
            DESIGN TOKENS
@@ -59,15 +63,31 @@
         }
 
         @keyframes liquid-morph {
-            0% { border-radius: 16px; }
-            50% { border-radius: 30% 10% 20% 10% / 10% 30% 10% 20%; }
-            100% { border-radius: 16px; }
+            0% {
+                border-radius: 16px;
+            }
+
+            50% {
+                border-radius: 30% 10% 20% 10% / 10% 30% 10% 20%;
+            }
+
+            100% {
+                border-radius: 16px;
+            }
         }
 
         @keyframes light-shift {
-            0% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; }
+            0% {
+                background-position: 0% 50%;
+            }
+
+            50% {
+                background-position: 100% 50%;
+            }
+
+            100% {
+                background-position: 0% 50%;
+            }
         }
 
         /* ═══════════════════════════════════════════════
@@ -313,7 +333,7 @@
 
         .card {
             background: linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.01) 100%),
-                        radial-gradient(ellipse at 50% 50%, rgba(255, 255, 255, 0.04) 0%, transparent 60%);
+                radial-gradient(ellipse at 50% 50%, rgba(255, 255, 255, 0.04) 0%, transparent 60%);
             background-size: 200% 200%;
             backdrop-filter: blur(24px) saturate(150%);
             -webkit-backdrop-filter: blur(24px) saturate(150%);
@@ -431,7 +451,7 @@
         ═══════════════════════════════════════════════ */
         #threat-map-container {
             background: linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.01) 100%),
-                        radial-gradient(ellipse at 50% 50%, rgba(255, 255, 255, 0.04) 0%, transparent 60%);
+                radial-gradient(ellipse at 50% 50%, rgba(255, 255, 255, 0.04) 0%, transparent 60%);
             background-size: 200% 200%;
             backdrop-filter: blur(24px) saturate(150%);
             -webkit-backdrop-filter: blur(24px) saturate(150%);
@@ -459,13 +479,11 @@
             inset: -1px;
             border-radius: var(--radius);
             padding: 1px;
-            background: linear-gradient(
-                135deg,
-                rgba(0, 180, 216, 0.3),
-                transparent 40%,
-                transparent 60%,
-                rgba(230, 57, 70, 0.2)
-            );
+            background: linear-gradient(135deg,
+                    rgba(0, 180, 216, 0.3),
+                    transparent 40%,
+                    transparent 60%,
+                    rgba(230, 57, 70, 0.2));
             -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
             -webkit-mask-composite: xor;
             mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
@@ -476,8 +494,15 @@
         }
 
         @keyframes borderShimmer {
-            0% { opacity: 0.4; filter: hue-rotate(0deg); }
-            100% { opacity: 0.8; filter: hue-rotate(15deg); }
+            0% {
+                opacity: 0.4;
+                filter: hue-rotate(0deg);
+            }
+
+            100% {
+                opacity: 0.8;
+                filter: hue-rotate(15deg);
+            }
         }
 
         .map-header {
@@ -563,7 +588,7 @@
         ═══════════════════════════════════════════════ */
         .event-stream-section {
             background: linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.01) 100%),
-                        radial-gradient(ellipse at 50% 50%, rgba(255, 255, 255, 0.04) 0%, transparent 60%);
+                radial-gradient(ellipse at 50% 50%, rgba(255, 255, 255, 0.04) 0%, transparent 60%);
             background-size: 200% 200%;
             backdrop-filter: blur(24px) saturate(150%);
             -webkit-backdrop-filter: blur(24px) saturate(150%);
@@ -745,7 +770,7 @@
         }
 
         /* Liquid Glass Morph Delays via GSAP instead, or we can keep it here but we'll control opacity with JS */
-        
+
         @keyframes fadeUp {
             to {
                 opacity: 1;
@@ -778,6 +803,7 @@
                 grid-template-columns: 280px 1fr;
                 gap: 18px;
             }
+
             .dashboard {
                 padding: 24px 20px;
             }
@@ -787,20 +813,29 @@
             .main-grid {
                 grid-template-columns: 1fr;
             }
+
             .sidebar {
                 display: grid;
                 grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
             }
-            #card-waf, #card-dlp, #card-chaos { grid-column: 1 / -1; }
+
+            #card-waf,
+            #card-dlp,
+            #card-chaos {
+                grid-column: 1 / -1;
+            }
+
             .header-group {
                 flex-direction: column;
                 align-items: flex-start;
                 gap: 12px;
             }
+
             .header-right {
                 width: 100%;
                 justify-content: flex-start;
             }
+
             #threat-map-container {
                 min-height: 340px;
                 max-height: none;
@@ -814,44 +849,55 @@
             .dashboard {
                 padding: 16px 14px;
             }
+
             .main-grid {
                 grid-template-columns: 1fr;
                 gap: 14px;
             }
+
             .sidebar {
                 grid-template-columns: 1fr;
             }
+
             .card {
                 padding: 18px 20px;
             }
+
             .metric-value {
                 font-size: clamp(24px, 6vw, 32px);
             }
+
             .map-header {
                 flex-direction: column;
                 align-items: flex-start;
                 gap: 10px;
             }
+
             .map-stats {
                 flex-wrap: wrap;
                 gap: 10px;
             }
+
             #earth-canvas {
                 min-height: 240px;
             }
+
             .event-stream-meta {
                 display: none;
             }
+
             .terminal-body {
                 font-size: 0.7rem;
                 padding: 8px 14px;
                 max-height: 180px;
             }
+
             .threat-counter {
                 padding: 10px 14px;
                 gap: 14px;
                 flex-wrap: wrap;
             }
+
             h1 {
                 font-size: 15px;
             }
@@ -863,16 +909,20 @@
                 grid-template-columns: minmax(500px, 1fr) minmax(400px, 1fr);
                 gap: 28px;
             }
+
             .sidebar {
                 display: grid;
                 grid-template-columns: 1fr 1fr;
                 gap: 16px;
                 align-content: start;
             }
+
             /* Interactive cards span both columns */
-            #card-waf, #card-dlp {
+            #card-waf,
+            #card-dlp {
                 grid-column: span 2;
             }
+
             #card-chaos {
                 grid-column: span 2;
             }
@@ -892,11 +942,12 @@
             display: flex;
             flex-direction: column;
             background: linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.01) 100%),
-                        radial-gradient(ellipse at 50% 50%, rgba(255, 255, 255, 0.04) 0%, transparent 60%);
+                radial-gradient(ellipse at 50% 50%, rgba(255, 255, 255, 0.04) 0%, transparent 60%);
             background-size: 200% 200%;
             backdrop-filter: blur(24px) saturate(150%);
             -webkit-backdrop-filter: blur(24px) saturate(150%);
-            border: 1px solid rgba(255, 255, 255, 0.08); /* surface tension */
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            /* surface tension */
             border-radius: var(--radius);
             padding: 16px 14px;
             box-shadow: var(--glass-rim), var(--glass-depth);
@@ -1259,8 +1310,10 @@
             font-size: 0.8rem;
             line-height: 1.5;
             word-wrap: break-word;
-            color: var(--accent); /* Teal #00b4d8 */
-            text-shadow: 0 0 8px var(--accent-bloom); /* Subtle glow */
+            color: var(--accent);
+            /* Teal #00b4d8 */
+            text-shadow: 0 0 8px var(--accent-bloom);
+            /* Subtle glow */
             border-left: 2px solid var(--accent);
             background: rgba(0, 180, 216, 0.04);
             animation: fadeIn 0.3s ease;
@@ -1326,9 +1379,18 @@
         }
 
         @keyframes pulse-alert {
-            0%   { box-shadow: var(--glass-rim), var(--glass-depth), 0 0 0 0 rgba(230, 57, 70, 0.25); }
-            50%  { box-shadow: var(--glass-rim), var(--glass-depth), 0 0 18px 4px rgba(230, 57, 70, 0.15); border-color: rgba(230, 57, 70, 0.7); }
-            100% { box-shadow: var(--glass-rim), var(--glass-depth), 0 0 0 0 rgba(230, 57, 70, 0.25); }
+            0% {
+                box-shadow: var(--glass-rim), var(--glass-depth), 0 0 0 0 rgba(230, 57, 70, 0.25);
+            }
+
+            50% {
+                box-shadow: var(--glass-rim), var(--glass-depth), 0 0 18px 4px rgba(230, 57, 70, 0.15);
+                border-color: rgba(230, 57, 70, 0.7);
+            }
+
+            100% {
+                box-shadow: var(--glass-rim), var(--glass-depth), 0 0 0 0 rgba(230, 57, 70, 0.25);
+            }
         }
 
         .card.alert-mode {
@@ -1362,186 +1424,198 @@
     <div id="ui-layer">
         <div class="dashboard">
 
-        <!-- ═══ HEADER ═══ -->
-        <div class="header-group">
-            <div class="header-left">
-                <h1 id="main-title"><span class="typewriter-cursor"></span></h1>
-                <div class="boot-line" id="boot-status"></div>
-                <div class="subtitle" id="hostname">Initializing...</div>
-            </div>
-            <div class="header-right">
-                <div class="lab-badge">BBM DevSecOps Lab</div>
-                <div class="status glitch" id="live-status" data-text="Live">
-                    <span class="dot"></span>
-                    <span id="status-text">Live</span>
+            <!-- ═══ HEADER ═══ -->
+            <div class="header-group">
+                <div class="header-left">
+                    <h1 id="main-title"><span class="typewriter-cursor"></span></h1>
+                    <div class="boot-line" id="boot-status"></div>
+                    <div class="subtitle" id="hostname">Initializing...</div>
                 </div>
-            </div>
-        </div>
-
-        <!-- ═══ MAIN GRID: 30/70 ═══ -->
-        <div class="main-grid">
-
-            <!-- LEFT COLUMN — System Metrics -->
-            <div class="sidebar">
-                <div class="card" id="card-cpu" title="Live CPU utilization fetched via psutil — updates every 3s">
-                    <div class="card-title">CPU Usage</div>
-                    <div class="metric-value" id="cpu-percent">--%</div>
-                    <div class="metric-sub" id="cpu-cores">-- cores</div>
-                    <div class="progress-bar">
-                        <div class="progress-fill ok" id="cpu-bar" style="width:0%"></div>
+                <div class="header-right">
+                    <div class="lab-badge">BBM DevSecOps Lab</div>
+                    <div class="status glitch" id="live-status" data-text="Live">
+                        <span class="dot"></span>
+                        <span id="status-text">Live</span>
                     </div>
-                </div>
-
-                <div class="card" id="card-ram" title="Virtual memory usage via psutil — real-time">
-                    <div class="card-title">Memory</div>
-                    <div class="metric-value" id="ram-percent">--%</div>
-                    <div class="metric-sub" id="ram-detail">-- / -- GB</div>
-                    <div class="progress-bar">
-                        <div class="progress-fill ok" id="ram-bar" style="width:0%"></div>
-                    </div>
-                </div>
-
-                <div class="card" id="card-disk" title="Root filesystem disk usage — psutil.disk_usage('/')">
-                    <div class="card-title">Disk</div>
-                    <div class="metric-value" id="disk-percent">--%</div>
-                    <div class="metric-sub" id="disk-detail">-- / -- GB</div>
-                    <div class="progress-bar">
-                        <div class="progress-fill ok" id="disk-bar" style="width:0%"></div>
-                    </div>
-                </div>
-
-                <div class="card" id="card-net" title="Cumulative network I/O counters, uptime, and OS info">
-                    <div class="card-title">Network I/O</div>
-                    <div class="info-row">
-                        <span>Sent</span>
-                        <span id="net-sent">-- MB</span>
-                    </div>
-                    <div class="info-row">
-                        <span>Received</span>
-                        <span id="net-recv">-- MB</span>
-                    </div>
-                    <div class="info-row">
-                        <span>Uptime</span>
-                        <span id="uptime">--</span>
-                    </div>
-                    <div class="info-row">
-                        <span>OS</span>
-                        <span id="os">--</span>
-                    </div>
-                </div>
-
-                <div class="card" id="card-waf" title="Tests payloads against OWASP Top 10 RegEx signatures (SQLi, XSS, Path Traversal)">
-                    <div class="card-title">WAF Payload Analyzer</div>
-                    <div class="waf-input-group">
-                        <input type="text" class="waf-input" id="waf-input" placeholder="> Inject payload here..."
-                            autocomplete="off" spellcheck="false">
-                        <button class="waf-btn" id="waf-btn" title="Submit payload for OWASP signature analysis">Execute</button>
-                    </div>
-                    <div id="waf-result-display"></div>
-                </div>
-
-                <div class="card" id="card-dlp" title="Browser-based SHA-256 encryption using Web Crypto API — zero server exposure">
-                    <div class="card-title">ZERO-TRUST DLP VAULT</div>
-                    <div class="waf-input-group" id="dlp-input-group">
-                        <input type="password" class="waf-input" id="dlp-input" placeholder="> Enter sensitive data..."
-                            autocomplete="off" spellcheck="false">
-                        <button class="waf-btn" id="dlp-btn" title="Encrypt data locally using SHA-256">ENCRYPT</button>
-                    </div>
-                    <div id="crypto-result-display"></div>
-                </div>
-
-                <div class="card" id="card-chaos" title="Chaos Engineering — triggers POST /api/chaos to simulate node failure and CPU spike">
-                    <div class="card-title" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-                        <span>CHAOS ENGINEERING</span>
-                        <span id="chaos-status"></span>
-                    </div>
-                    <button id="btn-chaos" title="Simulate 8-second node failure with CPU spike to 95-99%">INITIATE NODE FAILURE</button>
                 </div>
             </div>
 
-            <!-- RIGHT COLUMN — Threat Intelligence Map -->
-            <div id="threat-map-container" title="3D holographic globe with live attack arc visualization — canvas 2D, frame-rate independent">
-                <div class="map-header">
-                    <div class="map-title">Live Threat Intelligence</div>
-                    <div class="map-stats">
-                        <div class="map-stat">
-                            <span class="stat-dot dot-blocked"></span>
-                            <span>Blocked</span>
-                            <span class="stat-value" id="count-blocked">0</span>
-                        </div>
-                        <div class="map-stat">
-                            <span class="stat-dot dot-warnings"></span>
-                            <span>Warnings</span>
-                            <span class="stat-value" id="count-warnings">0</span>
-                        </div>
-                        <div class="map-stat">
-                            <span class="stat-dot dot-banned"></span>
-                            <span>Banned</span>
-                            <span class="stat-value" id="count-banned">0</span>
+            <!-- ═══ MAIN GRID: 30/70 ═══ -->
+            <div class="main-grid">
+
+                <!-- LEFT COLUMN — System Metrics -->
+                <div class="sidebar">
+                    <div class="card" id="card-cpu" title="Live CPU utilization fetched via psutil — updates every 3s">
+                        <div class="card-title">CPU Usage</div>
+                        <div class="metric-value" id="cpu-percent">--%</div>
+                        <div class="metric-sub" id="cpu-cores">-- cores</div>
+                        <div class="progress-bar">
+                            <div class="progress-fill ok" id="cpu-bar" style="width:0%"></div>
                         </div>
                     </div>
+
+                    <div class="card" id="card-ram" title="Virtual memory usage via psutil — real-time">
+                        <div class="card-title">Memory</div>
+                        <div class="metric-value" id="ram-percent">--%</div>
+                        <div class="metric-sub" id="ram-detail">-- / -- GB</div>
+                        <div class="progress-bar">
+                            <div class="progress-fill ok" id="ram-bar" style="width:0%"></div>
+                        </div>
+                    </div>
+
+                    <div class="card" id="card-disk" title="Root filesystem disk usage — psutil.disk_usage('/')">
+                        <div class="card-title">Disk</div>
+                        <div class="metric-value" id="disk-percent">--%</div>
+                        <div class="metric-sub" id="disk-detail">-- / -- GB</div>
+                        <div class="progress-bar">
+                            <div class="progress-fill ok" id="disk-bar" style="width:0%"></div>
+                        </div>
+                    </div>
+
+                    <div class="card" id="card-net" title="Cumulative network I/O counters, uptime, and OS info">
+                        <div class="card-title">Network I/O</div>
+                        <div class="info-row">
+                            <span>Sent</span>
+                            <span id="net-sent">-- MB</span>
+                        </div>
+                        <div class="info-row">
+                            <span>Received</span>
+                            <span id="net-recv">-- MB</span>
+                        </div>
+                        <div class="info-row">
+                            <span>Uptime</span>
+                            <span id="uptime">--</span>
+                        </div>
+                        <div class="info-row">
+                            <span>OS</span>
+                            <span id="os">--</span>
+                        </div>
+                    </div>
+
+                    <div class="card" id="card-waf"
+                        title="Tests payloads against OWASP Top 10 RegEx signatures (SQLi, XSS, Path Traversal)">
+                        <div class="card-title">WAF Payload Analyzer</div>
+                        <div class="waf-input-group">
+                            <input type="text" class="waf-input" id="waf-input" placeholder="> Inject payload here..."
+                                autocomplete="off" spellcheck="false">
+                            <button class="waf-btn" id="waf-btn"
+                                title="Submit payload for OWASP signature analysis">Execute</button>
+                        </div>
+                        <div id="waf-result-display"></div>
+                    </div>
+
+                    <div class="card" id="card-dlp"
+                        title="Browser-based SHA-256 encryption using Web Crypto API — zero server exposure">
+                        <div class="card-title">ZERO-TRUST DLP VAULT</div>
+                        <div class="waf-input-group" id="dlp-input-group">
+                            <input type="password" class="waf-input" id="dlp-input"
+                                placeholder="> Enter sensitive data..." autocomplete="off" spellcheck="false">
+                            <button class="waf-btn" id="dlp-btn"
+                                title="Encrypt data locally using SHA-256">ENCRYPT</button>
+                        </div>
+                        <div id="crypto-result-display"></div>
+                    </div>
+
+                    <div class="card" id="card-chaos"
+                        title="Chaos Engineering — triggers POST /api/chaos to simulate node failure and CPU spike">
+                        <div class="card-title"
+                            style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                            <span>CHAOS ENGINEERING</span>
+                            <span id="chaos-status"></span>
+                        </div>
+                        <button id="btn-chaos" title="Simulate 8-second node failure with CPU spike to 95-99%">INITIATE
+                            NODE FAILURE</button>
+                    </div>
                 </div>
-                <!-- Canvas moved to hero-container -->
+
+                <!-- RIGHT COLUMN — Threat Intelligence Map -->
+                <div id="threat-map-container"
+                    title="3D holographic globe with live attack arc visualization — canvas 2D, frame-rate independent">
+                    <div class="map-header">
+                        <div class="map-title">Live Threat Intelligence</div>
+                        <div class="map-stats">
+                            <div class="map-stat">
+                                <span class="stat-dot dot-blocked"></span>
+                                <span>Blocked</span>
+                                <span class="stat-value" id="count-blocked">0</span>
+                            </div>
+                            <div class="map-stat">
+                                <span class="stat-dot dot-warnings"></span>
+                                <span>Warnings</span>
+                                <span class="stat-value" id="count-warnings">0</span>
+                            </div>
+                            <div class="map-stat">
+                                <span class="stat-dot dot-banned"></span>
+                                <span>Banned</span>
+                                <span class="stat-value" id="count-banned">0</span>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Canvas moved to hero-container -->
+                </div>
+
+            </div>
+
+            <!-- ═══ EVENT STREAM — full width ═══ -->
+            <div class="event-stream-section">
+                <div class="event-stream-header">
+                    <div class="event-stream-title">Security Event Stream</div>
+                    <div class="event-stream-meta"
+                        title="Real-time auth.log stream — masked IPs and usernames for GDPR compliance">root@bbm-vps:~#
+                        tail -f /var/log/auth.log</div>
+                </div>
+                <div class="terminal-body" id="threat-log"></div>
+                <div class="threat-counter">
+                    <div class="threat-stat blocked">
+                        <span>Blocked:</span>
+                        <span class="count" id="count-blocked-2">0</span>
+                    </div>
+                    <div class="threat-stat monitored">
+                        <span>Warnings:</span>
+                        <span class="count" id="count-warnings-2">0</span>
+                    </div>
+                    <div class="threat-stat banned">
+                        <span>Banned IPs:</span>
+                        <span class="count" id="count-banned-2">0</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ═══ FOOTER ═══ -->
+            <div class="footer-status">
+                <span class="dot"></span>
+                <span>Actualizat la fiecare 3 secunde</span>
+                <span style="margin-left: auto; font-family: var(--font-mono); letter-spacing: 1px;"
+                    id="live-clock"></span>
             </div>
 
         </div>
 
-        <!-- ═══ EVENT STREAM — full width ═══ -->
-        <div class="event-stream-section">
-            <div class="event-stream-header">
-                <div class="event-stream-title">Security Event Stream</div>
-                <div class="event-stream-meta" title="Real-time auth.log stream — masked IPs and usernames for GDPR compliance">root@bbm-vps:~# tail -f /var/log/auth.log</div>
+        <!-- ═══ PACKET SNIFFER (Data Waterfall) ═══ -->
+        <div id="packet-sniffer">
+            <div class="sniffer-title" title="Simulated HTTP traffic stream — /api/traffic endpoint">Network Stream //
+                Port 443</div>
+            <div class="sniffer-stats">
+                <div class="sniffer-stat">
+                    <span class="sniffer-stat-value" id="sniffer-total">0</span>
+                    <span class="sniffer-stat-label">Req/s</span>
+                </div>
+                <div class="sniffer-stat">
+                    <span class="sniffer-stat-value" id="sniffer-ok">0</span>
+                    <span class="sniffer-stat-label">Pass</span>
+                </div>
+                <div class="sniffer-stat">
+                    <span class="sniffer-stat-value stat-err" id="sniffer-err">0</span>
+                    <span class="sniffer-stat-label">Drop</span>
+                </div>
+                <div class="sniffer-stat">
+                    <span class="sniffer-stat-value" id="sniffer-latency">0</span>
+                    <span class="sniffer-stat-label">Avg ms</span>
+                </div>
             </div>
-            <div class="terminal-body" id="threat-log"></div>
-            <div class="threat-counter">
-                <div class="threat-stat blocked">
-                    <span>Blocked:</span>
-                    <span class="count" id="count-blocked-2">0</span>
-                </div>
-                <div class="threat-stat monitored">
-                    <span>Warnings:</span>
-                    <span class="count" id="count-warnings-2">0</span>
-                </div>
-                <div class="threat-stat banned">
-                    <span>Banned IPs:</span>
-                    <span class="count" id="count-banned-2">0</span>
-                </div>
-            </div>
+            <div id="traffic-stream"></div>
         </div>
 
-        <!-- ═══ FOOTER ═══ -->
-        <div class="footer-status">
-            <span class="dot"></span>
-            <span>Actualizat la fiecare 3 secunde</span>
-            <span style="margin-left: auto; font-family: var(--font-mono); letter-spacing: 1px;" id="live-clock"></span>
-        </div>
-
-    </div>
-
-    <!-- ═══ PACKET SNIFFER (Data Waterfall) ═══ -->
-    <div id="packet-sniffer">
-        <div class="sniffer-title" title="Simulated HTTP traffic stream — /api/traffic endpoint">Network Stream // Port 443</div>
-        <div class="sniffer-stats">
-            <div class="sniffer-stat">
-                <span class="sniffer-stat-value" id="sniffer-total">0</span>
-                <span class="sniffer-stat-label">Req/s</span>
-            </div>
-            <div class="sniffer-stat">
-                <span class="sniffer-stat-value" id="sniffer-ok">0</span>
-                <span class="sniffer-stat-label">Pass</span>
-            </div>
-            <div class="sniffer-stat">
-                <span class="sniffer-stat-value stat-err" id="sniffer-err">0</span>
-                <span class="sniffer-stat-label">Drop</span>
-            </div>
-            <div class="sniffer-stat">
-                <span class="sniffer-stat-value" id="sniffer-latency">0</span>
-                <span class="sniffer-stat-label">Avg ms</span>
-            </div>
-        </div>
-        <div id="traffic-stream"></div>
-    </div>
-    
     </div> <!-- /#ui-layer -->
 
     <script>
@@ -1734,7 +1808,7 @@
             document.getElementById('os').textContent = d.os;
         }
 
-        window.startMetrics = function() {
+        window.startMetrics = function () {
             updateMetrics();
             setInterval(updateMetrics, 3000);
         };
@@ -2172,7 +2246,7 @@
                 });
             }
 
-            window.startThreats = function() {
+            window.startThreats = function () {
                 pollThreats();
                 setInterval(pollThreats, 4000);
             };
@@ -2366,7 +2440,7 @@
                 if (elLat) elLat.textContent = avgLat;
             }
 
-            window.startTraffic = function() {
+            window.startTraffic = function () {
                 pollTraffic();
                 setInterval(pollTraffic, 1000);
             };
@@ -2392,7 +2466,7 @@
                 inputGroup.style.display = 'none';
                 result.style.display = 'block';
                 result.textContent = '';
-                
+
                 if (resetTimer) clearTimeout(resetTimer);
                 if (scrambleInterval) clearInterval(scrambleInterval);
 
@@ -2400,7 +2474,7 @@
                 const hexChars = '0123456789ABCDEF';
                 scrambleInterval = setInterval(() => {
                     let scrambleArr = [];
-                    for(let i = 0; i < 64; i++) {
+                    for (let i = 0; i < 64; i++) {
                         scrambleArr.push(hexChars[Math.floor(Math.random() * hexChars.length)]);
                     }
                     result.textContent = scrambleArr.join('');
@@ -2413,7 +2487,7 @@
                     const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
                     const hashArray = Array.from(new Uint8Array(hashBuffer));
                     hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('').toUpperCase();
-                } catch(e) {
+                } catch (e) {
                     hashHex = 'ENCRYPTION_FAILED';
                     console.error('[DLP] Encryption error:', e);
                 }
@@ -2422,7 +2496,7 @@
                 setTimeout(() => {
                     clearInterval(scrambleInterval);
                     result.innerHTML = hashHex + '<br><span class="dlp-tag">[ SECURED: SHA-256 ]</span>';
-                    
+
                     // 5. Reset after 8s
                     resetTimer = setTimeout(() => {
                         result.style.display = 'none';
@@ -2456,7 +2530,7 @@
                 try {
                     // Send POST request
                     await fetch('/api/chaos', { method: 'POST' });
-                } catch(e) {
+                } catch (e) {
                     console.error('[Chaos] Error invoking failure:', e);
                 }
 
@@ -2466,7 +2540,7 @@
                     btn.disabled = false;
                     status.className = 'chaos-ok';
                     status.textContent = '[ OK ] Node replaced. System stable.';
-                    
+
                     // Manually clear alert mode to be instantly responsive
                     const cpuCard = document.getElementById('card-cpu');
                     if (cpuCard) {
@@ -2475,7 +2549,7 @@
 
                     // Clear the OK message after 5 seconds to keep UI clean
                     setTimeout(() => {
-                        if(status.className === 'chaos-ok') {
+                        if (status.className === 'chaos-ok') {
                             status.textContent = '';
                             status.className = '';
                         }
@@ -2517,18 +2591,19 @@
             });
 
             tl.to("#boot-text", { opacity: 0, duration: 0.2 })
-              .to("#hero-container", { scale: 0.6, x: 200, duration: 0.5 }, "<")
-              .to("#ui-layer", { autoAlpha: 1, duration: 0.1 }, "+=0.2")
-              .to([".sidebar .card", "#threat-map-container", ".event-stream-section", "#packet-sniffer"], {
-                  opacity: 1,
-                  z: 0,
-                  scale: 1,
-                  stagger: 0.05,
-                  duration: 0.4,
-                  ease: "back.out(1.2)"
-              }, "<");
+                .to("#hero-container", { scale: 0.6, x: 200, duration: 0.5 }, "<")
+                .to("#ui-layer", { autoAlpha: 1, duration: 0.1 }, "+=0.2")
+                .to([".sidebar .card", "#threat-map-container", ".event-stream-section", "#packet-sniffer"], {
+                    opacity: 1,
+                    z: 0,
+                    scale: 1,
+                    stagger: 0.05,
+                    duration: 0.4,
+                    ease: "back.out(1.2)"
+                }, "<");
 
         })();
     </script>
 </body>
+
 </html>
