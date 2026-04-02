@@ -1547,29 +1547,41 @@
             0% { box-shadow: inset 0 0 50px rgba(255, 51, 102, 0.2); }
             100% { box-shadow: inset 0 0 150px rgba(255, 51, 102, 0.6); }
         }
-        /* 3. Matrix Decryption Entry (Animatie de intrare pentru log-uri noi) */
-        /* 1. ANULAM STERGEREA RANDURILOR IN STREAM (Reparam dreapta) */
-        #traffic-stream span {
-            display: inline-block !important; /* Aduce cuvintele inapoi pe acelasi rand */
-            width: auto !important;
-            animation: none !important;
-            border: none !important;
-            padding: 0 !important;
-            margin: 0 !important;
+        /* 1. RESTABILIREA STICLEI SI A PADDING-ULUI (Reparația critică) */
+        .card, .waf-container, #packet-sniffer {
+            overflow: hidden !important; /* CRITIC: Tine lichidul neon inapoi in interiorul cardului */
+            padding: 1.5rem !important; /* Readuce spatiul de respiratie dintre text si margini */
+            display: flex !important;
+            flex-direction: column !important;
         }
 
-        /* 2. APLICAM EFECTUL DOAR PE RANDUL INTREG */
-        /* Presupunem ca fiecare linie de log este un <div> sau <p> in interiorul stream-ului */
-        #traffic-stream > div, #traffic-stream > p, .network-log-row {
+        /* 2. REPARAREA ALERTELOR (Fara sa spargem cardul parinte) */
+        #threat-log-container {
+            max-height: 140px !important; /* Forteaza scroll INTERN, nu lasa sa iasa din card */
+            overflow-y: auto !important;
             display: block !important;
+            margin-top: 10px !important;
+            padding-right: 5px;
+        }
+
+        /* 3. REPARAREA STREAM-ULUI DE RETEA (Spatiere corecta intre cuvinte) */
+        #traffic-stream > div, #traffic-stream > p, .network-log-row {
+            display: flex !important;
+            gap: 12px !important; /* Spatiu curat intre elementele log-ului */
+            align-items: center !important;
             width: 100% !important;
-            white-space: nowrap !important;
+            font-family: 'JetBrains Mono', monospace !important;
+            /* Pastram efectul de aparitie laterala Matrix */
             overflow: hidden !important;
-            text-overflow: ellipsis !important;
             animation: cyber-log-entry 0.35s cubic-bezier(0.1, 0.8, 0.2, 1) forwards;
             border-left: 2px solid transparent;
             padding-left: 8px;
             margin-bottom: 4px;
+        }
+
+        #traffic-stream span {
+            display: inline-block !important;
+            white-space: nowrap !important;
         }
 
         @keyframes cyber-log-entry {
@@ -1594,22 +1606,6 @@
             10% { opacity: 0.6; }
             90% { opacity: 0.6; }
             100% { top: 95%; opacity: 0; }
-        }
-
-        /* 3. DEBLOCAM ALERTELE DIN STANGA */
-        #threat-log-container {
-            display: block !important;
-            min-height: 80px !important; /* Ne asiguram ca nu colapseaza la zero */
-            max-height: 200px !important;
-            overflow-y: auto !important;
-            opacity: 1 !important;
-            visibility: visible !important;
-            margin-top: 15px !important;
-        }
-
-        /* Asiguram ca containerul parinte lasa alertele sa fie vizibile */
-        .card, .waf-container {
-            overflow: visible !important; /* CRITIC: scoatem hidden-ul care taia log-urile de Threat */
         }
     </style>
 </head>
