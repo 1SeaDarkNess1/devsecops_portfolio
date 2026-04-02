@@ -129,7 +129,7 @@
         }
 
         .left-column, .right-column { pointer-events: auto; }
-        .left-column { width: 380px; display: flex; flex-direction: column; justify-content: flex-start !important; align-items: stretch; gap: 1.5rem; height: 100%; overflow-y: auto; padding-right: 15px; padding-bottom: 100px !important; mask-image: linear-gradient(to bottom, black 90%, transparent); -webkit-mask-image: linear-gradient(to bottom, black 90%, transparent); }
+        .left-column { width: 380px; display: flex !important; flex-direction: column !important; justify-content: flex-start !important; align-items: stretch; gap: 2rem !important; height: 100% !important; overflow-y: auto; padding-right: 15px; padding-bottom: 100px !important; mask-image: linear-gradient(to bottom, black 90%, transparent); -webkit-mask-image: linear-gradient(to bottom, black 90%, transparent); }
         .left-column::-webkit-scrollbar { display: none; }
         .right-column { width: 380px; }
 
@@ -327,16 +327,37 @@
                 0 40px 80px -20px rgba(0, 0, 0, 0.95) !important;
                 
             overflow: hidden !important;
-            flex: 0 0 auto !important; height: max-content !important; padding: 1.5rem !important;
-            display: flex;
-            flex-direction: column;
+            flex: 0 0 auto !important; height: auto !important; min-height: min-content !important; padding: 1.5rem !important; margin: 0 !important;
+            display: flex !important;
+            flex-direction: column !important;
             z-index: 1;
         }
 
-        #threat-log-container {
-            max-height: 250px;
-            overflow-y: auto;
-            margin-top: 10px;
+        /* 3. TINEM LOG-URILE IN FRAU (Ca sa nu mai sparga cardul) */
+        .card pre, 
+        .log-container, 
+        #threat-log-container,
+        .terminal-output {
+            max-height: 180px !important; /* Daca sunt prea multe log-uri, face scroll INTERN */
+            overflow-y: auto !important;
+            height: auto !important;
+            margin-top: 10px !important;
+            display: block !important;
+        }
+        
+        /* Scrollbar invizibil elegant pentru interioare */
+        .card pre::-webkit-scrollbar,
+        .log-container::-webkit-scrollbar,
+        #threat-log-container::-webkit-scrollbar,
+        .terminal-output::-webkit-scrollbar {
+            width: 4px;
+        }
+        .card pre::-webkit-scrollbar-thumb,
+        .log-container::-webkit-scrollbar-thumb,
+        #threat-log-container::-webkit-scrollbar-thumb,
+        .terminal-output::-webkit-scrollbar-thumb {
+            background: rgba(0, 180, 216, 0.3);
+            border-radius: 4px;
         }
 
         /* 2. THE FROSTED GLASS TEXTURE (Micro-noise generat dinamic prin SVG) */
