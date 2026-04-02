@@ -304,25 +304,24 @@
             gap: 16px;
         }
 
-        /* 2. THE TRUE LIQUID GLASS ENGINE */
+        /* 1. THE APPLE-GRADE LIQUID GLASS (Volum, Reflexie, Adancime) */
         .card, .waf-container, #packet-sniffer, #threat-map-container, .event-stream-section {
             position: relative;
-            background: rgba(10, 15, 30, 0.4) !important; /* Baza translucida */
-            backdrop-filter: blur(40px) saturate(200%) !important;
-            -webkit-backdrop-filter: blur(40px) saturate(200%) !important;
-            border-radius: 16px !important; /* Curbura eleganta, nu pastila */
-            border: 1px solid rgba(255, 255, 255, 0.1) !important;
-            border-top: 1px solid rgba(255, 255, 255, 0.2) !important; /* Edge highlight */
+            background: rgba(15, 20, 35, 0.15) !important; /* Fundal super clar */
+            backdrop-filter: blur(48px) saturate(250%) !important;
+            -webkit-backdrop-filter: blur(48px) saturate(250%) !important;
+            border-radius: 20px !important;
+            border: 1px solid rgba(255, 255, 255, 0.05) !important;
+            
+            /* Secretul volumului 3D: Reflexii si umbre interne */
             box-shadow: 
-                0 30px 60px rgba(0, 0, 0, 0.6), /* Umbra de adancime */
-                inset 0 0 0 1px rgba(255, 255, 255, 0.05) !important; /* Tensiunea apei */
-            padding: 1.5rem !important;
-            overflow: hidden !important; /* Tine reflexiile inauntru */
-            color: #e2e8f0;
-            animation: none !important; /* Dezactivăm animațiile vechi care pot intra în conflict */
-            flex: 0 0 auto !important; /* flex-grow: 0, flex-shrink: 0 */
-            height: max-content !important; /* Ia inaltimea strict a textului din interior */
-            min-height: auto !important;
+                inset 0 1.5px 2px rgba(255, 255, 255, 0.25), /* Lumina pe muchia de sus */
+                inset 0 -1.5px 2px rgba(0, 0, 0, 0.5), /* Umbra interna jos */
+                inset 1px 0 2px rgba(255, 255, 255, 0.05), /* Reflexie stanga */
+                0 30px 60px -15px rgba(0, 0, 0, 0.9) !important; /* Drop shadow adanc */
+                
+            overflow: hidden !important;
+            flex: 0 0 auto !important; height: max-content !important; padding: 1.5rem !important;
             display: flex;
             flex-direction: column;
             z-index: 1;
@@ -334,26 +333,36 @@
             margin-top: 10px;
         }
 
-        .card > *, .waf-container > *, #packet-sniffer > *, #threat-map-container > *, .event-stream-section > * {
-            position: relative;
-            z-index: 2; /* Tine textul si butoanele deasupra lichidului */
+        /* 2. THE SURFACE GLARE (Reflexia oblica pe geam) */
+        .card::after, .waf-container::after, #packet-sniffer::after, #threat-map-container::after, .event-stream-section::after {
+            content: ''; position: absolute; inset: 0;
+            background: linear-gradient(115deg, rgba(255,255,255,0.12) 0%, transparent 35%, transparent 100%);
+            z-index: 1; pointer-events: none; border-radius: inherit;
         }
 
-        /* 3. ANIMATED REFRACTION (Lumina lichida care se misca in interior) */
+        /* 3. TRUE LIQUID MESH (Trei surse de lumina care se misca organic) */
         .card::before, .waf-container::before, #packet-sniffer::before, #threat-map-container::before, .event-stream-section::before {
-            content: '';
-            position: absolute; top: -50%; left: -50%; width: 200%; height: 200%;
+            content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%;
             background: 
-                radial-gradient(circle at 30% 70%, rgba(0, 180, 216, 0.15) 0%, transparent 50%),
-                radial-gradient(circle at 70% 30%, rgba(230, 57, 70, 0.05) 0%, transparent 50%);
-            animation: liquid-flow 12s infinite linear;
-            z-index: -1; pointer-events: none;
+                radial-gradient(circle at 50% 50%, rgba(0, 180, 216, 0.25) 0%, transparent 60%),
+                radial-gradient(circle at 80% 20%, rgba(138, 43, 226, 0.15) 0%, transparent 50%),
+                radial-gradient(circle at 20% 80%, rgba(230, 57, 70, 0.15) 0%, transparent 50%);
+            filter: blur(24px); /* Topeste gradientul pentru a parea lichid gros */
+            animation: liquid-depth 18s infinite ease-in-out alternate;
+            mix-blend-mode: screen; /* Ilumineaza culorile intunecate */
+            z-index: 0; pointer-events: none;
         }
 
-        @keyframes liquid-flow {
-            0% { transform: rotate(0deg) scale(1); }
-            50% { transform: rotate(180deg) scale(1.1); }
-            100% { transform: rotate(360deg) scale(1); }
+        @keyframes liquid-depth {
+            0% { transform: rotate(0deg) scale(0.8) translate(0, 0); }
+            33% { transform: rotate(120deg) scale(1.1) translate(8%, -8%); }
+            66% { transform: rotate(240deg) scale(0.9) translate(-8%, 8%); }
+            100% { transform: rotate(360deg) scale(1.2) translate(0, 0); }
+        }
+
+        /* 4. TINE TEXTUL DEASUPRA LICHIDULUI */
+        .card > *, .waf-container > *, #packet-sniffer > *, #threat-map-container > *, .event-stream-section > * {
+            position: relative; z-index: 2;
         }
 
         /* 4. REPARARE ELEMENTE INTERNE (Aliniament perfect) */
@@ -488,40 +497,10 @@
             animation: light-shift 10s ease-in-out infinite, liquid-morph 9s ease-in-out infinite 0.2s;
         }
 
-            /* Animated accent border glow */
-            #threat-map-container::before {
-                content: '';
-                position: absolute;
-                inset: -1px;
-                border-radius: var(--radius);
-                padding: 1px;
-                background: linear-gradient(135deg, rgba(0, 180, 216, 0.3), transparent 40%, transparent 60%, rgba(230, 57, 70, 0.2));
-                -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-                -webkit-mask-composite: xor;
-                mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-                mask-composite: exclude;
-                pointer-events: none;
-                opacity: 0.6;
-                animation: borderShimmer 8s ease-in-out infinite alternate;
-            }
-
-        @keyframes borderShimmer {
-            0% {
-                opacity: 0.4;
-                filter: hue-rotate(0deg);
-            }
-
-            100% {
-                opacity: 0.8;
-                filter: hue-rotate(15deg);
-            }
-        }
-
-        .map-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-bottom: 20px;
+        /* 5. REPARA TEXTUL INCALECAT LA LIVE THREAT INTELLIGENCE */
+        .threat-header, .map-header, .card h3 { 
+            display: flex; flex-wrap: wrap; gap: 10px; align-items: center; 
+            margin-bottom: 15px; line-height: 1.4;
         }
 
         .map-title {
