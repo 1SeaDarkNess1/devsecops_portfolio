@@ -124,7 +124,7 @@
 
         #main-dashboard {
             position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
-            box-sizing: border-box; padding: 2rem 3rem;
+            box-sizing: border-box; padding: 2rem 2rem !important; /* Reducem padding-ul lateral excesiv */
             z-index: 10; display: flex; justify-content: space-between;
             pointer-events: none; /* Scroll-ul principal trece prin el */
         }
@@ -132,7 +132,7 @@
         .left-column, .right-column { pointer-events: auto; }
         .left-column { width: 380px; display: flex !important; flex-direction: column !important; justify-content: flex-start !important; align-items: stretch; gap: 2rem !important; height: 100% !important; overflow-y: auto; padding-right: 15px; padding-bottom: 100px !important; mask-image: linear-gradient(to bottom, black 90%, transparent); -webkit-mask-image: linear-gradient(to bottom, black 90%, transparent); }
         .left-column::-webkit-scrollbar { display: none; }
-        .right-column { width: 380px; }
+        .right-column { width: 500px !important; max-width: 35vw; }
 
         /* Volumetric ambient lights */
         body::before {
@@ -937,7 +937,8 @@
         ═══════════════════════════════════════════════ */
         #packet-sniffer {
             position: relative;
-            width: 280px;
+            width: 100% !important;
+            box-sizing: border-box !important;
             height: calc(100vh - 4rem) !important; /* Il blocheaza de sus pana jos */
             display: flex !important;
             flex-direction: column !important;
@@ -1000,6 +1001,16 @@
             justify-content: flex-start;
             mask-image: linear-gradient(to bottom, black 85%, transparent 100%);
             -webkit-mask-image: linear-gradient(to bottom, black 85%, transparent 100%);
+        }
+
+        /* 4. Optimizam textul din log-uri sa foloseasca noul spatiu */
+        #traffic-stream span {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis; /* Daca un log e absurd de lung, pune puncte-puncte in loc sa sparga designul */
+            display: inline-block;
+            max-width: 100%;
+            vertical-align: middle;
         }
 
         .pkt-line {
