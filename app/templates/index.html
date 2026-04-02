@@ -89,9 +89,10 @@
            BASE
         ═══════════════════════════════════════════════ */
         html, body {
+            min-height: 400vh;
             overflow-x: hidden;
-            overflow-y: scroll !important;
-            min-height: 400vh !important;
+            overflow-y: auto;
+            background: #050507;
         }
 
         body {
@@ -138,8 +139,6 @@
         }
 
         #ui-layer {
-            opacity: 0;
-            visibility: hidden;
             position: relative;
             z-index: 20;
             width: 100%;
@@ -893,13 +892,8 @@
            PACKET SNIFFER (Data Waterfall)
         ═══════════════════════════════════════════════ */
         #packet-sniffer {
-            position: fixed;
-            right: 12px;
-            top: 40px;
-            bottom: 40px;
+            position: relative;
             width: 280px;
-            z-index: 10;
-            pointer-events: none;
             display: flex;
             flex-direction: column;
             background: linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.01) 100%), radial-gradient(ellipse at 50% 50%, rgba(255, 255, 255, 0.04) 0%, transparent 60%);
@@ -1372,16 +1366,18 @@
 
 <body>
 
-    <h1 id="boot-text">BBM LAB // SYSTEM OFFLINE. Scroll to initiate uplink.</h1>
+    <div style="z-index: 2; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);">
+        <h1 id="boot-text">BBM LAB // SYSTEM OFFLINE. Scroll to initiate uplink.</h1>
+    </div>
 
-    <div id="hero-container">
+    <div id="canvas-container" style="position: fixed; top: 0; left: 0; width: 100%; height: 100vh; z-index: 1; pointer-events: none;">
         <canvas id="earth-canvas" title="Canvas WebGL globe — 420 golden-spiral points"></canvas>
     </div>
 
-    <div id="ui-layer">
-        <div class="dashboard">
-
-            <!-- ═══ HEADER ═══ -->
+    <div id="main-dashboard" style="z-index: 10; position: fixed; top: 0; left: 0; width: 100%; height: 100vh; pointer-events: none; padding: 2rem; display: flex; justify-content: space-between;">
+        
+        <div class="left-column" style="display: flex; flex-direction: column; gap: 16px; width: 380px; overflow-y: auto; overflow-x: hidden; pointer-events: auto; padding-right: 10px;">
+            
             <div class="header-group">
                 <div class="header-left">
                     <h1 id="main-title"><span class="typewriter-cursor"></span></h1>
@@ -1397,129 +1393,106 @@
                 </div>
             </div>
 
-            <!-- ═══ MAIN GRID: 30/70 ═══ -->
-            <div class="main-grid">
-
-                <!-- LEFT COLUMN — System Metrics -->
-                <div class="sidebar">
-                    <div class="card" id="card-cpu" title="Live CPU utilization fetched via psutil — updates every 3s">
-                        <div class="card-title">CPU Usage</div>
-                        <div class="metric-value" id="cpu-percent">--%</div>
-                        <div class="metric-sub" id="cpu-cores">-- cores</div>
-                        <div class="progress-bar">
-                            <div class="progress-fill ok" id="cpu-bar" style="width:0%"></div>
-                        </div>
-                    </div>
-
-                    <div class="card" id="card-ram" title="Virtual memory usage via psutil — real-time">
-                        <div class="card-title">Memory</div>
-                        <div class="metric-value" id="ram-percent">--%</div>
-                        <div class="metric-sub" id="ram-detail">-- / -- GB</div>
-                        <div class="progress-bar">
-                            <div class="progress-fill ok" id="ram-bar" style="width:0%"></div>
-                        </div>
-                    </div>
-
-                    <div class="card" id="card-disk" title="Root filesystem disk usage — psutil.disk_usage('/')">
-                        <div class="card-title">Disk</div>
-                        <div class="metric-value" id="disk-percent">--%</div>
-                        <div class="metric-sub" id="disk-detail">-- / -- GB</div>
-                        <div class="progress-bar">
-                            <div class="progress-fill ok" id="disk-bar" style="width:0%"></div>
-                        </div>
-                    </div>
-
-                    <div class="card" id="card-net" title="Cumulative network I/O counters, uptime, and OS info">
-                        <div class="card-title">Network I/O</div>
-                        <div class="info-row">
-                            <span>Sent</span>
-                            <span id="net-sent">-- MB</span>
-                        </div>
-                        <div class="info-row">
-                            <span>Received</span>
-                            <span id="net-recv">-- MB</span>
-                        </div>
-                        <div class="info-row">
-                            <span>Uptime</span>
-                            <span id="uptime">--</span>
-                        </div>
-                        <div class="info-row">
-                            <span>OS</span>
-                            <span id="os">--</span>
-                        </div>
-                    </div>
-
-                    <div class="card" id="card-waf"
-                        title="Tests payloads against OWASP Top 10 RegEx signatures (SQLi, XSS, Path Traversal)">
-                        <div class="card-title">WAF Payload Analyzer</div>
-                        <div class="waf-input-group">
-                            <input type="text" class="waf-input" id="waf-input" placeholder="> Inject payload here..."
-                                autocomplete="off" spellcheck="false">
-                            <button class="waf-btn" id="waf-btn"
-                                title="Submit payload for OWASP signature analysis">Execute</button>
-                        </div>
-                        <div id="waf-result-display"></div>
-                    </div>
-
-                    <div class="card" id="card-dlp"
-                        title="Browser-based SHA-256 encryption using Web Crypto API — zero server exposure">
-                        <div class="card-title">ZERO-TRUST DLP VAULT</div>
-                        <div class="waf-input-group" id="dlp-input-group">
-                            <input type="password" class="waf-input" id="dlp-input"
-                                placeholder="> Enter sensitive data..." autocomplete="off" spellcheck="false">
-                            <button class="waf-btn" id="dlp-btn"
-                                title="Encrypt data locally using SHA-256">ENCRYPT</button>
-                        </div>
-                        <div id="crypto-result-display"></div>
-                    </div>
-
-                    <div class="card" id="card-chaos"
-                        title="Chaos Engineering — triggers POST /api/chaos to simulate node failure and CPU spike">
-                        <div class="card-title"
-                            style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-                            <span>CHAOS ENGINEERING</span>
-                            <span id="chaos-status"></span>
-                        </div>
-                        <button id="btn-chaos" title="Simulate 8-second node failure with CPU spike to 95-99%">INITIATE
-                            NODE FAILURE</button>
-                    </div>
+            <div class="card" id="card-cpu" title="Live CPU utilization fetched via psutil — updates every 3s">
+                <div class="card-title">CPU Usage</div>
+                <div class="metric-value" id="cpu-percent">--%</div>
+                <div class="metric-sub" id="cpu-cores">-- cores</div>
+                <div class="progress-bar">
+                    <div class="progress-fill ok" id="cpu-bar" style="width:0%"></div>
                 </div>
-
-                <!-- RIGHT COLUMN — Threat Intelligence Map -->
-                <div id="threat-map-container"
-                    title="3D holographic globe with live attack arc visualization — canvas 2D, frame-rate independent">
-                    <div class="map-header">
-                        <div class="map-title">Live Threat Intelligence</div>
-                        <div class="map-stats">
-                            <div class="map-stat">
-                                <span class="stat-dot dot-blocked"></span>
-                                <span>Blocked</span>
-                                <span class="stat-value" id="count-blocked">0</span>
-                            </div>
-                            <div class="map-stat">
-                                <span class="stat-dot dot-warnings"></span>
-                                <span>Warnings</span>
-                                <span class="stat-value" id="count-warnings">0</span>
-                            </div>
-                            <div class="map-stat">
-                                <span class="stat-dot dot-banned"></span>
-                                <span>Banned</span>
-                                <span class="stat-value" id="count-banned">0</span>
-                            </div>
-                        </div>
-                    </div>
-                    <!-- Canvas moved to hero-container -->
-                </div>
-
             </div>
 
-            <!-- ═══ EVENT STREAM — full width ═══ -->
+            <div class="card" id="card-ram" title="Virtual memory usage via psutil — real-time">
+                <div class="card-title">Memory</div>
+                <div class="metric-value" id="ram-percent">--%</div>
+                <div class="metric-sub" id="ram-detail">-- / -- GB</div>
+                <div class="progress-bar">
+                    <div class="progress-fill ok" id="ram-bar" style="width:0%"></div>
+                </div>
+            </div>
+
+            <div class="card" id="card-disk" title="Root filesystem disk usage — psutil.disk_usage('/')">
+                <div class="card-title">Disk</div>
+                <div class="metric-value" id="disk-percent">--%</div>
+                <div class="metric-sub" id="disk-detail">-- / -- GB</div>
+                <div class="progress-bar">
+                    <div class="progress-fill ok" id="disk-bar" style="width:0%"></div>
+                </div>
+            </div>
+
+            <div class="card" id="card-net" title="Cumulative network I/O counters, uptime, and OS info">
+                <div class="card-title">Network I/O</div>
+                <div class="info-row">
+                    <span>Sent</span>
+                    <span id="net-sent">-- MB</span>
+                </div>
+                <div class="info-row">
+                    <span>Received</span>
+                    <span id="net-recv">-- MB</span>
+                </div>
+                <div class="info-row">
+                    <span>Uptime</span>
+                    <span id="uptime">--</span>
+                </div>
+                <div class="info-row">
+                    <span>OS</span>
+                    <span id="os">--</span>
+                </div>
+            </div>
+
+            <div class="card" id="card-waf" title="Tests payloads against OWASP Top 10 RegEx signatures (SQLi, XSS, Path Traversal)">
+                <div class="card-title">WAF Payload Analyzer</div>
+                <div class="waf-input-group">
+                    <input type="text" class="waf-input" id="waf-input" placeholder="> Inject payload here..." autocomplete="off" spellcheck="false">
+                    <button class="waf-btn" id="waf-btn" title="Submit payload for OWASP signature analysis">Execute</button>
+                </div>
+                <div id="waf-result-display"></div>
+            </div>
+
+            <div class="card" id="card-dlp" title="Browser-based SHA-256 encryption using Web Crypto API — zero server exposure">
+                <div class="card-title">ZERO-TRUST DLP VAULT</div>
+                <div class="waf-input-group" id="dlp-input-group">
+                    <input type="password" class="waf-input" id="dlp-input" placeholder="> Enter sensitive data..." autocomplete="off" spellcheck="false">
+                    <button class="waf-btn" id="dlp-btn" title="Encrypt data locally using SHA-256">ENCRYPT</button>
+                </div>
+                <div id="crypto-result-display"></div>
+            </div>
+
+            <div class="card" id="card-chaos" title="Chaos Engineering — triggers POST /api/chaos to simulate node failure and CPU spike">
+                <div class="card-title" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                    <span>CHAOS ENGINEERING</span>
+                    <span id="chaos-status"></span>
+                </div>
+                <button id="btn-chaos" title="Simulate 8-second node failure with CPU spike to 95-99%">INITIATE NODE FAILURE</button>
+            </div>
+
+            <div id="threat-map-container" title="Live threat intelligence stats">
+                <div class="map-header">
+                    <div class="map-title">Live Threat Intelligence</div>
+                    <div class="map-stats">
+                        <div class="map-stat">
+                            <span class="stat-dot dot-blocked"></span>
+                            <span>Blocked</span>
+                            <span class="stat-value" id="count-blocked">0</span>
+                        </div>
+                        <div class="map-stat">
+                            <span class="stat-dot dot-warnings"></span>
+                            <span>Warnings</span>
+                            <span class="stat-value" id="count-warnings">0</span>
+                        </div>
+                        <div class="map-stat">
+                            <span class="stat-dot dot-banned"></span>
+                            <span>Banned</span>
+                            <span class="stat-value" id="count-banned">0</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <div class="event-stream-section">
                 <div class="event-stream-header">
                     <div class="event-stream-title">Security Event Stream</div>
-                    <div class="event-stream-meta"
-                        title="Real-time auth.log stream — masked IPs and usernames for GDPR compliance">root@bbm-vps:~#
-                        tail -f /var/log/auth.log</div>
+                    <div class="event-stream-meta" title="Log stream">root@bbm-vps:~# tail -f /var/log/auth.log</div>
                 </div>
                 <div class="terminal-body" id="threat-log"></div>
                 <div class="threat-counter">
@@ -1538,42 +1511,40 @@
                 </div>
             </div>
 
-            <!-- ═══ FOOTER ═══ -->
             <div class="footer-status">
                 <span class="dot"></span>
                 <span>Actualizat la fiecare 3 secunde</span>
-                <span style="margin-left: auto; font-family: var(--font-mono); letter-spacing: 1px;"
-                    id="live-clock"></span>
+                <span style="margin-left: auto; font-family: var(--font-mono); letter-spacing: 1px;" id="live-clock"></span>
             </div>
 
         </div>
 
-        <!-- ═══ PACKET SNIFFER (Data Waterfall) ═══ -->
-        <div id="packet-sniffer">
-            <div class="sniffer-title" title="Simulated HTTP traffic stream — /api/traffic endpoint">Network Stream //
-                Port 443</div>
-            <div class="sniffer-stats">
-                <div class="sniffer-stat">
-                    <span class="sniffer-stat-value" id="sniffer-total">0</span>
-                    <span class="sniffer-stat-label">Req/s</span>
+        <div class="right-column" style="pointer-events: auto;">
+            <div id="packet-sniffer">
+                <div class="sniffer-title" title="Simulated HTTP traffic stream — /api/traffic endpoint">Network Stream // Port 443</div>
+                <div class="sniffer-stats">
+                    <div class="sniffer-stat">
+                        <span class="sniffer-stat-value" id="sniffer-total">0</span>
+                        <span class="sniffer-stat-label">Req/s</span>
+                    </div>
+                    <div class="sniffer-stat">
+                        <span class="sniffer-stat-value" id="sniffer-ok">0</span>
+                        <span class="sniffer-stat-label">Pass</span>
+                    </div>
+                    <div class="sniffer-stat">
+                        <span class="sniffer-stat-value stat-err" id="sniffer-err">0</span>
+                        <span class="sniffer-stat-label">Drop</span>
+                    </div>
+                    <div class="sniffer-stat">
+                        <span class="sniffer-stat-value" id="sniffer-latency">0</span>
+                        <span class="sniffer-stat-label">Avg ms</span>
+                    </div>
                 </div>
-                <div class="sniffer-stat">
-                    <span class="sniffer-stat-value" id="sniffer-ok">0</span>
-                    <span class="sniffer-stat-label">Pass</span>
-                </div>
-                <div class="sniffer-stat">
-                    <span class="sniffer-stat-value stat-err" id="sniffer-err">0</span>
-                    <span class="sniffer-stat-label">Drop</span>
-                </div>
-                <div class="sniffer-stat">
-                    <span class="sniffer-stat-value" id="sniffer-latency">0</span>
-                    <span class="sniffer-stat-label">Avg ms</span>
-                </div>
+                <div id="traffic-stream"></div>
             </div>
-            <div id="traffic-stream"></div>
         </div>
 
-    </div> <!-- /#ui-layer -->
+    </div>
 
     <script>
         // ═══════════════════════════════════════════════
@@ -2550,12 +2521,11 @@
         // ═══════════════════════════════════════════════
         document.addEventListener("DOMContentLoaded", () => {
             gsap.registerPlugin(ScrollTrigger);
-
-            gsap.set("#ui-layer", { autoAlpha: 0 });
-            gsap.set(".sidebar .card", { z: -500, opacity: 0, scale: 0.8 });
-            gsap.set("#threat-map-container", { z: -500, opacity: 0, scale: 0.8 });
-            gsap.set(".event-stream-section", { z: -500, opacity: 0, scale: 0.8 });
-            gsap.set("#packet-sniffer", { z: -500, opacity: 0, scale: 0.8 });
+            
+            // Setam starea initiala invizibila a dashboard-ului
+            gsap.set("#main-dashboard", { autoAlpha: 0 });
+            gsap.set(".left-column .card", { x: -50 });
+            gsap.set(".right-column", { x: 50 });
 
             const tl = gsap.timeline({
                 scrollTrigger: {
@@ -2563,10 +2533,8 @@
                     start: "top top",
                     end: "bottom bottom",
                     scrub: 1,
-                    markers: true, // CRITIC PENTRU DEBUGGING
+                    markers: false, // Oprim markerele ca sa fie curat
                     onUpdate: (self) => {
-                        // At the very end of scroll, ensure fetching is active.
-                        // We also use a flag to only trigger once.
                         if (self.progress > 0.95 && !window._uplinkActive) {
                             window._uplinkActive = true;
                             if (window.startMetrics) window.startMetrics();
@@ -2577,18 +2545,11 @@
                 }
             });
 
-            tl.to("#boot-text", { opacity: 0, duration: 0.2 })
-                .to("#hero-container", { scale: 0.6, x: 200, duration: 0.5 }, "<")
-                .to("#ui-layer", { autoAlpha: 1, duration: 0.1 }, "+=0.2")
-                .to([".sidebar .card", "#threat-map-container", ".event-stream-section", "#packet-sniffer"], {
-                    opacity: 1,
-                    z: 0,
-                    scale: 1,
-                    stagger: 0.05,
-                    duration: 0.4,
-                    ease: "back.out(1.2)"
-                }, "<");
-
+            tl.to("#boot-text", { autoAlpha: 0, duration: 1 }) // Pas 1: Dispare textul
+              .to("#canvas-container", { scale: 0.8, x: "15%", duration: 2 }, "<") // Pas 2: Globul se muta
+              .to("#main-dashboard", { autoAlpha: 1, pointerEvents: "all", duration: 0.5 }) // Pas 3: Apare containerul mare
+              .to(".left-column .card", { x: 0, autoAlpha: 1, stagger: 0.15, duration: 1 }, "<") // Pas 4: Cardurile vin din stanga
+              .to(".right-column", { x: 0, autoAlpha: 1, duration: 1 }, "<"); // Pas 5: Sniffer-ul vine din dreapta
         });
     </script>
 </body>
