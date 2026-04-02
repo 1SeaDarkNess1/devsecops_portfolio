@@ -115,11 +115,28 @@
         #boot-text {
             position: fixed; top: 50%; left: 50%;
             transform: translate(-50%, -50%); /* Centrare matematica absoluta */
-            z-index: 5; white-space: nowrap;
+            z-index: 5;
             font-size: clamp(1rem, 2vw, 1.5rem);
             color: rgba(255, 255, 255, 0.9);
             letter-spacing: 4px; text-transform: uppercase;
             text-shadow: 0 0 20px rgba(0, 180, 216, 0.4);
+            /* Injectate de Architect */
+            display: inline-block;
+            overflow: hidden; /* Ascunde textul care inca n-a aparut */
+            border-right: 4px solid #00e5ff; /* Cursorul care clipeste */
+            white-space: nowrap;
+            animation: 
+                reveal-text 2.5s cubic-bezier(0.1, 0.8, 0.2, 1) forwards,
+                blink-cursor 0.8s step-end infinite;
+        }
+
+        @keyframes reveal-text {
+            0% { clip-path: inset(0 100% 0 0); }
+            100% { clip-path: inset(0 0 0 0); }
+        }
+        @keyframes blink-cursor {
+            0%, 100% { border-color: transparent; }
+            50% { border-color: #00e5ff; }
         }
 
         #main-dashboard {
@@ -1488,6 +1505,52 @@
             80% { transform: skew(5deg); text-shadow: 2px 0px rgba(0,229,255,0.8), -2px 0px rgba(255,51,102,0.8); }
             100% { transform: skew(0deg); text-shadow: none; }
         }
+        :root {
+            --mouse-x: 50%;
+            --mouse-y: 50%;
+        }
+
+        /* Efectul de lanterna peste sticla: o lumina alba extrem de subtila care urmareste mouse-ul */
+        body::before {
+            content: ''; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            background: radial-gradient(circle at var(--mouse-x) var(--mouse-y), rgba(255, 255, 255, 0.03) 0%, transparent 15%);
+            pointer-events: none; z-index: 9998;
+            mix-blend-mode: screen;
+        }
+
+        /* Sistemul de targetare (Cyber Brackets) pe panouri la hover */
+        .target-brackets {
+            content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: 
+                linear-gradient(to right, #00e5ff 2px, transparent 2px) 0 0,
+                linear-gradient(to bottom, #00e5ff 2px, transparent 2px) 0 0,
+                linear-gradient(to left, #00e5ff 2px, transparent 2px) 100% 0,
+                linear-gradient(to bottom, #00e5ff 2px, transparent 2px) 100% 0,
+                linear-gradient(to right, #00e5ff 2px, transparent 2px) 0 100%,
+                linear-gradient(to top, #00e5ff 2px, transparent 2px) 0 100%,
+                linear-gradient(to left, #00e5ff 2px, transparent 2px) 100% 100%,
+                linear-gradient(to top, #00e5ff 2px, transparent 2px) 100% 100%;
+            background-repeat: no-repeat;
+            background-size: 15px 15px; /* Dimensiunea coltarului */
+            opacity: 0; transition: opacity 0.4s ease, transform 0.4s ease;
+            transform: scale(0.95); /* Pornesc din interior */
+            pointer-events: none; z-index: 10; border-radius: 20px;
+        }
+
+        .card:hover .target-brackets, .waf-container:hover .target-brackets, #packet-sniffer:hover .target-brackets {
+            opacity: 0.8;
+            transform: scale(1); /* Expandare magnetica la hover */
+        }
+
+        /* Puls rosu in caz de alerta critica pe ecran */
+        body.threat-active {
+            box-shadow: inset 0 0 150px rgba(255, 51, 102, 0.4);
+            animation: threat-pulse 2s infinite alternate;
+        }
+        @keyframes threat-pulse {
+            0% { box-shadow: inset 0 0 50px rgba(255, 51, 102, 0.2); }
+            100% { box-shadow: inset 0 0 150px rgba(255, 51, 102, 0.6); }
+        }
     </style>
 </head>
 
@@ -2606,6 +2669,7 @@
 
             async function initiateFailure() {
                 // UI state change
+                document.body.classList.add('threat-active');
                 btn.textContent = '[ SYSTEM OVERLOAD ]';
                 btn.disabled = true;
                 status.className = 'chaos-alert';
@@ -2620,6 +2684,7 @@
 
                 // Simulate recovery after 8 seconds
                 setTimeout(() => {
+                    document.body.classList.remove('threat-active');
                     btn.textContent = 'INITIATE NODE FAILURE';
                     btn.disabled = false;
                     status.className = 'chaos-ok';
@@ -2677,6 +2742,22 @@
               .to("#main-dashboard", { autoAlpha: 1, pointerEvents: "all", duration: 0.5 }) // Pas 3: Apare containerul mare
               .to(".left-column .card", { x: 0, autoAlpha: 1, stagger: 0.15, duration: 1 }, "<") // Pas 4: Cardurile vin din stanga
               .to(".right-column", { x: 0, autoAlpha: 1, duration: 1 }, "<"); // Pas 5: Sniffer-ul vine din dreapta
+        });
+
+        // =========================================
+        //  11. UI MAGNETIC FLASHLIGHT + BRACKETS INJECTION
+        // =========================================
+        document.addEventListener("mousemove", (e) => {
+            const x = (e.clientX / window.innerWidth) * 100;
+            const y = (e.clientY / window.innerHeight) * 100;
+            document.documentElement.style.setProperty('--mouse-x', `${x}%`);
+            document.documentElement.style.setProperty('--mouse-y', `${y}%`);
+        });
+
+        document.querySelectorAll('.card, .waf-container, #packet-sniffer').forEach(el => {
+            const br = document.createElement('div');
+            br.className = 'target-brackets';
+            el.appendChild(br);
         });
     </script>
 </body>
