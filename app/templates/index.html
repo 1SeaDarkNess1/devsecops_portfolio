@@ -95,8 +95,8 @@
         ═══════════════════════════════════════════════ */
         html, body {
             overflow-x: hidden;
-            overflow-y: auto;
-            min-height: 300vh;
+            overflow-y: scroll !important;
+            min-height: 400vh !important;
         }
 
         body {
@@ -765,21 +765,13 @@
         }
 
         /* ═══════════════════════════════════════════════
-           ENTRANCE ANIMATION
+           HARDWARE ACCELERATION
         ═══════════════════════════════════════════════ */
         .card,
         #threat-map-container,
-        .event-stream-section {
-            /* Fade up removed as GSAP will handle staggered intro */
-        }
-
-        /* Liquid Glass Morph Delays via GSAP instead, or we can keep it here but we'll control opacity with JS */
-
-        @keyframes fadeUp {
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+        .event-stream-section,
+        #packet-sniffer {
+            will-change: transform, opacity, border-radius;
         }
 
         /* ═══════════════════════════════════════════════
@@ -1757,9 +1749,24 @@
 
         // ═══════════════════════════════════════════════
         //  3. CORE METRICS LOGIC
-        // ═══════════════════════════════════════════════
         let metricsRetries = 0;
         const MAX_RETRIES = 3;
+
+        // DOM Cache for metrics
+        const domMetrics = {
+            hostname: document.getElementById('hostname'),
+            cpuCard: document.getElementById('card-cpu'),
+            cpuPercent: document.getElementById('cpu-percent'),
+            cpuCores: document.getElementById('cpu-cores'),
+            ramPercent: document.getElementById('ram-percent'),
+            ramDetail: document.getElementById('ram-detail'),
+            diskPercent: document.getElementById('disk-percent'),
+            diskDetail: document.getElementById('disk-detail'),
+            netSent: document.getElementById('net-sent'),
+            netRecv: document.getElementById('net-recv'),
+            uptime: document.getElementById('uptime'),
+            os: document.getElementById('os')
+        };
 
         function updateBar(barId, percent) {
             const bar = document.getElementById(barId);
@@ -1769,47 +1776,46 @@
         }
 
         async function updateMetrics() {
+            if (document.hidden) return; // Save resources
+
             const d = await safeFetch('/api/metrics');
 
             if (!d) {
                 metricsRetries++;
-                if (metricsRetries >= MAX_RETRIES) {
-                    document.getElementById('hostname').textContent = '[ API UNAVAILABLE ]';
+                if (metricsRetries >= MAX_RETRIES && domMetrics.hostname) {
+                    domMetrics.hostname.textContent = '[ API UNAVAILABLE ]';
                 }
                 return;
             }
             metricsRetries = 0;
 
-            document.getElementById('hostname').textContent =
-                d.hostname + ' · ' + d.os;
+            if (domMetrics.hostname) domMetrics.hostname.textContent = d.hostname + ' · ' + d.os;
 
             // CPU + Chaos alert-mode
-            const cpuCard = document.getElementById('card-cpu');
-            if (d.cpu.status === 'CRITICAL') {
-                cpuCard.classList.add('alert-mode');
-            } else {
-                cpuCard.classList.remove('alert-mode');
+            if (domMetrics.cpuCard) {
+                if (d.cpu.status === 'CRITICAL') domMetrics.cpuCard.classList.add('alert-mode');
+                else domMetrics.cpuCard.classList.remove('alert-mode');
             }
 
-            animateCounter(document.getElementById('cpu-percent'), d.cpu.percent, '%');
-            document.getElementById('cpu-cores').textContent = d.cpu.cores + ' cores';
+            if (domMetrics.cpuPercent) animateCounter(domMetrics.cpuPercent, d.cpu.percent, '%');
+            if (domMetrics.cpuCores) domMetrics.cpuCores.textContent = d.cpu.cores + ' cores';
             updateBar('cpu-bar', d.cpu.percent);
 
             // RAM
-            animateCounter(document.getElementById('ram-percent'), d.ram.percent, '%');
-            document.getElementById('ram-detail').textContent = d.ram.used + ' / ' + d.ram.total + ' GB';
+            if (domMetrics.ramPercent) animateCounter(domMetrics.ramPercent, d.ram.percent, '%');
+            if (domMetrics.ramDetail) domMetrics.ramDetail.textContent = d.ram.used + ' / ' + d.ram.total + ' GB';
             updateBar('ram-bar', d.ram.percent);
 
             // Disk
-            animateCounter(document.getElementById('disk-percent'), d.disk.percent, '%');
-            document.getElementById('disk-detail').textContent = d.disk.used + ' / ' + d.disk.total + ' GB';
+            if (domMetrics.diskPercent) animateCounter(domMetrics.diskPercent, d.disk.percent, '%');
+            if (domMetrics.diskDetail) domMetrics.diskDetail.textContent = d.disk.used + ' / ' + d.disk.total + ' GB';
             updateBar('disk-bar', d.disk.percent);
 
             // Network + info
-            document.getElementById('net-sent').textContent = d.network.bytes_sent + ' MB';
-            document.getElementById('net-recv').textContent = d.network.bytes_recv + ' MB';
-            document.getElementById('uptime').textContent = d.uptime;
-            document.getElementById('os').textContent = d.os;
+            if (domMetrics.netSent) domMetrics.netSent.textContent = d.network.bytes_sent + ' MB';
+            if (domMetrics.netRecv) domMetrics.netRecv.textContent = d.network.bytes_recv + ' MB';
+            if (domMetrics.uptime) domMetrics.uptime.textContent = d.uptime;
+            if (domMetrics.os) domMetrics.os.textContent = d.os;
         }
 
         window.startMetrics = function () {
@@ -2177,23 +2183,34 @@
             //  D. RENDER LOOP (frame-rate independent)
             // ===========================
             let lastFrameTime = 0;
+            let isCanvasVisible = false;
+
+            const observer = new IntersectionObserver((entries) => {
+                isCanvasVisible = entries[0].isIntersecting;
+            }, { threshold: 0.1 });
+            const heroContainer = document.getElementById('hero-container');
+            if (heroContainer) observer.observe(heroContainer);
 
             function render(time) {
-                // Delta = ratio vs 60fps baseline (16.667ms)
-                const dt = lastFrameTime ? (time - lastFrameTime) : 16.667;
-                lastFrameTime = time;
-                const delta = Math.min(dt / 16.667, 3); // clamp to avoid spiral on tab-switch
+                if (isCanvasVisible && !document.hidden) {
+                    // Delta = ratio vs 60fps baseline (16.667ms)
+                    const dt = lastFrameTime ? (time - lastFrameTime) : 16.667;
+                    lastFrameTime = time;
+                    const delta = Math.min(dt / 16.667, 3); // clamp to avoid spiral on tab-switch
 
-                const cw = parseFloat(canvas.style.width) || 400;
-                const ch = parseFloat(canvas.style.height) || 300;
-                ctx.clearRect(0, 0, cw, ch);
+                    const cw = parseFloat(canvas.style.width) || 400;
+                    const ch = parseFloat(canvas.style.height) || 300;
+                    ctx.clearRect(0, 0, cw, ch);
 
-                const cx = cw * 0.5;
-                const cy = ch * 0.5;
-                const radius = Math.min(cw, ch) * GLOBE_RADIUS_FACTOR;
+                    const cx = cw * 0.5;
+                    const cy = ch * 0.5;
+                    const radius = Math.min(cw, ch) * GLOBE_RADIUS_FACTOR;
 
-                drawGlobe(cx, cy, radius, delta);
-                drawArcs(cx, cy, radius, delta);
+                    drawGlobe(cx, cy, radius, delta);
+                    drawArcs(cx, cy, radius, delta);
+                } else {
+                    lastFrameTime = 0; // reset delta to prevent catch-up jumps
+                }
 
                 requestAnimationFrame(render);
             }
@@ -2206,6 +2223,8 @@
             let simulationMode = false;
 
             async function pollThreats() {
+                if (document.hidden) return; // Save resources
+
                 const data = await safeFetch('/api/threats');
                 if (!data) return; // graceful degradation
 
@@ -2383,6 +2402,8 @@
             let totalErr = 0;
 
             async function pollTraffic() {
+                if (document.hidden) return; // Save resources
+
                 const data = await safeFetch('/api/traffic');
                 if (!data) return; // graceful degradation
 
@@ -2577,10 +2598,11 @@
 
             const tl = gsap.timeline({
                 scrollTrigger: {
-                    trigger: "body",
+                    trigger: document.body,
                     start: "top top",
                     end: "bottom bottom",
                     scrub: 1,
+                    markers: true, // CRITIC PENTRU DEBUGGING
                     onUpdate: (self) => {
                         // At the very end of scroll, ensure fetching is active.
                         // We also use a flag to only trigger once.
