@@ -15,22 +15,25 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js" integrity="sha512-Ic9xkERjyZ1xgJ5svx3y0u3xrvfT/uPkV99LBwe68xjy/mGtO+4eURHZBW2xW4SZbFrF1Tf090XqB+EVgXnVjw==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     <style>
         /* ═══════════════════════════════════════════════
-           DESIGN TOKENS
+           DESIGN TOKENS — LIQUID GLASS EDITION
         ═══════════════════════════════════════════════ */
         :root {
-            --bg-obsidian: #050507;
-            --bg-surface: rgba(18, 20, 28, 0.55);
-            --bg-surface-hover: rgba(24, 27, 38, 0.62);
+            --bg-obsidian: #030305;
+            --bg-surface: rgba(8, 12, 22, 0.55);
+            --bg-surface-hover: rgba(14, 18, 30, 0.62);
             --border-subtle: rgba(255, 255, 255, 0.04);
-            --border-hover: rgba(255, 255, 255, 0.08);
+            --border-hover: rgba(255, 255, 255, 0.10);
             --text-primary: #e2e8f0;
-            --text-secondary: rgba(226, 232, 240, 0.50);
-            --text-tertiary: rgba(226, 232, 240, 0.28);
-            --accent: #00b4d8;
-            --accent-dim: rgba(0, 180, 216, 0.12);
-            --accent-muted: rgba(0, 180, 216, 0.35);
-            --accent-bloom: rgba(0, 180, 216, 0.40);
-            --accent-bloom-far: rgba(0, 180, 216, 0.18);
+            --text-secondary: rgba(226, 232, 240, 0.55);
+            --text-tertiary: rgba(226, 232, 240, 0.30);
+            --accent: #00e5ff;
+            --accent-dim: rgba(0, 229, 255, 0.12);
+            --accent-muted: rgba(0, 229, 255, 0.35);
+            --accent-bloom: rgba(0, 229, 255, 0.50);
+            --accent-bloom-far: rgba(0, 229, 255, 0.20);
+            --neon-cyan: #00e5ff;
+            --neon-pink: #ff3366;
+            --neon-purple: #bc13fe;
             --crimson: #e63946;
             --crimson-dim: rgba(230, 57, 70, 0.12);
             --amber: #f4a261;
@@ -39,14 +42,16 @@
             --green-dim: rgba(46, 196, 182, 0.12);
             --font-ui: 'Inter', -apple-system, 'Segoe UI', sans-serif;
             --font-mono: 'JetBrains Mono', 'Fira Code', 'Cascadia Mono', monospace;
-            --radius: 12px;
-            --radius-sm: 8px;
-            --ease: 0.4s ease;
+            --radius: 20px;
+            --radius-sm: 10px;
+            --ease: 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
             /* Cinematic glass */
-            --glass-blur: blur(32px) saturate(180%);
-            --glass-bg: linear-gradient(135deg, rgba(255, 255, 255, 0.03) 0%, rgba(255, 255, 255, 0.01) 100%);
-            --glass-rim: inset 0.5px 0.5px 1px rgba(255, 255, 255, 0.12);
-            --glass-depth: 0 20px 40px rgba(0, 0, 0, 0.50);
+            --glass-blur: blur(40px) saturate(220%);
+            --glass-bg: linear-gradient(135deg, rgba(255, 255, 255, 0.04) 0%, rgba(255, 255, 255, 0.01) 100%);
+            --glass-rim: inset 0 1px 1px rgba(255, 255, 255, 0.15);
+            --glass-depth: 0 30px 60px rgba(0, 0, 0, 0.65);
+            --mouse-x: 50%;
+            --mouse-y: 50%;
         }
 
         *,
@@ -59,15 +64,19 @@
 
         @keyframes liquid-morph {
             0% {
-                border-radius: 16px;
+                border-radius: 20px;
             }
-
+            25% {
+                border-radius: 22px 18px 20px 22px / 20px 22px 18px 20px;
+            }
             50% {
-                border-radius: 30% 10% 20% 10% / 10% 30% 10% 20%;
+                border-radius: 18px 22px 22px 18px / 22px 18px 20px 22px;
             }
-
+            75% {
+                border-radius: 22px 20px 18px 22px / 18px 22px 22px 18px;
+            }
             100% {
-                border-radius: 16px;
+                border-radius: 20px;
             }
         }
 
@@ -88,11 +97,11 @@
         /* ═══════════════════════════════════════════════
            BASE
         ═══════════════════════════════════════════════ */
-        /* 1. RESET SI HUD LOCK-IN (Fara scroll aiurea pe ecran) */
+        /* 1. RESET SI HUD LOCK-IN */
         html, body {
             margin: 0; padding: 0;
             width: 100%; min-height: 200vh !important; 
-            background-color: #030305;
+            background-color: #020204;
             overflow-x: hidden; overflow-y: auto;
             font-family: 'JetBrains Mono', monospace;
             color: #e2e8f0;
@@ -141,38 +150,59 @@
 
         #main-dashboard {
             position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
-            box-sizing: border-box; padding: 2rem 2rem !important; /* Reducem padding-ul lateral excesiv */
+            box-sizing: border-box; padding: 1.5rem 2rem !important;
             z-index: 10; display: flex; justify-content: space-between;
-            pointer-events: none; /* Scroll-ul principal trece prin el */
+            pointer-events: none;
         }
 
         .left-column, .right-column { pointer-events: auto; }
-        .left-column { width: 380px; display: flex !important; flex-direction: column !important; justify-content: flex-start !important; align-items: stretch; gap: 2rem !important; height: 100% !important; overflow-y: auto; padding-right: 15px; padding-bottom: 100px !important; mask-image: linear-gradient(to bottom, black 90%, transparent); -webkit-mask-image: linear-gradient(to bottom, black 90%, transparent); }
+        .left-column { width: 380px; display: flex !important; flex-direction: column !important; justify-content: flex-start !important; align-items: stretch; gap: 1.25rem !important; height: 100% !important; overflow-y: auto; padding-right: 15px; padding-bottom: 100px !important; mask-image: linear-gradient(to bottom, black 90%, transparent); -webkit-mask-image: linear-gradient(to bottom, black 90%, transparent); }
         .left-column::-webkit-scrollbar { display: none; }
         .right-column { 
             width: 500px !important; max-width: 35vw; 
-            height: calc(100vh - 4rem) !important;
-            display: block !important; /* Scoatem Flexbox-ul de aici ca sa nu mai distruga inaltimile */
+            height: calc(100vh - 3rem) !important;
+            display: block !important;
         }
 
-        /* Volumetric ambient lights */
+        /* Volumetric ambient lights — deep space glow */
         body::before {
             content: '';
             position: fixed;
             inset: 0;
-            background: radial-gradient(ellipse 80% 60% at 15% 20%, rgba(0, 180, 216, 0.08) 0%, transparent 70%), radial-gradient(ellipse 70% 50% at 85% 75%, rgba(230, 57, 70, 0.05) 0%, transparent 65%), radial-gradient(ellipse 50% 40% at 50% 50%, rgba(0, 180, 216, 0.03) 0%, transparent 60%);
+            background: 
+                radial-gradient(ellipse 80% 60% at 15% 20%, rgba(0, 229, 255, 0.06) 0%, transparent 70%),
+                radial-gradient(ellipse 70% 50% at 85% 75%, rgba(255, 51, 102, 0.04) 0%, transparent 65%),
+                radial-gradient(ellipse 60% 50% at 50% 50%, rgba(0, 229, 255, 0.025) 0%, transparent 60%);
             pointer-events: none;
             z-index: -2;
         }
 
-        /* Military-grade scanline overlay (1px microscopic) */
+        /* CRT scanline overlay */
         body::after {
             content: '';
             position: fixed;
             inset: 0;
-            background: repeating-linear-gradient(0deg, transparent, transparent 1px, rgba(0, 0, 0, 0.02) 1px, rgba(0, 0, 0, 0.02) 2px);
+            background: repeating-linear-gradient(0deg, transparent, transparent 1px, rgba(0, 0, 0, 0.015) 1px, rgba(0, 0, 0, 0.015) 2px);
             pointer-events: none;
             z-index: 9999;
+        }
+
+        /* === HORIZONTAL LASER BEAM across viewport === */
+        .viewport-laser {
+            position: fixed;
+            left: 0; width: 100vw; height: 1px;
+            background: linear-gradient(90deg, transparent 0%, rgba(0, 229, 255, 0.6) 20%, rgba(0, 229, 255, 0.9) 50%, rgba(0, 229, 255, 0.6) 80%, transparent 100%);
+            box-shadow: 0 0 15px 3px rgba(0, 229, 255, 0.3), 0 0 40px 6px rgba(0, 229, 255, 0.1);
+            z-index: 9990;
+            pointer-events: none;
+            animation: laser-sweep-viewport 8s ease-in-out infinite alternate;
+            opacity: 0.5;
+        }
+        @keyframes laser-sweep-viewport {
+            0% { top: 15%; opacity: 0; }
+            10% { opacity: 0.5; }
+            90% { opacity: 0.5; }
+            100% { top: 85%; opacity: 0; }
         }
 
         /* ═══════════════════════════════════════════════
@@ -331,88 +361,92 @@
             gap: 16px;
         }
 
-        /* 2. STICLA CRISTAL (Contrast ridicat si margini taioase) */
+        /* ═══════════════════════════════════════════════
+           THE LIQUID GLASS SYSTEM
+        ═══════════════════════════════════════════════ */
         .card, .waf-container, #packet-sniffer, #threat-map-container, .event-stream-section {
             position: relative;
-            background: rgba(5, 8, 14, 0.4) !important; /* Baza un pic mai inchisa pentru a face neonul sa sara in ochi */
-            backdrop-filter: blur(45px) saturate(250%) contrast(120%) brightness(110%) !important;
-            -webkit-backdrop-filter: blur(45px) saturate(250%) contrast(120%) brightness(110%) !important;
-            border-radius: 20px !important;
-            border: 1px solid rgba(255, 255, 255, 0.05) !important;
+            background: rgba(6, 10, 20, 0.45) !important;
+            backdrop-filter: blur(40px) saturate(220%) brightness(105%) !important;
+            -webkit-backdrop-filter: blur(40px) saturate(220%) brightness(105%) !important;
+            border-radius: var(--radius) !important;
+            border: 1px solid rgba(255, 255, 255, 0.06) !important;
+            border-top: 1px solid rgba(0, 229, 255, 0.25) !important;
             
-            /* Muchii ascutite si reflexii mai vizibile */
             box-shadow: 
-                inset 0 1.5px 2px rgba(255, 255, 255, 0.5), /* Lumina puternica pe muchia de sus */
-                inset 0 -1.5px 3px rgba(0, 0, 0, 0.9), /* Umbra groasa jos */
-                inset 1.5px 0 2px rgba(0, 229, 255, 0.2), /* Aberatie Cyan mai puternica */
-                inset -1.5px 0 2px rgba(255, 51, 102, 0.2), /* Aberatie Magenta mai puternica */
-                0 40px 80px -20px rgba(0, 0, 0, 0.99) !important;
-            color: #f8fafc; /* Text principal un alb mai stralucitor */
+                inset 0 1px 1px rgba(255, 255, 255, 0.12),
+                inset 0 -1px 2px rgba(0, 0, 0, 0.6),
+                0 30px 60px -15px rgba(0, 0, 0, 0.85) !important;
+            color: #f0f4f8;
                 
             overflow: hidden !important;
-            flex: 0 0 auto !important; height: auto !important; min-height: min-content !important; padding: 1.5rem !important; margin: 0 !important;
+            flex: 0 0 auto !important; height: auto !important; min-height: min-content !important; padding: 1.25rem !important; margin: 0 !important;
             display: flex !important;
             flex-direction: column !important;
             z-index: 1;
+            transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275),
+                        box-shadow 0.5s ease,
+                        border-color 0.5s ease !important;
         }
 
-        /* 3. TINEM LOG-URILE IN FRAU (Ca sa nu mai sparga cardul) */
+        /* Log container scroll control */
         .card pre, 
         .log-container, 
         #threat-log-container,
         .terminal-output {
-            max-height: 180px !important; /* Daca sunt prea multe log-uri, face scroll INTERN */
+            max-height: 180px !important;
             overflow-y: auto !important;
             height: auto !important;
             margin-top: 10px !important;
             display: block !important;
         }
         
-        /* Scrollbar invizibil elegant pentru interioare */
+        /* Neon scrollbar for internal containers */
         .card pre::-webkit-scrollbar,
         .log-container::-webkit-scrollbar,
         #threat-log-container::-webkit-scrollbar,
         .terminal-output::-webkit-scrollbar {
-            width: 4px;
+            width: 3px;
         }
         .card pre::-webkit-scrollbar-thumb,
         .log-container::-webkit-scrollbar-thumb,
         #threat-log-container::-webkit-scrollbar-thumb,
         .terminal-output::-webkit-scrollbar-thumb {
-            background: rgba(0, 180, 216, 0.3);
+            background: rgba(0, 229, 255, 0.25);
             border-radius: 4px;
         }
 
-        /* 2. THE FROSTED GLASS TEXTURE (Micro-noise generat dinamic prin SVG) */
+        /* FROSTED GLASS TEXTURE — micro-noise SVG overlay */
         .card::after, .waf-container::after, #packet-sniffer::after, #threat-map-container::after, .event-stream-section::after {
             content: ''; position: absolute; inset: 0;
             background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
-            opacity: 0.04; /* Extraordinar de subtil, doar cat sa dea textura tactila */
+            opacity: 0.03;
             pointer-events: none; z-index: 5; border-radius: inherit;
             mix-blend-mode: overlay;
         }
 
-        /* 1. LIQUID MESH PE STEROIZI (Culori Neon Vibrante) */
+        /* LIQUID NEON MESH — rotating color-dodge gradients */
         .card::before, .waf-container::before, #packet-sniffer::before, #threat-map-container::before, .event-stream-section::before {
-            content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%;
+            content: ''; position: absolute; top: -60%; left: -60%; width: 220%; height: 220%;
             background: 
-                radial-gradient(circle at 50% 50%, rgba(0, 229, 255, 0.45) 0%, transparent 60%), /* Neon Cyan */
-                radial-gradient(circle at 80% 20%, rgba(188, 19, 254, 0.35) 0%, transparent 50%), /* Neon Purple */
-                radial-gradient(circle at 20% 80%, rgba(255, 51, 102, 0.30) 0%, transparent 50%); /* Neon Red/Pink */
-            filter: blur(20px); /* Blur un pic mai mic ca sa pastreze culorile conturate */
-            animation: liquid-depth 18s infinite ease-in-out alternate;
-            mix-blend-mode: color-dodge; /* Face culorile sa 'arda' mai intens sub sticla */
+                radial-gradient(circle at 30% 70%, rgba(0, 229, 255, 0.20) 0%, transparent 50%),
+                radial-gradient(circle at 70% 30%, rgba(255, 51, 102, 0.15) 0%, transparent 50%),
+                radial-gradient(circle at 50% 50%, rgba(188, 19, 254, 0.10) 0%, transparent 60%);
+            filter: blur(25px);
+            animation: liquid-depth 20s infinite ease-in-out alternate;
+            mix-blend-mode: color-dodge;
             z-index: 0; pointer-events: none;
         }
 
         @keyframes liquid-depth {
-            0% { transform: rotate(0deg) scale(0.8) translate(0, 0); }
-            33% { transform: rotate(120deg) scale(1.1) translate(8%, -8%); }
-            66% { transform: rotate(240deg) scale(0.9) translate(-8%, 8%); }
-            100% { transform: rotate(360deg) scale(1.2) translate(0, 0); }
+            0%   { transform: rotate(0deg) scale(0.85) translate(0, 0); }
+            25%  { transform: rotate(90deg) scale(1.05) translate(5%, -5%); }
+            50%  { transform: rotate(180deg) scale(0.95) translate(-5%, 5%); }
+            75%  { transform: rotate(270deg) scale(1.1) translate(3%, -3%); }
+            100% { transform: rotate(360deg) scale(1.0) translate(0, 0); }
         }
 
-        /* 4. TINE TEXTUL DEASUPRA LICHIDULUI */
+        /* Text stays ABOVE the liquid layer */
         .card > *, .waf-container > *, #packet-sniffer > *, #threat-map-container > *, .event-stream-section > * {
             position: relative; z-index: 2;
         }
@@ -427,28 +461,33 @@
         }
         input[type="text"]:focus, input[type="password"]:focus { border-bottom: 1px solid #00b4d8 !important; }
 
-        /* 3. NEON TEXT GLOW (Pentru butoane si accente) */
+        /* NEON BUTTONS */
         button, .waf-btn {
-            width: 100%; padding: 0.8rem !important; border-radius: 12px !important;
-            background: rgba(0, 180, 216, 0.1) !important; border: 1px solid rgba(0, 229, 255, 0.4) !important;
-            color: #00e5ff !important; font-weight: bold; letter-spacing: 1px; cursor: pointer;
-            transition: all 0.3s ease !important;
+            width: 100%; padding: 0.7rem !important; border-radius: var(--radius-sm) !important;
+            background: rgba(0, 229, 255, 0.06) !important; border: 1px solid rgba(0, 229, 255, 0.30) !important;
+            color: var(--neon-cyan) !important; font-weight: 600; letter-spacing: 1.5px; cursor: pointer;
+            transition: all 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94) !important;
             margin-bottom: 8px;
-            text-shadow: 0 0 8px rgba(0, 229, 255, 0.5);
+            text-shadow: 0 0 10px rgba(0, 229, 255, 0.4);
+            text-transform: uppercase;
+            font-size: 0.7rem;
         }
         button:hover, .waf-btn:hover { 
-            background: rgba(0, 229, 255, 0.15) !important; 
-            box-shadow: 0 0 20px rgba(0, 229, 255, 0.4) !important; 
+            background: rgba(0, 229, 255, 0.12) !important; 
+            box-shadow: 0 0 25px rgba(0, 229, 255, 0.3), inset 0 0 15px rgba(0, 229, 255, 0.05) !important;
+            border-color: rgba(0, 229, 255, 0.5) !important;
+            text-shadow: 0 0 15px rgba(0, 229, 255, 0.6);
         }
 
         #btn-chaos {
-            background: rgba(230, 57, 70, 0.1) !important; border-color: rgba(255, 51, 102, 0.4) !important; 
-            color: #ff3366 !important;
-            text-shadow: 0 0 8px rgba(255, 51, 102, 0.5);
+            background: rgba(255, 51, 102, 0.06) !important; border-color: rgba(255, 51, 102, 0.30) !important; 
+            color: var(--neon-pink) !important;
+            text-shadow: 0 0 10px rgba(255, 51, 102, 0.4);
         }
         #btn-chaos:hover { 
-            background: rgba(255, 51, 102, 0.15) !important; 
-            box-shadow: 0 0 20px rgba(255, 51, 102, 0.4) !important; 
+            background: rgba(255, 51, 102, 0.12) !important; 
+            box-shadow: 0 0 25px rgba(255, 51, 102, 0.3), inset 0 0 15px rgba(255, 51, 102, 0.05) !important; 
+            border-color: rgba(255, 51, 102, 0.5) !important;
         }
 
         .card-title {
@@ -456,17 +495,18 @@
             font-weight: 600;
             letter-spacing: 2.5px;
             text-transform: uppercase;
-            color: var(--text-tertiary);
-            margin-bottom: 16px;
+            color: rgba(0, 229, 255, 0.50);
+            margin-bottom: 14px;
+            text-shadow: 0 0 8px rgba(0, 229, 255, 0.15);
         }
 
         .metric-value {
             font-family: var(--font-mono);
-            font-size: clamp(28px, 3.5vw, 36px);
+            font-size: clamp(26px, 3.5vw, 34px);
             font-weight: 700;
-            color: var(--accent);
+            color: var(--neon-cyan);
             line-height: 1;
-            text-shadow: 0 0 10px var(--accent-bloom), 0 0 20px var(--accent-bloom-far);
+            text-shadow: 0 0 12px var(--accent-bloom), 0 0 30px var(--accent-bloom-far);
             transition: color var(--ease), text-shadow var(--ease);
         }
 
@@ -1449,18 +1489,18 @@
             }
 
         /* =========================================
-           1. THE CRT HARDWARE OVERLAY 
+           CRT HARDWARE OVERLAY (subtle scanlines)
            ========================================= */
         body::after {
             content: " ";
             display: block;
             position: fixed;
             top: 0; left: 0; bottom: 0; right: 0;
-            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.1) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.03), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.03));
-            z-index: 999; /* Sta peste absolut tot */
-            background-size: 100% 3px, 6px 100%;
-            pointer-events: none; /* CRITIC: ca sa poti da click pe butoane prin el */
-            animation: scanline 10s linear infinite;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.06) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.02), rgba(0, 255, 0, 0.008), rgba(0, 0, 255, 0.02));
+            z-index: 999;
+            background-size: 100% 2px, 4px 100%;
+            pointer-events: none;
+            animation: scanline 12s linear infinite;
         }
         @keyframes scanline {
             0% { background-position: 0 0; }
@@ -1468,91 +1508,103 @@
         }
 
         /* =========================================
-           2. TACTICAL HOVER EFFECTS 
+           TACTICAL HOVER — 3D perspective lift
            ========================================= */
-        .card, .waf-container {
-            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.4s ease, border-color 0.4s ease !important;
-        }
         .card:hover, .waf-container:hover {
-            transform: translateY(-4px) scale(1.01) !important;
-            border-top-color: rgba(0, 229, 255, 0.5) !important; /* Glow neon pe muchie cand pui mouse-ul */
+            transform: translateY(-5px) scale(1.015) !important;
+            border-top-color: rgba(0, 229, 255, 0.6) !important;
             box-shadow: 
-                inset 0 1.5px 4px rgba(255, 255, 255, 0.6),
-                0 45px 90px -20px rgba(0, 229, 255, 0.15) !important; /* Arunca o lumina albastra dedesubt */
+                inset 0 1px 2px rgba(255, 255, 255, 0.20),
+                inset 0 -1px 2px rgba(0, 0, 0, 0.4),
+                0 40px 80px -20px rgba(0, 229, 255, 0.12),
+                0 0 40px rgba(0, 229, 255, 0.06) !important;
+        }
+        #packet-sniffer:hover {
+            border-top-color: rgba(0, 229, 255, 0.5) !important;
+            box-shadow:
+                inset 0 1px 2px rgba(255, 255, 255, 0.15),
+                0 35px 70px -15px rgba(0, 229, 255, 0.10) !important;
         }
 
         /* =========================================
-           3. CYBER-GLITCH PE BUTONUL DE CHAOS 
+           CYBER-GLITCH on Chaos Button
            ========================================= */
         #btn-chaos {
             position: relative;
             overflow: hidden;
         }
-        #btn-chaos:hover {
-            animation: glitch-skew 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94) both infinite alternate;
-            background: rgba(255, 51, 102, 0.25) !important;
+        #btn-chaos:hover:not(:disabled) {
+            animation: glitch-skew 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94) both infinite alternate;
+            background: rgba(255, 51, 102, 0.18) !important;
             color: #fff !important;
         }
         @keyframes glitch-skew {
-            0% { transform: skew(0deg); text-shadow: 2px 0px rgba(0,229,255,0.8), -2px 0px rgba(255,51,102,0.8); }
-            20% { transform: skew(-10deg); text-shadow: -2px 0px rgba(0,229,255,0.8), 2px 0px rgba(255,51,102,0.8); }
-            40% { transform: skew(10deg); text-shadow: 2px 0px rgba(0,229,255,0.8), -2px 0px rgba(255,51,102,0.8); }
-            60% { transform: skew(-5deg); text-shadow: -2px 0px rgba(0,229,255,0.8), 2px 0px rgba(255,51,102,0.8); }
-            80% { transform: skew(5deg); text-shadow: 2px 0px rgba(0,229,255,0.8), -2px 0px rgba(255,51,102,0.8); }
+            0% { transform: skew(0deg); text-shadow: 2px 0px rgba(0,229,255,0.7), -2px 0px rgba(255,51,102,0.7); }
+            20% { transform: skew(-8deg); text-shadow: -2px 0px rgba(0,229,255,0.7), 2px 0px rgba(255,51,102,0.7); }
+            40% { transform: skew(8deg); text-shadow: 2px 0px rgba(0,229,255,0.7), -2px 0px rgba(255,51,102,0.7); }
+            60% { transform: skew(-4deg); text-shadow: -2px 0px rgba(0,229,255,0.7), 2px 0px rgba(255,51,102,0.7); }
+            80% { transform: skew(4deg); text-shadow: 2px 0px rgba(0,229,255,0.7), -2px 0px rgba(255,51,102,0.7); }
             100% { transform: skew(0deg); text-shadow: none; }
         }
-        :root {
-            --mouse-x: 50%;
-            --mouse-y: 50%;
-        }
 
-        /* Efectul de lanterna peste sticla: o lumina alba extrem de subtila care urmareste mouse-ul */
-        body::before {
-            content: ''; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
-            background: radial-gradient(circle at var(--mouse-x) var(--mouse-y), rgba(255, 255, 255, 0.03) 0%, transparent 15%);
+        /* Mouse flashlight effect */
+        .mouse-spotlight {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            background: radial-gradient(circle at var(--mouse-x) var(--mouse-y), rgba(0, 229, 255, 0.02) 0%, transparent 20%);
             pointer-events: none; z-index: 9998;
             mix-blend-mode: screen;
         }
 
-        /* Sistemul de targetare (Cyber Brackets) pe panouri la hover */
+        /* Tactical targeting brackets */
         .target-brackets {
             content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 100%;
             background: 
-                linear-gradient(to right, #00e5ff 2px, transparent 2px) 0 0,
-                linear-gradient(to bottom, #00e5ff 2px, transparent 2px) 0 0,
-                linear-gradient(to left, #00e5ff 2px, transparent 2px) 100% 0,
-                linear-gradient(to bottom, #00e5ff 2px, transparent 2px) 100% 0,
-                linear-gradient(to right, #00e5ff 2px, transparent 2px) 0 100%,
-                linear-gradient(to top, #00e5ff 2px, transparent 2px) 0 100%,
-                linear-gradient(to left, #00e5ff 2px, transparent 2px) 100% 100%,
-                linear-gradient(to top, #00e5ff 2px, transparent 2px) 100% 100%;
+                linear-gradient(to right, var(--neon-cyan) 1.5px, transparent 1.5px) 0 0,
+                linear-gradient(to bottom, var(--neon-cyan) 1.5px, transparent 1.5px) 0 0,
+                linear-gradient(to left, var(--neon-cyan) 1.5px, transparent 1.5px) 100% 0,
+                linear-gradient(to bottom, var(--neon-cyan) 1.5px, transparent 1.5px) 100% 0,
+                linear-gradient(to right, var(--neon-cyan) 1.5px, transparent 1.5px) 0 100%,
+                linear-gradient(to top, var(--neon-cyan) 1.5px, transparent 1.5px) 0 100%,
+                linear-gradient(to left, var(--neon-cyan) 1.5px, transparent 1.5px) 100% 100%,
+                linear-gradient(to top, var(--neon-cyan) 1.5px, transparent 1.5px) 100% 100%;
             background-repeat: no-repeat;
-            background-size: 15px 15px; /* Dimensiunea coltarului */
-            opacity: 0; transition: opacity 0.4s ease, transform 0.4s ease;
-            transform: scale(0.95); /* Pornesc din interior */
-            pointer-events: none; z-index: 10; border-radius: 20px;
+            background-size: 12px 12px;
+            opacity: 0; 
+            transition: opacity 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94), transform 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            transform: scale(0.92);
+            pointer-events: none; z-index: 10; border-radius: var(--radius);
         }
 
         .card:hover .target-brackets, .waf-container:hover .target-brackets, #packet-sniffer:hover .target-brackets {
-            opacity: 0.8;
-            transform: scale(1); /* Expandare magnetica la hover */
+            opacity: 0.7;
+            transform: scale(1);
         }
 
-        /* Puls rosu in caz de alerta critica pe ecran */
+        /* Critical threat pulse */
         body.threat-active {
-            box-shadow: inset 0 0 150px rgba(255, 51, 102, 0.4);
+            box-shadow: inset 0 0 120px rgba(255, 51, 102, 0.3);
             animation: threat-pulse 2s infinite alternate;
         }
         @keyframes threat-pulse {
-            0% { box-shadow: inset 0 0 50px rgba(255, 51, 102, 0.2); }
-            100% { box-shadow: inset 0 0 150px rgba(255, 51, 102, 0.6); }
+            0% { box-shadow: inset 0 0 40px rgba(255, 51, 102, 0.15); }
+            100% { box-shadow: inset 0 0 120px rgba(255, 51, 102, 0.45); }
         }
-        /* 1. RESTABILIREA STICLEI SI A PADDING-ULUI (Reparația critică) */
+
+        /* Overflow and padding enforcement */
         .card, .waf-container, #packet-sniffer {
-            overflow: hidden !important; /* CRITIC: Tine lichidul neon inapoi in interiorul cardului */
-            padding: 1.5rem !important; /* Readuce spatiul de respiratie dintre text si margini */
+            overflow: hidden !important;
+            padding: 1.25rem !important;
             display: flex !important;
             flex-direction: column !important;
+        }
+
+        /* === NEON BORDER GLOW ANIMATION on top edge === */
+        @keyframes border-glow-pulse {
+            0%, 100% { border-top-color: rgba(0, 229, 255, 0.20); }
+            50% { border-top-color: rgba(0, 229, 255, 0.40); }
+        }
+        .card, .waf-container, #packet-sniffer, #threat-map-container, .event-stream-section {
+            animation: border-glow-pulse 4s ease-in-out infinite, liquid-morph 12s ease-in-out infinite;
         }
 
         /* 2. REPARAREA ALERTELOR (Fara sa spargem cardul parinte) */
@@ -1589,28 +1641,32 @@
             100% { opacity: 1; transform: translateX(0); filter: blur(0); border-left-color: transparent; }
         }
 
-        /* 4. The Sweeping Laser Scanner (Linia de diagnoza) */
+        /* Sweeping Laser Scanner inside packet sniffer */
         .cyber-scanner {
             position: absolute;
-            left: 0; width: 100%; height: 2px;
-            background: #00e5ff;
-            box-shadow: 0 0 20px 3px rgba(0, 229, 255, 0.6);
-            opacity: 0.4;
+            left: 0; width: 100%; height: 1px;
+            background: linear-gradient(90deg, transparent 0%, var(--neon-cyan) 30%, var(--neon-cyan) 70%, transparent 100%);
+            box-shadow: 0 0 15px 2px rgba(0, 229, 255, 0.5), 0 0 30px 4px rgba(0, 229, 255, 0.2);
+            opacity: 0.35;
             z-index: 50;
             pointer-events: none;
-            animation: scan-sweep 6s ease-in-out infinite alternate;
+            animation: scan-sweep 7s ease-in-out infinite alternate;
         }
 
         @keyframes scan-sweep {
             0% { top: 5%; opacity: 0; }
-            10% { opacity: 0.6; }
-            90% { opacity: 0.6; }
+            10% { opacity: 0.5; }
+            90% { opacity: 0.5; }
             100% { top: 95%; opacity: 0; }
         }
     </style>
 </head>
 
 <body>
+
+    <!-- Viewport-level visual effects -->
+    <div class="viewport-laser"></div>
+    <div class="mouse-spotlight"></div>
 
     <div>
         <h1 id="boot-text">BBM LAB // SYSTEM OFFLINE. Scroll to initiate uplink.</h1>
