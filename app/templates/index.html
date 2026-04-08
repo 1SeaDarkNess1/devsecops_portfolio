@@ -148,19 +148,49 @@
             50% { border-color: #00e5ff; }
         }
 
+        /* ═══════════════════════════════════════════════
+           MAIN HUD LAYOUT — Flex Shell
+        ═══════════════════════════════════════════════ */
         #main-dashboard {
             position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
-            box-sizing: border-box; padding: 1.5rem 2rem !important;
-            z-index: 10; display: flex; justify-content: space-between;
+            box-sizing: border-box;
+            padding: 1.25rem 1.5rem !important;
+            z-index: 10;
+            display: flex;
+            justify-content: space-between;
+            gap: 1.5rem;
             pointer-events: none;
+            overflow: hidden;
         }
 
         .left-column, .right-column { pointer-events: auto; }
-        .left-column { width: 380px; display: flex !important; flex-direction: column !important; justify-content: flex-start !important; align-items: stretch; gap: 1.25rem !important; height: 100% !important; overflow-y: auto; padding-right: 15px; padding-bottom: 100px !important; mask-image: linear-gradient(to bottom, black 90%, transparent); -webkit-mask-image: linear-gradient(to bottom, black 90%, transparent); }
+
+        /* LEFT COLUMN — Control Panels */
+        .left-column {
+            width: 380px;
+            min-width: 340px;
+            flex-shrink: 0;
+            display: flex !important;
+            flex-direction: column !important;
+            justify-content: flex-start !important;
+            align-items: stretch;
+            gap: 1rem !important;
+            height: 100% !important;
+            overflow-y: auto;
+            padding-right: 10px;
+            padding-bottom: 80px !important;
+            mask-image: linear-gradient(to bottom, black 92%, transparent);
+            -webkit-mask-image: linear-gradient(to bottom, black 92%, transparent);
+        }
         .left-column::-webkit-scrollbar { display: none; }
-        .right-column { 
-            width: 500px !important; max-width: 35vw; 
-            height: calc(100vh - 3rem) !important;
+
+        /* RIGHT COLUMN — Network Stream (widened for data clarity) */
+        .right-column {
+            width: 550px !important;
+            min-width: 480px;
+            max-width: 42vw;
+            flex-shrink: 0;
+            height: calc(100vh - 2.5rem) !important;
             display: block !important;
         }
 
@@ -1005,7 +1035,7 @@
         }
 
         /* ═══════════════════════════════════════════════
-           PACKET SNIFFER (Data Waterfall)
+           PACKET SNIFFER — Data Waterfall (CSS Grid)
         ═══════════════════════════════════════════════ */
         #packet-sniffer {
             width: 100% !important;
@@ -1016,124 +1046,157 @@
             flex-direction: column !important;
             position: relative;
             overflow: hidden !important;
+            padding: 1.25rem 1rem !important;
         }
 
         .sniffer-title {
             font-family: var(--font-mono);
-            font-size: 0.55rem;
+            font-size: 0.6rem;
             font-weight: 600;
             letter-spacing: 2.5px;
             text-transform: uppercase;
-            color: var(--text-tertiary);
-            margin-bottom: 12px;
-            opacity: 0.6;
+            color: rgba(0, 229, 255, 0.45);
+            text-shadow: 0 0 8px rgba(0, 229, 255, 0.12);
+            margin-bottom: 10px;
         }
 
+        /* Stats bar — even grid distribution */
         .sniffer-stats {
-            display: flex;
-            justify-content: space-between;
-            padding: 8px 0;
-            margin-bottom: 10px;
-            border-top: 1px solid var(--border-subtle);
-            border-bottom: 1px solid var(--border-subtle);
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 0;
+            padding: 10px 0;
+            margin-bottom: 8px;
+            border-top: 1px solid rgba(255, 255, 255, 0.06);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
         }
 
         .sniffer-stat {
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 2px;
+            gap: 3px;
         }
 
         .sniffer-stat-value {
             font-family: var(--font-mono);
-            font-size: 0.85rem;
+            font-size: 1rem;
             font-weight: 700;
             color: var(--accent);
-            text-shadow: 0 0 8px var(--accent-bloom-far);
+            text-shadow: 0 0 10px var(--accent-bloom-far);
             transition: color 0.3s ease;
         }
 
         .sniffer-stat-label {
             font-family: var(--font-mono);
             font-size: 0.5rem;
-            letter-spacing: 1.5px;
+            letter-spacing: 2px;
             text-transform: uppercase;
             color: var(--text-tertiary);
         }
 
         .sniffer-stat-value.stat-err {
             color: var(--crimson);
+            text-shadow: 0 0 10px rgba(230, 57, 70, 0.3);
         }
 
+        /* Traffic stream container */
         #traffic-stream {
             flex-grow: 1 !important;
             height: auto !important;
-            overflow: hidden !important; /* Fara scroll, curge automat */
+            overflow: hidden !important;
             display: flex;
             flex-direction: column;
-            justify-content: flex-end; /* Elementele noi apar jos si imping in sus */
-            
-            /* Efect de dizolvare eleganta a log-urilor vechi in partea de sus */
-            mask-image: linear-gradient(to bottom, transparent 0%, black 15%, black 100%);
-            -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 15%, black 100%);
+            justify-content: flex-end;
+            mask-image: linear-gradient(to bottom, transparent 0%, black 10%, black 100%);
+            -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 10%, black 100%);
         }
 
-        /* 4. Optimizam textul din log-uri sa foloseasca noul spatiu */
-        #traffic-stream span {
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis; /* Daca un log e absurd de lung, pune puncte-puncte in loc sa sparga designul */
-            display: inline-block;
-            max-width: 100%;
-            vertical-align: middle;
-        }
-
+        /* ═══════════════════════════════════════════════
+           PACKET LOG ROWS — CSS Grid Perfect Alignment
+           Columns: Status(40px) Method(50px) Path(1fr) Latency(55px) IP(140px)
+        ═══════════════════════════════════════════════ */
         .pkt-line {
             font-family: var(--font-mono);
-            font-size: 10px;
-            letter-spacing: 0.5px;
-            line-height: 1.8;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
+            font-size: 0.72rem;
+            line-height: 1.6;
+            letter-spacing: 0.3px;
+
+            /* CSS GRID — the critical fix for alignment */
+            display: grid !important;
+            grid-template-columns: 38px 42px 1fr 50px 135px;
+            gap: 0.6rem;
+            align-items: center;
+            width: 100% !important;
+            min-height: 0;
+
+            /* Animation */
             opacity: 0;
-            transform: translateY(10px) translateX(5px);
+            transform: translateX(8px);
             will-change: transform, opacity;
-            animation: pktSlideIn 0.4s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+            animation: pktSlideIn 0.35s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+
+            /* Hover highlight */
+            padding: 1px 4px;
+            border-radius: 3px;
+            transition: background 0.2s ease;
+        }
+        .pkt-line:hover {
+            background: rgba(0, 229, 255, 0.04);
         }
 
         @keyframes pktSlideIn {
             to {
-                opacity: 0.7;
-                transform: translateY(0) translateX(0);
+                opacity: 0.75;
+                transform: translateX(0);
             }
         }
 
+        /* Grid cell styling — each span is a dedicated column */
         .pkt-line .pkt-status {
             font-weight: 700;
-            margin-right: 4px;
+            text-align: left;
+            /* Width is enforced by grid column */
         }
 
         .pkt-line .pkt-method {
             color: var(--text-secondary);
-            margin-right: 2px;
+            text-transform: uppercase;
+            font-weight: 500;
+            font-size: 0.65rem;
         }
 
         .pkt-line .pkt-path {
             color: var(--text-primary);
-            opacity: 0.6;
+            opacity: 0.55;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            min-width: 0; /* Critical for text-overflow in grid */
         }
 
         .pkt-line .pkt-latency {
             color: var(--text-tertiary);
-            margin-left: 4px;
+            text-align: right;
+            font-size: 0.65rem;
         }
 
         .pkt-line .pkt-agent {
             color: var(--text-tertiary);
-            opacity: 0.4;
-            margin-left: 4px;
+            opacity: 0.50;
+            text-align: right;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            min-width: 0;
+        }
+
+        /* Override the old inline span overrides that conflict with grid */
+        #traffic-stream span {
+            display: block !important;
+            white-space: nowrap !important;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
 
         /* Status color coding */
@@ -1177,10 +1240,18 @@
             }
         }
 
-        /* Don't show on narrow screens */
+        /* Don't show sniffer on narrow screens */
         @media (max-width: 1280px) {
             #packet-sniffer {
-                display: none;
+                display: none !important;
+            }
+            .right-column {
+                display: none !important;
+            }
+            .left-column {
+                width: 100% !important;
+                max-width: 600px;
+                margin: 0 auto;
             }
         }
 
@@ -1616,25 +1687,8 @@
             padding-right: 5px;
         }
 
-        /* 3. REPARAREA STREAM-ULUI DE RETEA (Spatiere corecta intre cuvinte) */
-        #traffic-stream > div, #traffic-stream > p, .network-log-row {
-            display: flex !important;
-            gap: 12px !important; /* Spatiu curat intre elementele log-ului */
-            align-items: center !important;
-            width: 100% !important;
-            font-family: 'JetBrains Mono', monospace !important;
-            /* Pastram efectul de aparitie laterala Matrix */
-            overflow: hidden !important;
-            animation: cyber-log-entry 0.35s cubic-bezier(0.1, 0.8, 0.2, 1) forwards;
-            border-left: 2px solid transparent;
-            padding-left: 8px;
-            margin-bottom: 4px;
-        }
-
-        #traffic-stream span {
-            display: inline-block !important;
-            white-space: nowrap !important;
-        }
+        /* Network stream rows — handled by .pkt-line CSS Grid above */
+        /* (Old flex overrides removed to avoid conflicting with grid) */
 
         @keyframes cyber-log-entry {
             0% { opacity: 0; transform: translateX(-15px); filter: blur(5px); border-left-color: #00e5ff; }
