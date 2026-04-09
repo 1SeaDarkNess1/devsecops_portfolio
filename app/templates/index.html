@@ -3,157 +3,74 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TacIntel — Autonomous Response System</title>
+    <title>TacIntel — Particle Architect</title>
     
-    <!-- CSS Architecture -->
-    <link rel="stylesheet" href="{{ url_for('static', filename='assets/styles/core.css') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='assets/styles/liquid-glass.css') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='assets/styles/layout.css') }}">
-    
-    <!-- Holographic Terminal Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;600;700&family=Outfit:wght@400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700;800&display=swap" rel="stylesheet">
 </head>
 <body>
 
-    <!-- Liquid Caustics Engine Physics (SVG Filters) -->
-    <svg style="display: none;">
-        <defs>
-            <filter id="liquid-caustics">
-                <feTurbulence type="fractalNoise" baseFrequency="0.01 0.005" numOctaves="3" result="noise" />
-                <feDisplacementMap in="SourceGraphic" in2="noise" scale="12" xChannelSelector="R" yChannelSelector="G" />
-            </filter>
-            
-            <filter id="core-refraction">
-                <!-- A pure liquid glass refraction filter for the card borders -->
-                <feTurbulence type="fractalNoise" baseFrequency="0.8" numOctaves="2" result="highFreqNoise" />
-                <feColorMatrix type="matrix" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 0.05 0" in="highFreqNoise" result="subtleNoise" />
-                <feComposite operator="in" in="SourceGraphic" in2="subtleNoise" result="composite1" />
-            </filter>
-        </defs>
-    </svg>
-
-    <!-- PURE BENTO GRID SHELL (3 Columns) -->
-    <main id="bento-matrix" class="bento-matrix">
+    <main class="dashboard-shell">
         
-        <!-- [1] LEFT PANEL: Intelligence & Response -->
-        <aside class="bento-panel panel-left flex-stack">
+        <!-- COLOANA STÂNGA: TACTICAL PANELS -->
+        <aside class="tactical-sidebar">
             
-            <section class="liquid-box" id="bento-cicd" data-threat="normal">
-                <header class="box-head">
-                    <div class="box-title">CI/CD Attester</div>
-                    <div class="threat-dot"></div>
-                </header>
-                <div class="box-core flex-stack">
-                    <div class="score-display block-glow">Secure Score: <span id="score-val" class="highlight-cyan">98/100</span></div>
-                    <ul id="cicd-remediation" class="terminal-list"></ul>
+            <div class="glass-card">
+                <div class="card-title">CI/CD Attester</div>
+                <div class="card-content">
+                    <div class="metric">
+                        <span class="label">SECURE DEPLOY SCORE</span>
+                        <span class="value highlight-cyan">98/100</span>
+                    </div>
+                    <ul class="alert-list">
+                        <li>[SYSTEM] Signature verified.</li>
+                        <li><span class="highlight-magenta">[ALERT] Rotate KMS Key (4 days left).</span></li>
+                    </ul>
                 </div>
-            </section>
+            </div>
 
-            <section class="liquid-box flex-stretch" id="bento-threat-matrix" data-threat="normal">
-                <header class="box-head">
-                    <div class="box-title">Predictive Threat Matrix</div>
-                </header>
-                <div class="box-core map-3d-view" id="matrix-canvas-container">
-                    <!-- 3D Matrix goes here -->
-                    <div class="threat-overlay-text" id="threat-matrix-status">Predicting vectors...</div>
+            <div class="glass-card">
+                <div class="card-title">Predictive Threat Matrix</div>
+                <div class="card-content">
+                    <div class="metric">
+                        <span class="label">ANOMALY VECTORS DECODED</span>
+                        <span class="value">Active</span>
+                    </div>
+                    <ul class="alert-list">
+                        <li>[SCAN] Port 443 flow stable.</li>
+                        <li><span class="highlight-cyan">[WARN] Anomalous traffic predicted > 2:00 AM.</span></li>
+                        <li>Neural heuristics engaged.</li>
+                    </ul>
                 </div>
-            </section>
+            </div>
 
-            <section class="liquid-box" id="bento-arp" data-threat="normal">
-                <header class="box-head">
-                    <div class="box-title">Auto-Response Protocol</div>
-                    <div class="badge neon-blue">ACTIVE</div>
-                </header>
-                <div class="box-core flex-stack">
-                    <div class="metric-row">Status: <span>Monitoring</span></div>
-                    <div class="metric-row">Predicted Threat: <span id="arp-pred" class="highlight-magenta">LOW</span></div>
-                    <ul id="arp-actions" class="terminal-list"></ul>
+            <div class="glass-card">
+                <div class="card-title">Auto-Response Protocol</div>
+                <div class="card-content">
+                    <div class="metric">
+                        <span class="label">THREAT LEVEL</span>
+                        <span class="value highlight-red">CRITICAL</span>
+                    </div>
+                    <ul class="alert-list">
+                        <li><span class="highlight-red">[LOCKDOWN] XSS zero-day blocked.</span></li>
+                        <li>Executing IP range throttle...</li>
+                        <li>Status: <span class="highlight-cyan">Stable</span></li>
+                    </ul>
                 </div>
-            </section>
+            </div>
+
         </aside>
 
-        <!-- [2] CENTER PANEL: Monitor & Data -->
-        <section class="bento-panel panel-center flex-stack">
-            
-            <section class="liquid-box flex-stretch" id="bento-dlp" data-threat="normal">
-                <header class="box-head">
-                    <div class="box-title">Zero-Trust DLP Vault</div>
-                </header>
-                <div class="box-core flex-stack">
-                    <div class="sub-title">Exfiltration Prediction</div>
-                    <div class="dlp-rules-gen" id="dlp-rules">
-                        Initialising Neural Paths...
-                    </div>
-                </div>
-            </section>
-
-            <section class="liquid-box" id="bento-waf" data-threat="normal">
-                <header class="box-head">
-                    <div class="box-title">Intelligent WAF Sandbox</div>
-                </header>
-                <div class="box-core flex-stack">
-                    <input type="text" id="waf-ai-input" class="cyber-input" placeholder="> Input test payload..." autocomplete="off">
-                    <div id="waf-ai-output" class="terminal-box">Awaiting payload model generation.</div>
-                </div>
-            </section>
-
-            <section class="liquid-box" id="bento-chaos" data-threat="normal">
-                <header class="box-head">
-                    <div class="box-title">Chaos Scenario Modeller</div>
-                </header>
-                <div class="box-core flex-stack">
-                    <div class="metric-row">Impact Model: <span id="chaos-impact" class="text-dim">Pending Execution</span></div>
-                    <button class="cyber-btn" id="btn-chaos-model">Model Failure Scenario</button>
-                    <button class="cyber-btn danger hidden" id="btn-chaos-execute">EXECUTE FAILURE</button>
-                </div>
-            </section>
-            
-            <section class="liquid-box" id="bento-metrics" data-threat="normal">
-                <header class="box-head">
-                    <div class="box-title">System Metrics</div>
-                </header>
-                <div class="box-core metrics-grid">
-                    <div class="metric-node">
-                        <div class="m-label">CPU Core</div>
-                        <div class="m-val" id="met-cpu">1.2%</div>
-                        <div class="m-pred">Pred: <span id="pred-cpu">5.0%</span></div>
-                    </div>
-                    <div class="metric-node">
-                        <div class="m-label">RAM Pool</div>
-                        <div class="m-val" id="met-ram">41.0%</div>
-                        <div class="m-pred">Pred: <span id="pred-ram">45.0%</span></div>
-                    </div>
-                </div>
-            </section>
-            
+        <!-- COLOANA DREAPTĂ: PARTICLE CANVAS -->
+        <section class="canvas-container">
+            <canvas id="bbm-canvas"></canvas>
+            <div class="hud-overlay">
+                TacIntel Particle Engine v4.0.0
+            </div>
         </section>
-
-        <!-- [3] RIGHT PANEL: Network Flow Map 3D -->
-        <main class="bento-panel panel-right">
-            
-            <section class="liquid-box flex-stretch" id="bento-flow" data-threat="normal" style="height:100%; position: relative;">
-                <header class="box-head" style="position: absolute; top:0; left:0; right:0; z-index: 10; padding: 1.5rem;">
-                    <div class="box-title" style="font-size: 1.2rem;">Holographic Network Flow</div>
-                    <div class="badge neon-cyan">LIVE 443</div>
-                </header>
-                
-                <!-- 3D Flow WebGL/Canvas Surface -->
-                <div class="canvas-flow-surface" id="flow-canvas-container" style="width: 100%; height: 100%; position: absolute; inset: 0;">
-                    <canvas id="flow-node-canvas" style="display: block; width: 100%; height: 100%;"></canvas>
-                </div>
-
-                <!-- Tactical Grid Overlays (The requested specific CSS grid for text list over the 3D surface) -->
-                <div class="tactical-flow-logs" id="network-log-grid" style="position: absolute; bottom: 0; left: 0; right: 0; padding: 1.5rem; max-height: 40%; overflow-y: auto; z-index: 20;">
-                    <!-- Rows generated via JS matching grid-template-columns: 70px 1fr 140px 60px; -->
-                </div>
-            </section>
-
-        </main>
         
     </main>
 
-    <!-- Bootstrap Root App Module -->
-    <script type="module" src="{{ url_for('static', filename='app/app.js') }}"></script>
-
+    <script type="module" src="{{ url_for('static', filename='js/app.js') }}"></script>
 </body>
 </html>
