@@ -1,24 +1,1655 @@
-{% extends 'base.html' %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BBM · DevSecOps Lab</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&family=Syne:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+/* ═══════════════════════════════════════════════════════════════
+   BBM DevSecOps Lab — Apple Liquid Glass Edition
+   Design System: Dark Luxe + Summer Neon + Glassmorphism v2
+   ═══════════════════════════════════════════════════════════════ */
 
-{% block content %}
-    <!-- ═══ Hero Section ═══ -->
-    {% include 'components/hero.html' %}
+*, *::before, *::after {
+  margin: 0; padding: 0; box-sizing: border-box;
+}
 
-    <!-- ═══ Metrics Bar ═══ -->
-    {% include 'components/metrics_bar.html' %}
+:root {
+  /* ── Core Palette ── */
+  --bg-void:        #050508;
+  --bg-deep:        #0a0a12;
+  --bg-surface:     #0f0f1a;
 
-    <!-- ═══ CI/CD Pipeline Section ═══ -->
-    {% include 'components/pipeline.html' %}
+  /* ── Liquid Glass ── */
+  --glass-bg:       rgba(255, 255, 255, 0.03);
+  --glass-border:   rgba(255, 255, 255, 0.08);
+  --glass-highlight: rgba(255, 255, 255, 0.12);
+  --glass-blur:     24px;
+  --glass-blur-heavy: 40px;
 
-    <!-- ═══ Tech Arsenal Section ═══ -->
-    {% include 'components/arsenal.html' %}
+  /* ── Summer Neon Accents ── */
+  --neon-cyan:      #00e5ff;
+  --neon-teal:      #00f5d4;
+  --neon-coral:     #ff6b6b;
+  --neon-amber:     #ffb347;
+  --neon-lavender:  #c084fc;
+  --neon-rose:      #fb7185;
 
-    <!-- ═══ Dashboard Section ═══ -->
-    {% include 'components/dashboard.html' %}
+  /* ── Gradients ── */
+  --grad-summer:    linear-gradient(135deg, #00e5ff 0%, #00f5d4 30%, #ffb347 60%, #ff6b6b 100%);
+  --grad-glass:     linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.02) 100%);
+  --grad-border:    linear-gradient(135deg, rgba(0,229,255,0.4), rgba(255,107,107,0.4), rgba(0,245,212,0.4));
 
-    <!-- ═══ Threat Visualization ═══ -->
-    {% include 'components/threat_viz.html' %}
+  /* ── Typography ── */
+  --font-display:   'Syne', sans-serif;
+  --font-body:      'Outfit', sans-serif;
+  --font-mono:      'JetBrains Mono', monospace;
 
-    <!-- ═══ Terminal Section ═══ -->
-    {% include 'components/terminal.html' %}
-{% endblock %}
+  /* ── Spacing ── */
+  --section-pad:    clamp(80px, 12vh, 160px);
+}
+
+html {
+  scroll-behavior: smooth;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(0,229,255,0.3) transparent;
+}
+
+body {
+  background: var(--bg-void);
+  color: rgba(255,255,255,0.85);
+  font-family: var(--font-body);
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ── Custom Scrollbar ── */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, var(--neon-cyan), var(--neon-teal));
+  border-radius: 3px;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   §1  LIQUID GLASS SYSTEM
+   Layered glass components with light refraction simulation
+   ═══════════════════════════════════════════════════════════════ */
+
+.liquid-glass {
+  background: var(--glass-bg);
+  backdrop-filter: blur(var(--glass-blur)) saturate(1.4) brightness(1.1);
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(1.4) brightness(1.1);
+  border: 1px solid var(--glass-border);
+  border-radius: 24px;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.5s cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+.liquid-glass::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: var(--grad-glass);
+  border-radius: inherit;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.5s ease;
+}
+
+.liquid-glass::after {
+  content: '';
+  position: absolute;
+  top: -1px; left: -1px; right: -1px; bottom: -1px;
+  border-radius: inherit;
+  background: var(--grad-border);
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  padding: 1px;
+  opacity: 0;
+  transition: opacity 0.6s ease;
+  pointer-events: none;
+}
+
+.liquid-glass:hover::before { opacity: 1; }
+.liquid-glass:hover::after { opacity: 1; }
+.liquid-glass:hover {
+  border-color: rgba(255,255,255,0.15);
+  transform: translateY(-2px);
+  box-shadow:
+    0 8px 32px rgba(0,229,255,0.08),
+    0 0 0 1px rgba(255,255,255,0.05),
+    inset 0 1px 0 rgba(255,255,255,0.1);
+}
+
+/* Glass depth variants */
+.glass-elevated {
+  box-shadow:
+    0 4px 24px rgba(0,0,0,0.4),
+    0 0 0 1px rgba(255,255,255,0.05),
+    inset 0 1px 0 rgba(255,255,255,0.08);
+}
+
+.glass-inset {
+  background: rgba(0,0,0,0.2);
+  border-color: rgba(255,255,255,0.04);
+  box-shadow: inset 0 2px 8px rgba(0,0,0,0.3);
+}
+
+/* Light refraction on mouse move — controlled via JS */
+.liquid-glass .refraction-light {
+  position: absolute;
+  width: 300px; height: 300px;
+  background: radial-gradient(circle, rgba(255,255,255,0.06) 0%, transparent 70%);
+  border-radius: 50%;
+  pointer-events: none;
+  transform: translate(-50%, -50%);
+  transition: left 0.3s ease, top 0.3s ease;
+  mix-blend-mode: overlay;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   §2  GLOBAL BACKGROUND & AMBIENT EFFECTS
+   ═══════════════════════════════════════════════════════════════ */
+
+#bg-canvas {
+  position: fixed;
+  inset: 0;
+  z-index: -2;
+  pointer-events: none;
+}
+
+.ambient-orbs {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.ambient-orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(80px);
+  opacity: 0.15;
+  animation: orbFloat 20s ease-in-out infinite;
+}
+
+.orb-1 {
+  width: 600px; height: 600px;
+  background: var(--neon-cyan);
+  top: -10%; left: -5%;
+  animation-delay: 0s;
+  animation-duration: 25s;
+}
+.orb-2 {
+  width: 500px; height: 500px;
+  background: var(--neon-coral);
+  top: 40%; right: -10%;
+  animation-delay: -8s;
+  animation-duration: 22s;
+}
+.orb-3 {
+  width: 700px; height: 700px;
+  background: var(--neon-teal);
+  bottom: -15%; left: 30%;
+  animation-delay: -15s;
+  animation-duration: 30s;
+}
+.orb-4 {
+  width: 400px; height: 400px;
+  background: var(--neon-lavender);
+  top: 20%; left: 50%;
+  animation-delay: -5s;
+  animation-duration: 18s;
+}
+
+@keyframes orbFloat {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  25%      { transform: translate(60px, -40px) scale(1.1); }
+  50%      { transform: translate(-30px, 50px) scale(0.95); }
+  75%      { transform: translate(40px, 20px) scale(1.05); }
+}
+
+/* Noise texture overlay */
+.noise-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9998;
+  pointer-events: none;
+  opacity: 0.025;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-repeat: repeat;
+  background-size: 256px 256px;
+}
+
+/* Scan line effect */
+.scanlines {
+  position: fixed;
+  inset: 0;
+  z-index: 9997;
+  pointer-events: none;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(0,0,0,0.03) 2px,
+    rgba(0,0,0,0.03) 4px
+  );
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   §3  NAVIGATION — Floating Glass Navbar
+   ═══════════════════════════════════════════════════════════════ */
+
+.navbar {
+  position: fixed;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  background: rgba(10, 10, 18, 0.6);
+  backdrop-filter: blur(var(--glass-blur-heavy)) saturate(1.5);
+  -webkit-backdrop-filter: blur(var(--glass-blur-heavy)) saturate(1.5);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 100px;
+  transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+.navbar:hover {
+  border-color: rgba(255,255,255,0.15);
+  box-shadow: 0 8px 32px rgba(0,229,255,0.1);
+}
+
+.nav-logo {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 16px;
+  letter-spacing: -0.02em;
+  background: var(--grad-summer);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  padding: 0 12px;
+}
+
+.nav-links { display: flex; gap: 2px; }
+
+.nav-link {
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: 500;
+  color: rgba(255,255,255,0.5);
+  text-decoration: none;
+  padding: 8px 16px;
+  border-radius: 100px;
+  transition: all 0.3s ease;
+  position: relative;
+}
+
+.nav-link:hover {
+  color: rgba(255,255,255,0.95);
+  background: rgba(255,255,255,0.06);
+}
+
+.nav-link.active {
+  color: var(--neon-cyan);
+  background: rgba(0,229,255,0.08);
+}
+
+.nav-status {
+  width: 8px; height: 8px;
+  background: var(--neon-teal);
+  border-radius: 50%;
+  margin-left: 8px;
+  animation: statusPulse 2s ease-in-out infinite;
+  box-shadow: 0 0 8px var(--neon-teal);
+}
+
+@keyframes statusPulse {
+  0%, 100% { opacity: 1; box-shadow: 0 0 8px var(--neon-teal); }
+  50% { opacity: 0.5; box-shadow: 0 0 16px var(--neon-teal); }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   §4  HERO SECTION — Dispersion Title + Liquid Glass Panels
+   ═══════════════════════════════════════════════════════════════ */
+
+.hero {
+  position: relative;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 120px 24px 80px;
+  overflow: hidden;
+}
+
+/* The particle/dispersion canvas sits behind the title */
+#dispersion-canvas {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -55%);
+  pointer-events: none;
+  z-index: 2;
+}
+
+.hero-content {
+  position: relative;
+  z-index: 3;
+  text-align: center;
+  max-width: 900px;
+}
+
+/* The main BBM title — this gets replaced by canvas dispersion */
+.hero-title-wrapper {
+  position: relative;
+  margin-bottom: 16px;
+  cursor: pointer;
+  min-height: 180px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.hero-title {
+  font-family: var(--font-display);
+  font-size: clamp(100px, 15vw, 200px);
+  font-weight: 900;
+  letter-spacing: -0.04em;
+  line-height: 0.9;
+  background: var(--grad-summer);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  user-select: none;
+  position: relative;
+  filter: drop-shadow(0 0 60px rgba(0,229,255,0.2));
+}
+
+.hero-subtitle {
+  font-family: var(--font-mono);
+  font-size: clamp(14px, 2vw, 20px);
+  font-weight: 500;
+  letter-spacing: 0.35em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.4);
+  margin-bottom: 40px;
+  opacity: 0;
+  animation: fadeSlideUp 1s ease 0.5s forwards;
+}
+
+.hero-subtitle span {
+  background: var(--grad-summer);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.hero-tagline {
+  font-family: var(--font-body);
+  font-size: clamp(16px, 2.2vw, 22px);
+  font-weight: 300;
+  color: rgba(255,255,255,0.5);
+  max-width: 600px;
+  margin: 0 auto 48px;
+  line-height: 1.6;
+  opacity: 0;
+  animation: fadeSlideUp 1s ease 0.8s forwards;
+}
+
+/* CTA buttons */
+.hero-cta {
+  display: flex;
+  gap: 16px;
+  justify-content: center;
+  flex-wrap: wrap;
+  opacity: 0;
+  animation: fadeSlideUp 1s ease 1.1s forwards;
+}
+
+.btn-primary {
+  font-family: var(--font-body);
+  font-size: 15px;
+  font-weight: 600;
+  padding: 14px 32px;
+  border-radius: 100px;
+  border: none;
+  cursor: pointer;
+  background: var(--grad-summer);
+  color: #050508;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+.btn-primary::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(255,255,255,0.3) 0%, transparent 60%);
+  opacity: 0;
+  transition: opacity 0.4s ease;
+}
+
+.btn-primary:hover {
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: 0 8px 32px rgba(0,229,255,0.3), 0 0 80px rgba(0,229,255,0.1);
+}
+.btn-primary:hover::before { opacity: 1; }
+
+.btn-ghost {
+  font-family: var(--font-body);
+  font-size: 15px;
+  font-weight: 500;
+  padding: 14px 32px;
+  border-radius: 100px;
+  border: 1px solid rgba(255,255,255,0.15);
+  background: rgba(255,255,255,0.03);
+  color: rgba(255,255,255,0.7);
+  cursor: pointer;
+  backdrop-filter: blur(12px);
+  transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+  text-decoration: none;
+}
+
+.btn-ghost:hover {
+  background: rgba(255,255,255,0.08);
+  border-color: rgba(255,255,255,0.25);
+  color: #fff;
+  transform: translateY(-2px);
+}
+
+/* Scroll indicator */
+.scroll-indicator {
+  position: absolute;
+  bottom: 40px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  opacity: 0;
+  animation: fadeSlideUp 1s ease 1.5s forwards;
+}
+
+.scroll-indicator span {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.25);
+}
+
+.scroll-line {
+  width: 1px;
+  height: 40px;
+  background: linear-gradient(180deg, var(--neon-cyan), transparent);
+  animation: scrollPulse 2s ease-in-out infinite;
+}
+
+@keyframes scrollPulse {
+  0%, 100% { opacity: 0.3; transform: scaleY(1); }
+  50% { opacity: 1; transform: scaleY(1.3); }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   §5  FLOATING METRICS BAR — Liquid Glass Status
+   ═══════════════════════════════════════════════════════════════ */
+
+.metrics-bar {
+  display: flex;
+  gap: 16px;
+  justify-content: center;
+  flex-wrap: wrap;
+  padding: 0 24px;
+  margin-top: -40px;
+  position: relative;
+  z-index: 10;
+}
+
+.metric-chip {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 20px;
+  border-radius: 100px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  opacity: 0;
+  animation: fadeSlideUp 0.6s ease forwards;
+}
+
+.metric-chip:nth-child(1) { animation-delay: 1.3s; }
+.metric-chip:nth-child(2) { animation-delay: 1.4s; }
+.metric-chip:nth-child(3) { animation-delay: 1.5s; }
+.metric-chip:nth-child(4) { animation-delay: 1.6s; }
+
+.metric-dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  animation: statusPulse 2s ease-in-out infinite;
+}
+
+.metric-dot.green { background: var(--neon-teal); box-shadow: 0 0 8px var(--neon-teal); }
+.metric-dot.cyan { background: var(--neon-cyan); box-shadow: 0 0 8px var(--neon-cyan); }
+.metric-dot.amber { background: var(--neon-amber); box-shadow: 0 0 8px var(--neon-amber); }
+.metric-dot.coral { background: var(--neon-coral); box-shadow: 0 0 8px var(--neon-coral); }
+
+.metric-label { color: rgba(255,255,255,0.4); }
+.metric-value { color: rgba(255,255,255,0.85); font-weight: 600; }
+
+/* ═══════════════════════════════════════════════════════════════
+   §6  SECTIONS — Shared Layout
+   ═══════════════════════════════════════════════════════════════ */
+
+section {
+  position: relative;
+  padding: var(--section-pad) 24px;
+}
+
+.section-container {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.section-header {
+  text-align: center;
+  margin-bottom: 64px;
+}
+
+.section-tag {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--neon-cyan);
+  margin-bottom: 16px;
+  display: block;
+  opacity: 0.7;
+}
+
+.section-title {
+  font-family: var(--font-display);
+  font-size: clamp(32px, 5vw, 56px);
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  color: #fff;
+  margin-bottom: 16px;
+}
+
+.section-desc {
+  font-size: 17px;
+  color: rgba(255,255,255,0.4);
+  max-width: 500px;
+  margin: 0 auto;
+  line-height: 1.6;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   §7  PIPELINE SECTION — Animated CI/CD Flow
+   ═══════════════════════════════════════════════════════════════ */
+
+.pipeline-track {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+  padding: 40px 0;
+  overflow-x: auto;
+  flex-wrap: wrap;
+}
+
+.pipeline-stage {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 28px 24px;
+  min-width: 140px;
+  position: relative;
+  border-radius: 20px;
+}
+
+.pipeline-stage .stage-icon {
+  width: 56px; height: 56px;
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  position: relative;
+  background: rgba(0,229,255,0.08);
+  border: 1px solid rgba(0,229,255,0.15);
+  transition: all 0.4s ease;
+}
+
+.pipeline-stage:hover .stage-icon {
+  transform: scale(1.1);
+  box-shadow: 0 0 24px rgba(0,229,255,0.2);
+  border-color: rgba(0,229,255,0.4);
+}
+
+.stage-name {
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: 600;
+  color: rgba(255,255,255,0.8);
+}
+
+.stage-tool {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: rgba(255,255,255,0.35);
+}
+
+.pipeline-connector {
+  width: 40px; height: 2px;
+  background: linear-gradient(90deg, var(--neon-cyan), transparent);
+  position: relative;
+  flex-shrink: 0;
+}
+
+.pipeline-connector::after {
+  content: '';
+  position: absolute;
+  right: 0; top: 50%;
+  transform: translate(50%, -50%);
+  width: 6px; height: 6px;
+  background: var(--neon-cyan);
+  border-radius: 50%;
+  animation: connectorPulse 1.5s ease-in-out infinite;
+}
+
+@keyframes connectorPulse {
+  0%, 100% { opacity: 0.3; }
+  50% { opacity: 1; box-shadow: 0 0 8px var(--neon-cyan); }
+}
+
+/* Stage animation — staggered cascade */
+.pipeline-stage {
+  opacity: 0;
+  transform: translateY(20px);
+}
+.pipeline-stage.visible {
+  animation: stageReveal 0.6s cubic-bezier(0.23, 1, 0.32, 1) forwards;
+}
+
+@keyframes stageReveal {
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Active stage animation — data flowing */
+.pipeline-stage.active .stage-icon::after {
+  content: '';
+  position: absolute;
+  inset: -4px;
+  border-radius: 20px;
+  border: 2px solid var(--neon-cyan);
+  animation: stageActive 2s ease-in-out infinite;
+}
+
+@keyframes stageActive {
+  0%, 100% { opacity: 0; transform: scale(1); }
+  50% { opacity: 0.6; transform: scale(1.15); }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   §8  SKILLS / TECH ARSENAL — Glass Card Grid
+   ═══════════════════════════════════════════════════════════════ */
+
+.skills-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 20px;
+}
+
+.skill-card {
+  padding: 32px;
+  border-radius: 24px;
+  position: relative;
+  overflow: hidden;
+  cursor: default;
+}
+
+.skill-card .card-glow {
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  background: radial-gradient(circle at 50% 0%, var(--glow-color, rgba(0,229,255,0.08)) 0%, transparent 70%);
+  opacity: 0;
+  transition: opacity 0.5s ease;
+  pointer-events: none;
+}
+
+.skill-card:hover .card-glow { opacity: 1; }
+
+.skill-icon {
+  font-size: 32px;
+  margin-bottom: 20px;
+  display: block;
+}
+
+.skill-title {
+  font-family: var(--font-display);
+  font-size: 20px;
+  font-weight: 700;
+  color: #fff;
+  margin-bottom: 8px;
+}
+
+.skill-desc {
+  font-size: 14px;
+  color: rgba(255,255,255,0.4);
+  line-height: 1.6;
+  margin-bottom: 20px;
+}
+
+.skill-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.skill-tag {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  padding: 4px 10px;
+  border-radius: 100px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.06);
+  color: rgba(255,255,255,0.45);
+  transition: all 0.3s ease;
+}
+
+.skill-card:hover .skill-tag {
+  border-color: rgba(0,229,255,0.2);
+  color: rgba(255,255,255,0.7);
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   §9  LIVE DASHBOARD — Animated Metrics
+   ═══════════════════════════════════════════════════════════════ */
+
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 20px;
+}
+
+.dash-card {
+  padding: 28px;
+  border-radius: 24px;
+}
+
+.dash-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+.dash-card-title {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.4);
+}
+
+.dash-card-status {
+  font-size: 10px;
+  padding: 4px 8px;
+  border-radius: 100px;
+  background: rgba(0,245,212,0.1);
+  color: var(--neon-teal);
+  font-family: var(--font-mono);
+}
+
+.dash-metric {
+  font-family: var(--font-display);
+  font-size: 42px;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  background: var(--grad-summer);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin-bottom: 8px;
+}
+
+.dash-label {
+  font-size: 14px;
+  color: rgba(255,255,255,0.35);
+}
+
+/* Mini bar chart */
+.mini-chart {
+  display: flex;
+  align-items: flex-end;
+  gap: 3px;
+  height: 48px;
+  margin-top: 16px;
+}
+
+.mini-bar {
+  flex: 1;
+  border-radius: 4px 4px 0 0;
+  background: linear-gradient(180deg, var(--neon-cyan), rgba(0,229,255,0.2));
+  animation: barGrow 1.5s cubic-bezier(0.23, 1, 0.32, 1) forwards;
+  transform-origin: bottom;
+  transform: scaleY(0);
+}
+
+@keyframes barGrow {
+  to { transform: scaleY(1); }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   §10  THREAT MAP — Animated Network
+   ═══════════════════════════════════════════════════════════════ */
+
+.threat-map-container {
+  position: relative;
+  border-radius: 24px;
+  overflow: hidden;
+  min-height: 400px;
+}
+
+#threat-canvas {
+  width: 100%;
+  height: 400px;
+  display: block;
+}
+
+.threat-legend {
+  position: absolute;
+  bottom: 20px;
+  left: 20px;
+  display: flex;
+  gap: 16px;
+  z-index: 2;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: rgba(255,255,255,0.5);
+}
+
+.legend-dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   §11  TERMINAL — Live Command Feed
+   ═══════════════════════════════════════════════════════════════ */
+
+.terminal-window {
+  border-radius: 16px;
+  overflow: hidden;
+  max-width: 700px;
+  margin: 0 auto;
+}
+
+.terminal-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px;
+  background: rgba(0,0,0,0.3);
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+}
+
+.terminal-dot {
+  width: 12px; height: 12px;
+  border-radius: 50%;
+}
+.terminal-dot.red { background: #ff5f57; }
+.terminal-dot.yellow { background: #febc2e; }
+.terminal-dot.green { background: #28c840; }
+
+.terminal-title {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: rgba(255,255,255,0.4);
+  margin-left: 8px;
+}
+
+.terminal-body {
+  padding: 20px;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  line-height: 1.8;
+  color: rgba(255,255,255,0.6);
+  min-height: 200px;
+}
+
+.terminal-line { opacity: 0; animation: terminalType 0.3s ease forwards; }
+
+.terminal-line .prompt {
+  color: var(--neon-teal);
+  user-select: none;
+}
+
+.terminal-line .cmd { color: rgba(255,255,255,0.85); }
+.terminal-line .output { color: rgba(255,255,255,0.4); }
+.terminal-line .success { color: var(--neon-teal); }
+.terminal-line .warning { color: var(--neon-amber); }
+.terminal-line .error { color: var(--neon-coral); }
+
+@keyframes terminalType {
+  to { opacity: 1; }
+}
+
+.cursor-blink {
+  display: inline-block;
+  width: 8px; height: 16px;
+  background: var(--neon-cyan);
+  animation: cursorBlink 1s step-end infinite;
+  vertical-align: middle;
+  margin-left: 2px;
+}
+
+@keyframes cursorBlink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   §12  FOOTER — Glass Strip
+   ═══════════════════════════════════════════════════════════════ */
+
+.footer {
+  text-align: center;
+  padding: 40px 24px;
+  border-top: 1px solid rgba(255,255,255,0.04);
+}
+
+.footer-text {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: rgba(255,255,255,0.2);
+}
+
+.footer-text a {
+  color: var(--neon-cyan);
+  text-decoration: none;
+  transition: color 0.3s ease;
+}
+.footer-text a:hover { color: var(--neon-teal); }
+
+.footer-links {
+  display: flex;
+  gap: 24px;
+  justify-content: center;
+  margin-top: 16px;
+}
+
+.footer-link {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: rgba(255,255,255,0.3);
+  text-decoration: none;
+  transition: color 0.3s ease;
+}
+.footer-link:hover { color: var(--neon-cyan); }
+
+/* ═══════════════════════════════════════════════════════════════
+   §13  SCROLL REVEAL SYSTEM
+   ═══════════════════════════════════════════════════════════════ */
+
+.reveal {
+  opacity: 0;
+  transform: translateY(40px);
+  transition: all 0.8s cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+.reveal.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.reveal-delay-1 { transition-delay: 0.1s; }
+.reveal-delay-2 { transition-delay: 0.2s; }
+.reveal-delay-3 { transition-delay: 0.3s; }
+.reveal-delay-4 { transition-delay: 0.4s; }
+.reveal-delay-5 { transition-delay: 0.5s; }
+
+/* ═══════════════════════════════════════════════════════════════
+   §14  KEYFRAMES & UTILITIES
+   ═══════════════════════════════════════════════════════════════ */
+
+@keyframes fadeSlideUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% center; }
+  100% { background-position: 200% center; }
+}
+
+.text-gradient {
+  background: var(--grad-summer);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.text-shimmer {
+  background: linear-gradient(90deg,
+    var(--neon-cyan) 0%,
+    var(--neon-teal) 25%,
+    var(--neon-amber) 50%,
+    var(--neon-coral) 75%,
+    var(--neon-cyan) 100%
+  );
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: shimmer 4s linear infinite;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   §15  RESPONSIVE
+   ═══════════════════════════════════════════════════════════════ */
+
+@media (max-width: 768px) {
+  .navbar { padding: 6px 8px; top: 12px; }
+  .nav-link { padding: 6px 12px; font-size: 12px; }
+  .pipeline-track { gap: 8px; }
+  .pipeline-connector { width: 20px; }
+  .skills-grid { grid-template-columns: 1fr; }
+  .dashboard-grid { grid-template-columns: 1fr; }
+  .hero { padding: 100px 16px 60px; }
+  .metrics-bar { gap: 8px; }
+  .metric-chip { padding: 8px 14px; font-size: 11px; }
+}
+
+@media (max-width: 480px) {
+  .nav-links { display: none; }
+  .hero-title { font-size: 80px; }
+}
+</style>
+</head>
+
+<body>
+
+<!-- ═══ Background Layer ═══ -->
+<canvas id="bg-canvas"></canvas>
+<div class="ambient-orbs">
+  <div class="ambient-orb orb-1"></div>
+  <div class="ambient-orb orb-2"></div>
+  <div class="ambient-orb orb-3"></div>
+  <div class="ambient-orb orb-4"></div>
+</div>
+<div class="noise-overlay"></div>
+<div class="scanlines"></div>
+
+<!-- ═══ Navigation ═══ -->
+<nav class="navbar" id="navbar">
+  <div class="nav-logo">BBM</div>
+  <div class="nav-links">
+    <a href="#hero" class="nav-link active">Home</a>
+    <a href="#pipeline" class="nav-link">Pipeline</a>
+    <a href="#arsenal" class="nav-link">Arsenal</a>
+    <a href="#dashboard" class="nav-link">Metrics</a>
+    <a href="#terminal" class="nav-link">Terminal</a>
+  </div>
+  <div class="nav-status" title="Systems Online"></div>
+</nav>
+
+<!-- ═══ Hero Section ═══ -->
+<section class="hero" id="hero">
+  <canvas id="dispersion-canvas" width="900" height="300"></canvas>
+
+  <div class="hero-content">
+    <div class="hero-title-wrapper" id="title-trigger">
+      <h1 class="hero-title" id="hero-title-text">BBM</h1>
+    </div>
+    <p class="hero-subtitle"><span>DevSecOps</span> · Lab</p>
+    <p class="hero-tagline">
+      Building secure infrastructure that scales. CI/CD pipelines hardened with
+      Gitleaks, Semgrep & Trivy — deployed on cloud, monitored in real-time.
+    </p>
+    <div class="hero-cta">
+      <button class="btn-primary" onclick="window.open('https://github.com/1SeaDarkNess1/devsecops_portfolio','_blank')">
+        ⟶ &nbsp;View Source on GitHub
+      </button>
+      <a href="#pipeline" class="btn-ghost">Explore Pipeline</a>
+    </div>
+  </div>
+
+  <div class="scroll-indicator">
+    <span>Scroll</span>
+    <div class="scroll-line"></div>
+  </div>
+</section>
+
+<!-- ═══ Metrics Bar ═══ -->
+<div class="metrics-bar">
+  <div class="metric-chip liquid-glass">
+    <div class="metric-dot green"></div>
+    <span class="metric-label">Pipeline</span>
+    <span class="metric-value" id="mc-pipeline">PASSING</span>
+  </div>
+  <div class="metric-chip liquid-glass">
+    <div class="metric-dot cyan"></div>
+    <span class="metric-label">Uptime</span>
+    <span class="metric-value" id="mc-uptime">99.97%</span>
+  </div>
+  <div class="metric-chip liquid-glass">
+    <div class="metric-dot amber"></div>
+    <span class="metric-label">Threats Blocked</span>
+    <span class="metric-value" id="mc-threats">2,847</span>
+  </div>
+  <div class="metric-chip liquid-glass">
+    <div class="metric-dot coral"></div>
+    <span class="metric-label">Deploy</span>
+    <span class="metric-value" id="mc-deploy">12s avg</span>
+  </div>
+</div>
+
+<!-- ═══ CI/CD Pipeline Section ═══ -->
+<section id="pipeline">
+  <div class="section-container">
+    <div class="section-header reveal">
+      <span class="section-tag">// continuous_delivery</span>
+      <h2 class="section-title">Security-First Pipeline</h2>
+      <p class="section-desc">Every commit passes through 6 automated security gates before reaching production.</p>
+    </div>
+
+    <div class="pipeline-track" id="pipeline-track">
+      <div class="pipeline-stage liquid-glass" data-delay="0">
+        <div class="stage-icon">📝</div>
+        <span class="stage-name">Commit</span>
+        <span class="stage-tool">git push</span>
+      </div>
+      <div class="pipeline-connector"></div>
+      <div class="pipeline-stage liquid-glass" data-delay="100">
+        <div class="stage-icon">🔑</div>
+        <span class="stage-name">Secrets Scan</span>
+        <span class="stage-tool">Gitleaks</span>
+      </div>
+      <div class="pipeline-connector"></div>
+      <div class="pipeline-stage liquid-glass" data-delay="200">
+        <div class="stage-icon">🔍</div>
+        <span class="stage-name">SAST</span>
+        <span class="stage-tool">Semgrep</span>
+      </div>
+      <div class="pipeline-connector"></div>
+      <div class="pipeline-stage liquid-glass" data-delay="300">
+        <div class="stage-icon">🐳</div>
+        <span class="stage-name">Container Scan</span>
+        <span class="stage-tool">Trivy</span>
+      </div>
+      <div class="pipeline-connector"></div>
+      <div class="pipeline-stage liquid-glass" data-delay="400">
+        <div class="stage-icon">🏗️</div>
+        <span class="stage-name">Build & Push</span>
+        <span class="stage-tool">Docker + GH Actions</span>
+      </div>
+      <div class="pipeline-connector"></div>
+      <div class="pipeline-stage liquid-glass" data-delay="500">
+        <div class="stage-icon">🚀</div>
+        <span class="stage-name">Deploy</span>
+        <span class="stage-tool">SSH → Oracle Cloud</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ Tech Arsenal Section ═══ -->
+<section id="arsenal">
+  <div class="section-container">
+    <div class="section-header reveal">
+      <span class="section-tag">// tech_arsenal</span>
+      <h2 class="section-title">What I Ship With</h2>
+      <p class="section-desc">Production-tested tools for building, securing, and deploying at scale.</p>
+    </div>
+
+    <div class="skills-grid">
+      <div class="skill-card liquid-glass glass-elevated reveal reveal-delay-1">
+        <div class="card-glow" style="--glow-color: rgba(0,229,255,0.08)"></div>
+        <span class="skill-icon">🛡️</span>
+        <h3 class="skill-title">Security Automation</h3>
+        <p class="skill-desc">Automated vulnerability scanning integrated at every pipeline stage. Zero manual security gates.</p>
+        <div class="skill-tags">
+          <span class="skill-tag">Gitleaks</span>
+          <span class="skill-tag">Semgrep</span>
+          <span class="skill-tag">Trivy</span>
+          <span class="skill-tag">OWASP</span>
+        </div>
+      </div>
+
+      <div class="skill-card liquid-glass glass-elevated reveal reveal-delay-2">
+        <div class="card-glow" style="--glow-color: rgba(0,245,212,0.08)"></div>
+        <span class="skill-icon">⚡</span>
+        <h3 class="skill-title">Cloud Infrastructure</h3>
+        <p class="skill-desc">Containerized microservices on Oracle Cloud Free Tier with Nginx reverse proxy and automated SSL.</p>
+        <div class="skill-tags">
+          <span class="skill-tag">Docker</span>
+          <span class="skill-tag">Nginx</span>
+          <span class="skill-tag">Let's Encrypt</span>
+          <span class="skill-tag">Oracle Cloud</span>
+        </div>
+      </div>
+
+      <div class="skill-card liquid-glass glass-elevated reveal reveal-delay-3">
+        <div class="card-glow" style="--glow-color: rgba(255,107,107,0.08)"></div>
+        <span class="skill-icon">🔄</span>
+        <h3 class="skill-title">CI/CD Pipelines</h3>
+        <p class="skill-desc">Full GitHub Actions workflow — lint, scan, build, push, deploy via SSH. Avg deploy time: 12 seconds.</p>
+        <div class="skill-tags">
+          <span class="skill-tag">GitHub Actions</span>
+          <span class="skill-tag">SSH/SCP</span>
+          <span class="skill-tag">Webhooks</span>
+        </div>
+      </div>
+
+      <div class="skill-card liquid-glass glass-elevated reveal reveal-delay-4">
+        <div class="card-glow" style="--glow-color: rgba(192,132,252,0.08)"></div>
+        <span class="skill-icon">📊</span>
+        <h3 class="skill-title">Monitoring & Observability</h3>
+        <p class="skill-desc">Real-time system metrics dashboard with CPU, RAM, disk and network telemetry. Built with Flask + psutil.</p>
+        <div class="skill-tags">
+          <span class="skill-tag">Flask</span>
+          <span class="skill-tag">psutil</span>
+          <span class="skill-tag">REST API</span>
+          <span class="skill-tag">WebSocket</span>
+        </div>
+      </div>
+
+      <div class="skill-card liquid-glass glass-elevated reveal reveal-delay-5">
+        <div class="card-glow" style="--glow-color: rgba(255,179,71,0.08)"></div>
+        <span class="skill-icon">🐧</span>
+        <h3 class="skill-title">Linux Systems</h3>
+        <p class="skill-desc">Deep hands-on with Ubuntu, systemd, cron, iptables, /proc tuning, chroot jails, and shell scripting.</p>
+        <div class="skill-tags">
+          <span class="skill-tag">Ubuntu</span>
+          <span class="skill-tag">Bash</span>
+          <span class="skill-tag">systemd</span>
+          <span class="skill-tag">iptables</span>
+          <span class="skill-tag">WSL2</span>
+        </div>
+      </div>
+
+      <div class="skill-card liquid-glass glass-elevated reveal reveal-delay-5">
+        <div class="card-glow" style="--glow-color: rgba(0,229,255,0.08)"></div>
+        <span class="skill-icon">🧠</span>
+        <h3 class="skill-title">AI / ML (Learning)</h3>
+        <p class="skill-desc">Building foundational skills — Python, Pandas, Kaggle competitions. Preparing for national AI olympiad (ONIA).</p>
+        <div class="skill-tags">
+          <span class="skill-tag">Python</span>
+          <span class="skill-tag">Pandas</span>
+          <span class="skill-tag">Kaggle</span>
+          <span class="skill-tag">JupyterLab</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ Dashboard Section ═══ -->
+<section id="dashboard">
+  <div class="section-container">
+    <div class="section-header reveal">
+      <span class="section-tag">// live_telemetry</span>
+      <h2 class="section-title">System Heartbeat</h2>
+      <p class="section-desc">Real-time metrics from the production infrastructure.</p>
+    </div>
+
+    <div class="dashboard-grid">
+      <div class="dash-card liquid-glass glass-elevated reveal reveal-delay-1">
+        <div class="dash-card-header">
+          <span class="dash-card-title">CPU Load</span>
+          <span class="dash-card-status">● Live</span>
+        </div>
+        <div class="dash-metric" id="cpu-metric">0%</div>
+        <div class="dash-label">Oracle Cloud ARM · 4 vCPU</div>
+        <div class="mini-chart" id="cpu-chart"></div>
+      </div>
+
+      <div class="dash-card liquid-glass glass-elevated reveal reveal-delay-2">
+        <div class="dash-card-header">
+          <span class="dash-card-title">Memory</span>
+          <span class="dash-card-status">● Live</span>
+        </div>
+        <div class="dash-metric" id="ram-metric">0 GB</div>
+        <div class="dash-label">24 GB Total · Allocated</div>
+        <div class="mini-chart" id="ram-chart"></div>
+      </div>
+
+      <div class="dash-card liquid-glass glass-elevated reveal reveal-delay-3">
+        <div class="dash-card-header">
+          <span class="dash-card-title">Deployments</span>
+          <span class="dash-card-status">● 24h</span>
+        </div>
+        <div class="dash-metric" id="deploy-metric">0</div>
+        <div class="dash-label">Successful builds today</div>
+        <div class="mini-chart" id="deploy-chart"></div>
+      </div>
+
+      <div class="dash-card liquid-glass glass-elevated reveal reveal-delay-4">
+        <div class="dash-card-header">
+          <span class="dash-card-title">Vuln Scans</span>
+          <span class="dash-card-status">● Clean</span>
+        </div>
+        <div class="dash-metric" id="vuln-metric">0</div>
+        <div class="dash-label">Critical findings this week</div>
+        <div class="mini-chart" id="vuln-chart"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ Threat Visualization ═══ -->
+<section id="threat-viz">
+  <div class="section-container">
+    <div class="section-header reveal">
+      <span class="section-tag">// threat_intelligence</span>
+      <h2 class="section-title">Network Defense</h2>
+      <p class="section-desc">Visualizing active threat mitigation across the infrastructure.</p>
+    </div>
+
+    <div class="threat-map-container liquid-glass glass-elevated reveal">
+      <canvas id="threat-canvas"></canvas>
+      <div class="threat-legend">
+        <div class="legend-item">
+          <div class="legend-dot" style="background: var(--neon-teal);"></div>
+          <span>Secure Node</span>
+        </div>
+        <div class="legend-item">
+          <div class="legend-dot" style="background: var(--neon-amber);"></div>
+          <span>Monitored</span>
+        </div>
+        <div class="legend-item">
+          <div class="legend-dot" style="background: var(--neon-coral);"></div>
+          <span>Blocked Threat</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ Terminal Section ═══ -->
+<section id="terminal">
+  <div class="section-container">
+    <div class="section-header reveal">
+      <span class="section-tag">// live_feed</span>
+      <h2 class="section-title">Pipeline Output</h2>
+      <p class="section-desc">Watch the CI/CD pipeline execute in real-time.</p>
+    </div>
+
+    <div class="terminal-window liquid-glass glass-elevated reveal">
+      <div class="terminal-header">
+        <div class="terminal-dot red"></div>
+        <div class="terminal-dot yellow"></div>
+        <div class="terminal-dot green"></div>
+        <span class="terminal-title">bbm@prod ~ github-actions</span>
+      </div>
+      <div class="terminal-body" id="terminal-body">
+        <!-- Lines injected by JS -->
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ Footer ═══ -->
+<footer class="footer">
+  <p class="footer-text">
+    Built with 🔒 by <a href="https://github.com/1SeaDarkNess1" target="_blank">BBM</a>
+    · Hosted on Oracle Cloud · Secured by GitHub Actions
+  </p>
+  <div class="footer-links">
+    <a href="https://github.com/1SeaDarkNess1/devsecops_portfolio" class="footer-link" target="_blank">GitHub</a>
+    <a href="https://bbmlab.duckdns.org" class="footer-link" target="_blank">Live Dashboard</a>
+  </div>
+</footer>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     JAVASCRIPT — All Animations, Dispersion Engine, Threat Map
+     ═══════════════════════════════════════════════════════════════ -->
+<script>
+(function() {
+  'use strict';
+
+  /* ═══════════════════════════════════════════════════════════
+     §JS-1  PARTICLE BACKGROUND SYSTEM
+     Floating dots with subtle connections
+     ═══════════════════════════════════════════════════════════ */
+  const bgCanvas = document.getElementById('bg-canvas');
+  const bgCtx = bgCanvas.getContext('2d');
+  let bgParticles = [];
+
+  function resizeBg() {
+    bgCanvas.width = window.innerWidth;
+    bgCanvas.height = window.innerHeight;
+  }
+  resizeBg();
+  window.addEventListener('resize', resizeBg);
+
+  class BgParticle {
+    constructor() {
+      this.x = Math.random() * bgCanvas.width;
+      this.y = Math.random() * bgCanvas.height;
+      this.vx = (Math.random() - 0.5) * 0.3;
+      this.vy = (Math.random() - 0.5) * 0.3;
+      this.r = Math.random() * 1.5 + 0.5;
+      this.alpha = Math.random() * 0.3 + 0.05;
+    }
+    update() {
+      this.x += this.vx;
+      this.y += this.vy;
+      if (this.x < 0 || this.x > bgCanvas.width) this.vx *= -1;
+      if (this.y < 0 || this.y > bgCanvas.height) this.vy *= -1;
+    }
+    draw() {
+      bgCtx.beginPath();
+      bgCtx.arc(this.x, this.y, this.r, 0, Math.PI * 2);
+      bgCtx.fillStyle = `rgba(0, 229, 255, ${this.alpha})`;
+      bgCtx.fill();
+    }
+  }
+
+  for (let i = 0; i < 80; i++) bgParticles.push(new BgParticle());
+
+  function animateBg() {
+    bgCtx.clearRect(0, 0, bgCanvas.width, bgCanvas.height);
+    bgParticles.forEach(p => { p.update(); p.draw(); });
+
+    // Draw connections
+    for (let i = 0; i < bgParticles.length; i++) {
+      for (let j = i + 1; j < bgParticles.length; j++) {
+        const dx = bgParticles[i].x - bgParticles[j].x;
+        const dy = bgParticles[i].y - bgParticles[j].y;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        if (dist < 120) {
+          bgCtx.beginPath();
+          bgCtx.moveTo(bgParticles[i].x, bgParticles[i].y);
+          bgCtx.lineTo(bgParticles[j].x, bgParticles[j].y);
+          bgCtx.strokeStyle = `rgba(0, 229, 255, ${0.04 * (1 - dist / 120)})`;
+          bgCtx.lineWidth = 0.5;
+          bgCtx.stroke();
+        }
+      }
+    }
+    requestAnimationFrame(animateBg);
+  }
+  animateBg();
+
+
+  /* ═══════════════════════════════════════════════════════════
+     §JS-2  BBM TEXT DISPERSION EFFECT
+     Samples pixels from rendered text → creates particles
+     On hover/click → particles scatter → reassemble
+     ═══════════════════════════════════════════════════════════ */
+  const dispCanvas = document.getElementById('dispersion-canvas');
+  const dispCtx = dispCanvas.getContext('2d');
+  const heroTitle = document.getElementById('hero-title-text');
+  const titleTrigger = document.getElementById('title-trigger');
+  let dispParticles = [];
+  let isDispersed = false;
+  let mouseX = 0, mouseY = 0;
+
+  function initDispersion() {
+    const W = dispCanvas.width;
+    const H = dispCanvas.height;
+
+    // Render "BBM" to an offscreen canvas to sample pixels
+    const offscreen = document.createElement('canvas');
+    offscreen.width = W;
+    offscreen.height = H;
+    const offCtx = offscreen.getContext('2d');
+
+    // Calculate font size to match the hero title
+    const fontSize = Math.min(W * 0.28, 200);
+    offCtx.font = `900 ${fontSize}px Syne, sans-serif`;
+    offCtx.textAlign = 'center';
+    offCtx.textBaseline = 'middle';
+    offCtx.fillStyle = '#fff';
+    offCtx.fillText('BBM', W / 2, H / 2);
+
+    // Sample pixels
+    const imageData = offCtx.getImageData(0, 0, W, H);
+    const data = imageData.data;
+    const gap = 3; // Sample every 3 pixels for density
+    dispParticles = [];
+
+    for (let y = 0; y < H; y += gap) {
+      for (let x = 0; x < W; x += gap) {
+        const i = (y * W + x) * 4;
+        if (data[i + 3] > 128) {
+          // Color from summer gradient based on position
+          const t = x / W;
+          let r, g, b;
+          if (t < 0.33) {
+            r = 0; g = lerp(229, 245, t * 3); b = lerp(255, 212, t * 3);
+          } else if (t < 0.66) {
+            const t2 = (t - 0.33) * 3;
+            r = lerp(0, 255, t2); g = lerp(245, 179, t2); b = lerp(212, 71, t2);
+          } else {
+            const t3 = (t - 0.66) * 3;
+            r = lerp(255, 255, t3); g = lerp(179, 107, t3); b = lerp(71, 107, t3);
+          }
+
+          dispParticles.push({
+            x: x, y: y,
+            origX: x, origY: y,
+            vx: 0, vy: 0,
+            r: Math.random() * 1.8 + 0.8,
+            color: `rgba(${Math.round(r)}, ${Math.round(g)}, ${Math.round(b)}, 0.85)`,
+            delay: Math.random() * 0.5,
+            friction: 0.92 + Math.random() * 0.05,
+            returnSpeed: 0.03 + Math.random() * 0.04
+          });
+        }
+      }
+    }
+
+    // Hide the HTML title once particles are ready
+    heroTitle.style.opacity = '0';
+  }
+
+  function lerp(a, b, t) { return a + (b - a) * t; }
+
+  function disperseParticles() {
+    isDispersed = true;
+    dispParticles.forEach(p => {
+      const angle = Math.random() * Math.PI * 2;
+      const force = Math.random() * 12 + 5;
+      p.vx = Math.cos(angle) * force;
+      p.vy = Math.sin(angle) * force;
+    });
+
+    setTimeout(() => { isDispersed = false; }, 1500);
+  }
+
+  titleTrigger.addEventListener('mouseenter', disperseParticles);
+  titleTrigger.addEventListener('click', disperseParticles);
+
+  // Mouse repulsion on the canvas
+  dispCanvas.parentElement.addEventListener('mousemove', (e) => {
+    const rect = dispCanvas.getBoundingClientRect();
+    mouseX = e.clientX - rect.left;
+    mouseY = e.clientY - rect.top;
+  });
+
+  function animateDispersion() {
+    dispCtx.clearRect(0, 0, dispCanvas.width, dispCanvas.height);
+
+    dispParticles.forEach(p => {
+      if (isDispersed) {
+        p.x += p.vx;
+        p.y += p.vy;
+        p.vx *= p.friction;
+        p.vy *= p.friction;
+      } else {
+        // Return to origin
+        const dx = p.origX - p.x;
+        const dy = p.origY - p.y;
+        p.vx += dx * p.returnSpeed;
+        p.vy += dy * p.returnSpeed;
+        p.vx *= 0.85;
+        p.vy *= 0.85;
+        p.x += p.vx;
+        p.y += p.vy;
+
+        // Mouse repulsion
+        const mdx = p.x - mouseX;
+        const mdy = p.y - mouseY;
+        const mDist = Math.sqrt(mdx * mdx + mdy * mdy);
+        if (mDist < 80) {
+          const force = (80 - mDist) / 80;
+          p.vx += (mdx / mDist) * force * 2;
+          p.vy += (mdy / mDist) * force * 2;
+        }
+      }
+
+      dispCtx.beginPath();
+      dispCtx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+      dispCtx.fillStyle = p.color;
+      dispCtx.fill();
+    });
+
+    requestAnimationFrame(animateDispersion);
+  }
+
+  // Wait for font to load
+  document.fonts.ready.then(() => {
+    setTimeout(() => {
+      initDispersion();
+      animateDispersion();
+    }, 300);
+  });
+
+  // Auto-disperse on load for dramatic effect
+  setTimeout(disperseParticles, 2000);
+})();
+</script>
+</body>
+</html>
