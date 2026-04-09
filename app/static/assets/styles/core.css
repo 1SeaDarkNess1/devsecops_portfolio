@@ -1,0 +1,145 @@
+@charset "UTF-8";
+
+/* ═══════════════════════════════════════════════
+   CORE DESIGN SYSTEM
+   Cyberpunk / Dark Mode Variables & Resets
+═══════════════════════════════════════════════ */
+
+:root {
+    /* Color Palette */
+    --bg-dark: #020409;
+    --text-primary: #f8fafc;
+    --text-muted: rgba(248, 250, 252, 0.5);
+    
+    /* Neon Accents */
+    --neon-cyan: #00e5ff;
+    --neon-blue: #2962ff;
+    --neon-purple: #b388ff;
+    --neon-magenta: #ff3366;
+    --neon-red: #ff0033;
+    
+    /* State Colors mapped to Threat Levels */
+    --threat-normal: var(--neon-cyan);
+    --threat-warning: var(--neon-purple);
+    --threat-critical: var(--neon-red);
+    
+    /* Typography */
+    --font-heading: 'Outfit', sans-serif;
+    --font-mono: 'Fira Code', 'Courier New', monospace;
+    
+    /* Glass / UI Metrics */
+    --glass-border: rgba(255, 255, 255, 0.08);
+    --panel-radius: 20px;
+}
+
+*, *::before, *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    background-color: var(--bg-dark);
+    color: var(--text-primary);
+    font-family: var(--font-heading);
+    line-height: 1.5;
+    overflow: hidden; /* Prevent native scroll */
+    -webkit-font-smoothing: antialiased;
+}
+
+/* ═══════════════════════════════════════════════
+   TYPOGRAPHY & UTILITIES
+═══════════════════════════════════════════════ */
+.highlight-cyan { color: var(--neon-cyan); text-shadow: 0 0 10px rgba(0, 229, 255, 0.4); }
+.highlight-magenta { color: var(--neon-magenta); text-shadow: 0 0 10px rgba(255, 51, 102, 0.4); }
+.highlight-red { color: var(--neon-red); text-shadow: 0 0 10px rgba(255, 0, 51, 0.4); }
+.text-dim { color: var(--text-muted); }
+
+.terminal-list {
+    list-style: none;
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    padding-left: 0;
+}
+
+.terminal-list li {
+    position: relative;
+    padding-left: 1rem;
+    margin-bottom: 0.3rem;
+}
+.terminal-list li::before {
+    content: '>';
+    position: absolute;
+    left: 0;
+    color: var(--neon-cyan);
+}
+
+.badge {
+    font-size: 0.65rem;
+    padding: 0.2rem 0.5rem;
+    border-radius: 4px;
+    font-family: var(--font-mono);
+    text-transform: uppercase;
+    font-weight: bold;
+    letter-spacing: 1px;
+}
+.badge.neon-blue { background: rgba(41, 98, 255, 0.1); color: var(--neon-blue); border: 1px solid rgba(41,98,255,0.4); }
+.badge.neon-cyan { background: rgba(0, 229, 255, 0.1); color: var(--neon-cyan); border: 1px solid rgba(0,229,255,0.4); }
+
+.cyber-input {
+    background: rgba(0, 0, 0, 0.4);
+    border: 1px solid var(--glass-border);
+    color: var(--neon-cyan);
+    padding: 0.75rem 1rem;
+    border-radius: 8px;
+    font-family: var(--font-mono);
+    font-size: 0.85rem;
+    outline: none;
+    width: 100%;
+    transition: all 0.3s ease;
+}
+.cyber-input:focus {
+    border-color: var(--neon-cyan);
+    box-shadow: 0 0 15px rgba(0, 229, 255, 0.2) inset;
+}
+
+.cyber-btn {
+    background: transparent;
+    border: 1px solid var(--neon-cyan);
+    color: var(--neon-cyan);
+    padding: 0.75rem;
+    border-radius: 8px;
+    font-family: var(--font-heading);
+    font-weight: 800;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+}
+.cyber-btn:hover {
+    background: rgba(0, 229, 255, 0.15);
+    box-shadow: 0 0 20px rgba(0, 229, 255, 0.3);
+}
+.cyber-btn.danger {
+    border-color: var(--neon-red);
+    color: var(--neon-red);
+}
+.cyber-btn.danger:hover {
+    background: rgba(255, 0, 51, 0.15);
+    box-shadow: 0 0 20px rgba(255, 0, 51, 0.3);
+}
+.hidden { display: none !important; }
+
+.terminal-box {
+    background: rgba(0,0,0,0.5);
+    border: 1px solid rgba(255,255,255,0.05);
+    border-radius: 8px;
+    padding: 1rem;
+    font-family: var(--font-mono);
+    font-size: 0.8rem;
+    min-height: 4rem;
+    color: var(--text-muted);
+}

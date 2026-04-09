@@ -1,0 +1,156 @@
+@charset "UTF-8";
+
+/* ═══════════════════════════════════════════════
+   PURE LIQUID GLASS DYNAMICS
+   Level 11 / 10 Aesthetic Engine
+═══════════════════════════════════════════════ */
+
+.liquid-box {
+    position: relative;
+    border-radius: var(--panel-radius);
+    
+    /* Base Glass Physical Layer */
+    background: rgba(5, 7, 15, 0.55);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    
+    /* True Refraction Border (Linked to SVG in HTML) */
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow: 
+        0 20px 50px rgba(0, 0, 0, 0.6), /* Heavy drop shadow */
+        inset 0 1px 1px rgba(255, 255, 255, 0.15), /* Top specular highlight */
+        inset 0 -10px 20px rgba(0, 0, 0, 0.5); /* Bottom dark volume */
+        
+    overflow: hidden;
+    transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+    
+    /* Prevent text selection causing weird glass renders */
+    user-select: none;
+}
+
+/* 
+ * The Caustics Engine (Internal Morphing Fluid) 
+ * Driven by the ::before pseudo-element with SVG displacement 
+ */
+.liquid-box::before {
+    content: '';
+    position: absolute;
+    inset: -20px; /* Slight overflow to handle blur bleed */
+    background: radial-gradient(
+        circle at 50% 50%,
+        rgba(255, 255, 255, 0.03) 0%,
+        transparent 60%
+    );
+    filter: url(#liquid-caustics) blur(5px);
+    opacity: 0.6;
+    pointer-events: none;
+    z-index: 0;
+    
+    /* Morphing animation */
+    animation: caustic-flow 25s infinite linear;
+}
+
+/* Dynamic State Colors Driven by data-threat attribute */
+.liquid-box[data-threat="normal"]::before {
+    background: radial-gradient(circle at 30% 70%, rgba(0, 229, 255, 0.12) 0%, transparent 60%);
+}
+
+.liquid-box[data-threat="warning"]::before {
+    background: radial-gradient(circle at 30% 70%, rgba(179, 136, 255, 0.15) 0%, transparent 60%);
+    animation: caustic-flow 15s infinite linear;
+}
+
+.liquid-box[data-threat="critical"]::before {
+    background: radial-gradient(circle at 30% 70%, rgba(255, 0, 51, 0.2) 0%, transparent 60%);
+    animation: caustic-flow 8s infinite linear; /* Faster chaotic flow */
+}
+
+/* Ensure content stays ABOVE the caustics layer */
+.liquid-box > * {
+    position: relative;
+    z-index: 10;
+}
+
+/* Morphing / Bento-Motion Interactivity */
+.liquid-box:hover {
+    transform: translateY(-4px) scale(1.01);
+    box-shadow: 
+        0 30px 60px rgba(0, 0, 0, 0.8),
+        inset 0 1px 1px rgba(255, 255, 255, 0.25),
+        inset 0 -10px 30px rgba(0, 0, 0, 0.7);
+    border-color: rgba(255, 255, 255, 0.15);
+}
+
+@keyframes caustic-flow {
+    0% { transform: translateY(0) rotate(0deg); }
+    50% { transform: translateY(10px) rotate(180deg); }
+    100% { transform: translateY(0) rotate(360deg); }
+}
+
+/* ═══════════════════════════════════════════════
+   BENTO INTERNAL STRUCTURAL ELEMENTS
+═══════════════════════════════════════════════ */
+.box-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.25rem 1.25rem 0.5rem 1.25rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+}
+
+.box-title {
+    font-family: var(--font-heading);
+    font-size: 0.8rem;
+    font-weight: 800;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--text-muted);
+}
+
+.box-core {
+    padding: 1rem 1.25rem 1.25rem 1.25rem;
+}
+
+/* Pulsing Threat Indicator Dot */
+.threat-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--neon-cyan);
+    box-shadow: 0 0 10px var(--neon-cyan);
+    animation: pulse-dot 2s infinite;
+}
+
+.liquid-box[data-threat="warning"] .threat-dot { 
+    background: var(--neon-purple); box-shadow: 0 0 10px var(--neon-purple);
+}
+.liquid-box[data-threat="critical"] .threat-dot { 
+    background: var(--neon-red); box-shadow: 0 0 15px var(--neon-red); animation: pulse-dot 0.5s infinite;
+}
+
+@keyframes pulse-dot {
+    0%, 100% { transform: scale(1); opacity: 1; }
+    50% { transform: scale(1.5); opacity: 0.5; }
+}
+
+/* 3D Map Embedded Containers */
+.map-3d-view {
+    position: relative;
+    background: rgba(0,0,0,0.6);
+    border-radius: 12px;
+    overflow: hidden;
+    margin: 0 1.25rem 1.25rem 1.25rem;
+    box-shadow: inset 0 0 20px rgba(0,0,0,0.8);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+.threat-overlay-text {
+    position: absolute;
+    bottom: 1rem;
+    left: 1rem;
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    color: var(--neon-cyan);
+    text-shadow: 0 0 5px rgba(0,229,255,0.5);
+}
