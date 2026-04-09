@@ -1,0 +1,52 @@
+    <!-- ═══ Dashboard Section ═══ -->
+    <section id="dashboard">
+        <div class="section-container">
+            <div class="section-header reveal">
+                <span class="section-tag">// live_telemetry</span>
+                <h2 class="section-title">System Heartbeat</h2>
+                <p class="section-desc">Real-time metrics from the production infrastructure.</p>
+            </div>
+
+            <div class="dashboard-grid">
+                <div class="dash-card liquid-glass glass-elevated reveal reveal-delay-1">
+                    <div class="dash-card-header">
+                        <span class="dash-card-title">CPU Load</span>
+                        <span class="dash-card-status">● Live</span>
+                    </div>
+                    <div class="dash-metric" id="cpu-metric">0%</div>
+                    <div class="dash-label">Oracle Cloud ARM · 4 vCPU</div>
+                    <div class="mini-chart" id="cpu-chart"></div>
+                </div>
+
+                <div class="dash-card liquid-glass glass-elevated reveal reveal-delay-2">
+                    <div class="dash-card-header">
+                        <span class="dash-card-title">Memory</span>
+                        <span class="dash-card-status">● Live</span>
+                    </div>
+                    <div class="dash-metric" id="ram-metric">0 GB</div>
+                    <div class="dash-label">24 GB Total · Allocated</div>
+                    <div class="mini-chart" id="ram-chart"></div>
+                </div>
+
+                <div class="dash-card liquid-glass glass-elevated reveal reveal-delay-3">
+                    <div class="dash-card-header">
+                        <span class="dash-card-title">Deployments</span>
+                        <span class="dash-card-status">● 24h</span>
+                    </div>
+                    <div class="dash-metric" id="deploy-metric">0</div>
+                    <div class="dash-label">Successful builds today</div>
+                    <div class="mini-chart" id="deploy-chart"></div>
+                </div>
+
+                <div class="dash-card liquid-glass glass-elevated reveal reveal-delay-4">
+                    <div class="dash-card-header">
+                        <span class="dash-card-title">Vuln Scans</span>
+                        <span class="dash-card-status">● Clean</span>
+                    </div>
+                    <div class="dash-metric" id="vuln-metric">0</div>
+                    <div class="dash-label">Critical findings this week</div>
+                    <div class="mini-chart" id="vuln-chart"></div>
+                </div>
+            </div>
+        </div>
+    </section>
