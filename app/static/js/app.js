@@ -1,195 +1,289 @@
 /**
- * TacIntel Particle Architect Engine
- * Pure Canvas Rendering with getImageData & Spring Physics
+ * TacIntel Summer SaaS Edition - Application Logic
+ * BBM Particle Engine & Bento Dashboard Interactivity
  */
 
-const initParticleEngine = () => {
-    const canvas = document.getElementById('bbm-canvas');
-    if (!canvas) return;
-    
-    const ctx = canvas.getContext('2d', { willReadFrequently: true });
-    let w, h;
-    let particles = [];
-    
-    // Mouse Interaction State
-    const mouse = {
-        x: null,
-        y: null,
-        radius: 60 // Repulsion zone radius (scăzut de la 120)
-    };
+class TacIntelSystem {
+    constructor() {
+        this.initParticleEngine();
+        this.initMetrics();
+        this.initThreatLiveFeed();
+        this.initChaosEngine();
+        this.initAITerminal();
+    }
 
-    // Track mouse over canvas
-    canvas.addEventListener('mousemove', (e) => {
-        const rect = canvas.getBoundingClientRect();
-        mouse.x = e.clientX - rect.left;
-        mouse.y = e.clientY - rect.top;
-    });
-    
-    // Reset mouse when leaving canvas
-    canvas.addEventListener('mouseleave', () => {
-        mouse.x = null;
-        mouse.y = null;
-    });
+    /* ═══════════════════════════════════════════════
+       THE BBM PARTICLE ENGINE (LIGHT THEME)
+    ═══════════════════════════════════════════════ */
+    initParticleEngine() {
+        const canvas = document.getElementById('bbm-canvas');
+        if (!canvas) return;
+        
+        const ctx = canvas.getContext('2d', { willReadFrequently: true });
+        let w, h;
+        let particles = [];
+        
+        // Mouse Repulsion State
+        const mouse = { x: null, y: null, radius: 100 };
 
-    /**
-     * Particle Class with Spring Physics
-     */
-    class Particle {
-        constructor(x, y) {
-            this.x = Math.random() * w; // Start random
-            this.y = Math.random() * h;
-            this.baseX = x; // Target coordinate
-            this.baseY = y;
-            this.size = 2.5; // Particle size
-            this.density = (Math.random() * 30) + 1; // Weight/Mass variations
-            
-            // Velocity
-            this.vx = 0;
-            this.vy = 0;
-            
-            // Physics Constants
-            this.friction = 0.85; // Damping
-            this.springFactor = 0.1; // Pull to origin
-            
-            // Randomize neon blue/cyan colors for depth
-            const colors = ['#00e5ff', '#00b3cc', '#004d66', '#ff007f'];
-            this.color = colors[Math.floor(Math.random() * colors.length)];
-        }
+        canvas.addEventListener('mousemove', (e) => {
+            const rect = canvas.getBoundingClientRect();
+            mouse.x = e.clientX - rect.left;
+            mouse.y = e.clientY - rect.top;
+        });
+        
+        canvas.addEventListener('mouseleave', () => {
+            mouse.x = null;
+            mouse.y = null;
+        });
 
-        draw() {
-            ctx.fillStyle = this.color;
-            ctx.beginPath();
-            ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
-            ctx.closePath();
-            ctx.fill();
-        }
-
-        update() {
-            // 1. Mouse Repulsion Force
-            if (mouse.x != null && mouse.y != null) {
-                const dx = mouse.x - this.x;
-                const dy = mouse.y - this.y;
-                const distance = Math.sqrt(dx * dx + dy * dy);
+        // ---------------- Particle Class ----------------
+        class Particle {
+            constructor(x, y) {
+                this.x = Math.random() * w; 
+                this.y = Math.random() * h;
+                this.baseX = x; 
+                this.baseY = y;
+                this.size = 2.5; 
+                this.density = (Math.random() * 20) + 1; 
                 
-                if (distance < mouse.radius) {
-                    const forceDirectionX = dx / distance;
-                    const forceDirectionY = dy / distance;
-                    const maxDistance = mouse.radius;
-                    // Force is stronger closer to center
-                    const force = (maxDistance - distance) / maxDistance; 
-                    const directionX = forceDirectionX * force * this.density;
-                    const directionY = forceDirectionY * force * this.density;
-                    
-                    this.vx -= directionX;
-                    this.vy -= directionY;
-                }
+                this.vx = 0;
+                this.vy = 0;
+                
+                // Light Theme Physics Config
+                this.friction = 0.85; 
+                this.ease = 0.05; 
+                
+                // Summer SaaS Theme Colors
+                const colors = ['#1e293b', '#0f172a', '#65a30d', '#84cc16', '#0ea5e9'];
+                this.color = colors[Math.floor(Math.random() * colors.length)];
             }
 
-            // 2. Spring Force (Pull back to origin)
-            const dxBase = this.baseX - this.x;
-            const dyBase = this.baseY - this.y;
-            this.vx += dxBase * this.springFactor;
-            this.vy += dyBase * this.springFactor;
+            draw() {
+                ctx.fillStyle = this.color;
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.closePath();
+                ctx.fill();
+            }
 
-            // 3. Apply Friction
-            this.vx *= this.friction;
-            this.vy *= this.friction;
+            update() {
+                // 1. Mouse Repulsion Force
+                if (mouse.x != null && mouse.y != null) {
+                    const dx = mouse.x - this.x;
+                    const dy = mouse.y - this.y;
+                    const distance = Math.sqrt(dx * dx + dy * dy);
+                    
+                    if (distance < mouse.radius) {
+                        const forceDirectionX = dx / distance;
+                        const forceDirectionY = dy / distance;
+                        // Max distance check
+                        const force = (mouse.radius - distance) / mouse.radius; 
+                        const directionX = forceDirectionX * force * this.density;
+                        const directionY = forceDirectionY * force * this.density;
+                        
+                        this.vx -= directionX;
+                        this.vy -= directionY;
+                    }
+                }
 
-            // 4. Update Position
-            this.x += this.vx;
-            this.y += this.vy;
+                // 2. Spring Force (Pull back to base with ease)
+                const dxBase = this.baseX - this.x;
+                const dyBase = this.baseY - this.y;
+                this.vx += dxBase * this.ease;
+                this.vy += dyBase * this.ease;
+
+                // 3. Apply Friction
+                this.vx *= this.friction;
+                this.vy *= this.friction;
+
+                // 4. Move
+                this.x += this.vx;
+                this.y += this.vy;
+            }
+        }
+
+        // ---------------- Scanner ----------------
+        const initTextMap = () => {
+            particles = [];
+            w = canvas.parentElement.clientWidth;
+            h = canvas.parentElement.clientHeight;
+            canvas.width = w;
+            canvas.height = h;
+
+            // Draw solid text
+            ctx.fillStyle = "black"; // Must be dark to read alpha correctly
+            const fontSize = Math.min(w / 3.5, 120); // 120px default as requested
+            ctx.font = `900 ${fontSize}px 'Inter', sans-serif`;
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            
+            ctx.fillText("BBM", w / 2, h / 2);
+
+            // Scan pixels
+            const textCoordinates = ctx.getImageData(0, 0, w, h);
+            ctx.clearRect(0, 0, w, h); // Clear the solid text
+
+            const step = 4; // Higher density for crisp looks
+
+            for (let y = 0; y < h; y += step) {
+                for (let x = 0; x < w; x += step) {
+                    const index = (y * w + x) * 4 + 3;
+                    if (textCoordinates.data[index] > 128) {
+                        particles.push(new Particle(x, y));
+                    }
+                }
+            }
+        };
+
+        const animate = () => {
+            ctx.clearRect(0, 0, w, h);
+            for (let i=0; i<particles.length; i++) {
+                particles[i].update();
+                particles[i].draw();
+            }
+            requestAnimationFrame(animate);
+        };
+
+        initTextMap();
+        animate();
+
+        window.addEventListener('resize', () => {
+            clearTimeout(canvas.resizeTimer);
+            canvas.resizeTimer = setTimeout(initTextMap, 200);
+        });
+    }
+
+    /* ═══════════════════════════════════════════════
+       INTERACTIVITY LOGIC
+    ═══════════════════════════════════════════════ */
+    
+    // 1. Metrics Auto-Update
+    initMetrics() {
+        this.cpuEl = document.getElementById('cpu-val');
+        this.ramEl = document.getElementById('ram-val');
+        this.isChaos = false;
+
+        const simulateMetrics = () => {
+            if(this.isChaos) return; // Freeze if chaos is running
+            
+            const cpu = Math.floor(Math.random() * (28 - 12 + 1)) + 12; // 12% to 28%
+            const ram = Math.floor(Math.random() * (55 - 40 + 1)) + 40; // 40% to 55%
+            
+            this.updateMetricsUI(cpu, ram);
+        };
+        
+        setInterval(simulateMetrics, 2000);
+        simulateMetrics(); // run once immediately
+    }
+
+    updateMetricsUI(cpu, ram) {
+        this.cpuEl.textContent = `${cpu}%`;
+        this.ramEl.textContent = `${ram}%`;
+        
+        if (cpu >= 80) {
+            this.cpuEl.classList.add('danger');
+        } else {
+            this.cpuEl.classList.remove('danger');
         }
     }
 
-    /**
-     * Scan text and convert to particles
-     */
-    const initTextMap = () => {
-        particles = [];
-        w = canvas.parentElement.clientWidth;
-        h = canvas.parentElement.clientHeight;
-        canvas.width = w;
-        canvas.height = h;
-
-        // Draw temporary text to scan
-        ctx.fillStyle = "white";
-        // Calculate font size relative to screen
-        const fontSize = Math.min(w / 3, 300);
-        ctx.font = `800 ${fontSize}px 'JetBrains Mono', sans-serif`;
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
+    // 2. Threat Intel Live Feed
+    initThreatLiveFeed() {
+        this.logList = document.getElementById('log-list');
+        const internalLogs = [
+            "[WAF] Blocked SQLi from 192.168.1.12",
+            "[CI/CD] Container image scanned: Clean",
+            "[SYSTEM] Auto-scaling node cluster",
+            "[PROXY] Traffic normalized at Edge",
+            "[AUTH] 5 failed logins suppressed"
+        ];
         
-        ctx.fillText("BBM", w / 2, h / 2);
+        setInterval(() => {
+            const randomLog = internalLogs[Math.floor(Math.random() * internalLogs.length)];
+            this.injectLog(randomLog, 'system');
+        }, 4000);
+    }
 
-        // Scan pixels
-        const textCoordinates = ctx.getImageData(0, 0, w, h);
-        ctx.clearRect(0, 0, w, h); // Clear the solid text
-
-        // Skip pixels to avoid lag (Resolution step)
-        const step = 6; // Check every 6th pixel (Adjust for particle density)
-
-        for (let y = 0; y < h; y += step) {
-            for (let x = 0; x < w; x += step) {
-                // Determine array index of the alpha channel
-                const index = (y * w + x) * 4 + 3;
-                
-                // If pixel is not transparent (Alpha > 128)
-                if (textCoordinates.data[index] > 128) {
-                    // Create particle at this coordinate
-                    particles.push(new Particle(x, y));
-                }
-            }
+    injectLog(text, type = 'system') {
+        const li = document.createElement('li');
+        
+        // Match regex to extract tag e.g. [WAF]
+        const match = text.match(/^(\[[A-Z\/_]+\])\s(.*)/);
+        
+        if(match) {
+            li.innerHTML = `<span class="log-tag">${match[1]}</span> ${match[2]}`;
+        } else {
+            li.innerHTML = text;
         }
-        
-        // Connect particles rendering setup
-        ctx.lineWidth = 0.5;
-    };
 
-    /**
-     * Animation Loop
-     */
-    const animate = () => {
-        ctx.clearRect(0, 0, w, h);
+        if(type === 'danger') li.classList.add('log-danger');
+        if(type === 'user') li.classList.add('log-user');
         
-        particles.forEach(p => {
-            p.update();
-            p.draw();
+        this.logList.prepend(li); // Insert at top
+        
+        // Remove older logs (max 4 visible)
+        if(this.logList.children.length > 4) {
+            this.logList.removeChild(this.logList.lastChild);
+        }
+    }
+
+    // 3. Chaos Engine Executer
+    initChaosEngine() {
+        const btn = document.getElementById('btn-chaos-exec');
+        if(!btn) return;
+
+        btn.addEventListener('click', () => {
+            if(this.isChaos) return; // Prevent spam
+            
+            this.isChaos = true;
+            btn.textContent = 'EXECUTING...';
+            btn.classList.add('active');
+            
+            // Spike metrics
+            this.updateMetricsUI(99, 95);
+            
+            // Inject critical log
+            this.injectLog("[CHAOS] Node failure simulated. Rerouting traffic...", "danger");
+            
+            // Reset after 5s
+            setTimeout(() => {
+                this.isChaos = false;
+                btn.textContent = 'Execute Failure Scenario';
+                btn.classList.remove('active');
+                
+                // Instantly normalize visuals
+                this.injectLog("[SYSTEM] Mitigation successful. Normalizing...", "system");
+                this.updateMetricsUI(14, 42); 
+            }, 5000);
         });
-        
-        // Optional: Draw faint connection lines if particles are close
-        // (Turned off by default for performance, enable if needed)
-        /*
-        for (let i = 0; i < particles.length; i++) {
-            for (let j = i; j < particles.length; j++) {
-                const dx = particles[i].x - particles[j].x;
-                const dy = particles[i].y - particles[j].y;
-                const distance = dx * dx + dy * dy;
+    }
+
+    // 4. Bottom AI Terminal
+    initAITerminal() {
+        const input = document.getElementById('terminal-input');
+        if(!input) return;
+
+        input.addEventListener('keydown', (e) => {
+            if(e.key === 'Enter') {
+                const val = input.value.trim();
+                if(!val) return;
                 
-                if (distance < 600) { // Dist squared
-                    ctx.strokeStyle = `rgba(0, 229, 255, ${0.1 - distance/6000})`;
-                    ctx.beginPath();
-                    ctx.moveTo(particles[i].x, particles[i].y);
-                    ctx.lineTo(particles[j].x, particles[j].y);
-                    ctx.stroke();
-                }
+                input.value = '';
+                
+                // Inject User CMD
+                this.injectLog(`[USER_CMD] ${val}`, 'user');
+                
+                // Delay system response slightly
+                setTimeout(() => {
+                    this.injectLog("[SYSTEM] Task queued for execution.", "system");
+                }, 600);
             }
-        }
-        */
+        });
+    }
+}
 
-        requestAnimationFrame(animate);
-    };
-
-    // Bootstrap
-    initTextMap();
-    animate();
-
-    // Handle Resize
-    window.addEventListener('resize', () => {
-        // Debounce resize
-        clearTimeout(canvas.resizeTimer);
-        canvas.resizeTimer = setTimeout(initTextMap, 200);
-    });
-};
-
-// Start system when DOM is ready
-document.addEventListener('DOMContentLoaded', initParticleEngine);
+// Boot System
+document.addEventListener('DOMContentLoaded', () => {
+    new TacIntelSystem();
+});

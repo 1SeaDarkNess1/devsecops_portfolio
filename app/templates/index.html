@@ -3,73 +3,99 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TacIntel — Particle Architect</title>
+    <title>TacIntel — Summer SaaS Edition</title>
     
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
-    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;900&display=swap" rel="stylesheet">
 </head>
 <body>
 
-    <main class="dashboard-shell">
-        
-        <!-- COLOANA STÂNGA: TACTICAL PANELS -->
-        <aside class="tactical-sidebar">
-            
-            <div class="glass-card">
-                <div class="card-title">CI/CD Attester</div>
-                <div class="card-content">
-                    <div class="metric">
-                        <span class="label">SECURE DEPLOY SCORE</span>
-                        <span class="value highlight-cyan">98/100</span>
-                    </div>
-                    <ul class="alert-list">
-                        <li>[SYSTEM] Signature verified.</li>
-                        <li><span class="highlight-magenta">[ALERT] Rotate KMS Key (4 days left).</span></li>
-                    </ul>
-                </div>
+    <div class="app-container">
+        <!-- SIDEBAR -->
+        <aside class="side-nav">
+            <div class="nav-icons top-icons">
+                <!-- Dashboard Icon -->
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+                <!-- Shield Icon -->
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+                <!-- Metrics Icon -->
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
+                <!-- Settings Icon -->
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
             </div>
-
-            <div class="glass-card">
-                <div class="card-title">Predictive Threat Matrix</div>
-                <div class="card-content">
-                    <div class="metric">
-                        <span class="label">ANOMALY VECTORS DECODED</span>
-                        <span class="value">Active</span>
-                    </div>
-                    <ul class="alert-list">
-                        <li>[SCAN] Port 443 flow stable.</li>
-                        <li><span class="highlight-cyan">[WARN] Anomalous traffic predicted > 2:00 AM.</span></li>
-                        <li>Neural heuristics engaged.</li>
-                    </ul>
-                </div>
+            <div class="nav-icons bottom-icons">
+                <!-- Profile Icon -->
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
             </div>
-
-            <div class="glass-card">
-                <div class="card-title">Auto-Response Protocol</div>
-                <div class="card-content">
-                    <div class="metric">
-                        <span class="label">THREAT LEVEL</span>
-                        <span class="value highlight-red">CRITICAL</span>
-                    </div>
-                    <ul class="alert-list">
-                        <li><span class="highlight-red">[LOCKDOWN] XSS zero-day blocked.</span></li>
-                        <li>Executing IP range throttle...</li>
-                        <li>Status: <span class="highlight-cyan">Stable</span></li>
-                    </ul>
-                </div>
-            </div>
-
         </aside>
 
-        <!-- COLOANA DREAPTĂ: PARTICLE CANVAS -->
-        <section class="canvas-container">
-            <canvas id="bbm-canvas"></canvas>
-            <div class="hud-overlay">
-                TacIntel Particle Engine v4.0.0
+        <!-- MAIN DASHBOARD -->
+        <main class="glass-dashboard">
+            
+            <header class="app-header">
+                <div class="title-wrap">
+                    <h1>Hi, BBM System Online.</h1>
+                    <h2>Ready to secure?</h2>
+                </div>
+                <button class="btn-pro">Upgrade / Pro</button>
+            </header>
+
+            <div class="hero-canvas-wrapper">
+                <canvas id="bbm-canvas"></canvas>
             </div>
-        </section>
-        
-    </main>
+
+            <section class="bento-grid">
+                
+                <!-- Card 1: System Metrics -->
+                <div class="bento-card">
+                    <h3>System Metrics</h3>
+                    <div class="metrics-container">
+                        <div class="metric-box">
+                            <span class="m-label">CPU Core</span>
+                            <span class="m-value" id="cpu-val">--%</span>
+                        </div>
+                        <div class="metric-box">
+                            <span class="m-label">RAM Pool</span>
+                            <span class="m-value" id="ram-val">--%</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Card 2: Threat Intel -->
+                <div class="bento-card">
+                    <h3>Threat Intel</h3>
+                    <div class="threat-feed">
+                        <ul id="log-list">
+                            <li><span class="log-tag">[SYSTEM]</span> Initializing secure enclave...</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Card 3: Chaos Engine -->
+                <div class="bento-card">
+                    <h3>Chaos Engine</h3>
+                    <div class="chaos-controls">
+                        <p class="subtitle">Simulate critical failure nodes to train the mitigation AI.</p>
+                        <button class="btn-chaos" id="btn-chaos-exec">Execute Failure Scenario</button>
+                    </div>
+                </div>
+
+            </section>
+
+            <footer class="ai-terminal">
+                <div class="terminal-input-wrap">
+                    <svg class="sparkles-icon" width="20" height="20" viewBox="0 0 24 24" fill="var(--accent-blue)" stroke="none"><path d="M12 2L15 9l7 3-7 3-3 7-3-7-7-3 7-3z"></path></svg>
+                    <input type="text" id="terminal-input" placeholder="Ex: Block IP 192.168.1.1 or Analyze Node Failure..." autocomplete="off">
+                </div>
+                <div class="terminal-actions">
+                    <button class="pill-btn">Deep Research</button>
+                    <button class="pill-btn">Execute</button>
+                    <button class="pill-btn">Scan</button>
+                </div>
+            </footer>
+
+        </main>
+    </div>
 
     <script type="module" src="{{ url_for('static', filename='js/app.js') }}"></script>
 </body>
