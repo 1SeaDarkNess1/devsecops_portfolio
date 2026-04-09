@@ -15,7 +15,7 @@ const initParticleEngine = () => {
     const mouse = {
         x: null,
         y: null,
-        radius: 120 // Repulsion zone radius
+        radius: 60 // Repulsion zone radius (scăzut de la 120)
     };
 
     // Track mouse over canvas
