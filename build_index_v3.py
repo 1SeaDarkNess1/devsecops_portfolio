@@ -25,6 +25,8 @@ css = """
   --ok: var(--mint);
   --warn: #FCD34D;
   --crit: #FCA5A5;
+  --bg: var(--bg-deep);
+  --text: var(--text-1);
 
   /* Text */
   --text-1: rgba(255,255,255,0.96);
@@ -43,8 +45,8 @@ css = """
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 body {
   font-family: 'Outfit', sans-serif;
-  background-color: var(--bg);
-  color: var(--text);
+  background-color: var(--bg-deep);
+  color: var(--text-1);
   line-height: 1.6;
   overflow-x: hidden;
 }
