@@ -6,17 +6,28 @@ css = """
 @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;700&family=JetBrains+Mono:wght@400;700&family=Sora:wght@800;900&display=swap');
 
 :root {
-  --bg: #0A0E1A;
+  --bg-1: #0B1220;          /* deep midnight */
+  --bg-2: #0F1A2E;
+  --accent-mint: #A7F3D0;   /* spring mint */
+  --accent-sky: #7DD3FC;    /* clear sky */
+  --accent-rose: #FBCFE8;   /* soft rose */
+  --accent-gold: #FDE68A;   /* sunlight */
+  --accent-violet: #C4B5FD; /* lilac */
+  
+  /* Mapping for existing components */
+  --bg: var(--bg-1);
+  --accent: var(--accent-sky);
+  --accent-warm: var(--accent-gold);
+  --ok: var(--accent-mint);
+  --warn: var(--accent-gold);
+  --crit: #FCA5A5;
+  
+  --text: rgba(255, 255, 255, 0.95);
+  --text-dim: rgba(255, 255, 255, 0.65);
+  --text-mute: rgba(255, 255, 255, 0.4);
+  
   --glass-1: rgba(255, 255, 255, 0.045);
   --glass-2: rgba(255, 255, 255, 0.07);
-  --accent: #7DD3FC;
-  --accent-warm: #FDE68A;
-  --text: rgba(255, 255, 255, 0.92);
-  --text-dim: rgba(255, 255, 255, 0.55);
-  --text-mute: rgba(255, 255, 255, 0.35);
-  --ok: #6EE7B7;
-  --warn: #FDE68A;
-  --crit: #FCA5A5;
 }
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -68,26 +79,70 @@ h1, h2, h3, h4 { font-family: 'Sora', sans-serif; color: #fff; }
 .section-title { font-size: 2.5rem; letter-spacing: -1px; margin-bottom: 1rem; }
 
 /* HERO */
-.hero { min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
-.hero__title { position: relative; font-size: clamp(4rem, 10vw, 8rem); font-weight: 900; z-index: 2; margin-bottom: 2rem; cursor: default; }
-.hero__char {
-  background: linear-gradient(180deg, #fff 0%, #fff 40%, rgba(255, 255, 255, 0.55) 100%);
-  -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
-  position: relative; text-shadow: 0 0 80px rgba(125, 211, 252, 0.15); display: inline-block;
+.hero { 
+  min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; 
+  background: radial-gradient(circle at 50% 50%, rgba(167,243,208,0.03), transparent 70%);
+}
+.hero__title-wrap { position: relative; display: inline-block; z-index: 10; }
+.hero__title {
+  font-family: 'Sora', sans-serif; font-weight: 900;
+  font-size: clamp(5rem, 16vw, 14rem);
+  letter-spacing: -.06em; line-height: .85;
+  position: relative; display: inline-block;
+  background: linear-gradient(180deg, #fff 0%, #fff 35%, rgba(167,243,208,0.7) 100%);
+  -webkit-background-clip: text; background-clip: text;
+  -webkit-text-fill-color: transparent;
+  filter: drop-shadow(0 0 80px rgba(125,211,252,0.25));
+  animation: float 8s ease-in-out infinite;
 }
 .hero__title::before {
   content: "BBM LAB"; position: absolute; inset: 0;
-  background: linear-gradient(110deg, transparent 35%, rgba(125, 211, 252, 0.9) 50%, transparent 65%);
-  -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
-  background-size: 200% 100%; animation: sheen 6s linear infinite; pointer-events: none;
+  background: linear-gradient(110deg,
+    transparent 30%,
+    rgba(167,243,208,0.95) 45%,
+    rgba(125,211,252,1) 50%,
+    rgba(196,181,253,.95) 55%,
+    transparent 70%);
+  background-size: 300% 100%;
+  -webkit-background-clip: text; background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: prism 7s linear infinite;
+  mix-blend-mode: screen;
 }
-@keyframes sheen { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
 .hero__title::after {
-  content: ""; position: absolute; inset: -20px;
-  background: radial-gradient(ellipse, rgba(125, 211, 252, 0.08), transparent 60%);
-  filter: blur(40px); animation: breathe 5s ease-in-out infinite; z-index: -1;
+  content: "BBM LAB"; position: absolute; inset: 0;
+  color: transparent;
+  -webkit-text-stroke: 1px rgba(167,243,208,0.18);
+  filter: blur(.5px);
+  animation: echo 8s ease-in-out infinite;
 }
-@keyframes breathe { 0%, 100% { opacity: 0.4; transform: scale(1); } 50% { opacity: 0.8; transform: scale(1.05); } }
+
+/* Aurora background behind text */
+.hero__title-wrap::before {
+  content: ""; position: absolute; inset: -60px;
+  background:
+    radial-gradient(ellipse 60% 40% at 30% 50%, rgba(167,243,208,0.15), transparent 60%),
+    radial-gradient(ellipse 60% 40% at 70% 50%, rgba(125,211,252,0.15), transparent 60%),
+    radial-gradient(ellipse 40% 30% at 50% 50%, rgba(196,181,253,0.1), transparent 60%);
+  filter: blur(40px);
+  animation: aurora 12s ease-in-out infinite;
+  z-index: -1;
+}
+
+@keyframes prism { 0% { background-position: 200% 0 } 100% { background-position: -200% 0 } }
+@keyframes float {
+  0%, 100% { transform: translateY(0) scale(1); filter: drop-shadow(0 0 80px rgba(125,211,252,0.25))}
+  50% { transform: translateY(-8px) scale(1.005); filter: drop-shadow(0 20px 100px rgba(167,243,208,0.35))}
+}
+@keyframes echo {
+  0%, 100% { transform: translate(0,0); opacity: .4 }
+  50% { transform: translate(2px,-2px); opacity: .7 }
+}
+@keyframes aurora {
+  0%, 100% { transform: scale(1) rotate(0deg); opacity: .6 }
+  33% { transform: scale(1.1) rotate(2deg); opacity: .9 }
+  66% { transform: scale(1.05) rotate(-2deg); opacity: .7 }
+}
 /* Dispersion Canvas */
 #dispersion-canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 1;}
 
@@ -225,10 +280,8 @@ html = """<!DOCTYPE html>
 
     <!-- 01 HERO -->
     <section class="section hero" id="hero">
-        <div style="position: relative; z-index:2;">
-            <h1 class="hero__title" id="dispersion-title">
-                <span class="hero__char">B</span><span class="hero__char">B</span><span class="hero__char">M</span> <span class="hero__char">L</span><span class="hero__char">A</span><span class="hero__char">B</span>
-            </h1>
+        <div class="hero__title-wrap">
+            <h1 class="hero__title" id="dispersion-title">BBM LAB</h1>
             <div class="status-pill">● ALL SYSTEMS OPERATIONAL</div>
         </div>
         <canvas id="dispersion-canvas"></canvas>
@@ -337,17 +390,17 @@ html = """<!DOCTYPE html>
             <div class="cd-title">COMPLIANCE TRACKER</div>
             <div style="display:flex; gap:30px; margin-top:20px;" id="compliance-wrapper">
                 <div class="comp-col">
-                    <div style="display:flex; justify-content:space-between;" class="mono"><span>CIS Docker</span> <span style="color:var(--accent);">24/24</span></div>
+                    <div style="display:flex; justify-content:space-between;" class="mono"><span>CIS Docker</span> <span style="color:var(--accent);" id="score-cis">--/--</span></div>
                     <div class="comp-bar-bg"><div class="comp-bar-fill" id="bar-cis"></div></div>
                     <ul class="comp-list" id="list-cis"></ul>
                 </div>
                 <div class="comp-col">
-                    <div style="display:flex; justify-content:space-between;" class="mono"><span>OWASP Top 10</span> <span style="color:var(--accent);">10/10</span></div>
+                    <div style="display:flex; justify-content:space-between;" class="mono"><span>OWASP Top 10</span> <span style="color:var(--accent);" id="score-owasp">--/--</span></div>
                     <div class="comp-bar-bg"><div class="comp-bar-fill" id="bar-owasp"></div></div>
                     <ul class="comp-list" id="list-owasp"></ul>
                 </div>
                 <div class="comp-col">
-                    <div style="display:flex; justify-content:space-between;" class="mono"><span>NIST CSF</span> <span style="color:var(--accent);">18/20</span></div>
+                    <div style="display:flex; justify-content:space-between;" class="mono"><span>NIST CSF</span> <span style="color:var(--accent);" id="score-nist">--/--</span></div>
                     <div class="comp-bar-bg"><div class="comp-bar-fill" id="bar-nist"></div></div>
                     <ul class="comp-list" id="list-nist"></ul>
                 </div>
@@ -432,11 +485,16 @@ html = """<!DOCTYPE html>
         <h2 class="section-title">Projects</h2>
         <div class="grid-2">
             <div class="glass cd-body">
-                <h3 style="font-size:1.2rem; margin-bottom:10px;">BRAWL STARS APEX BOT</h3>
-                <p style="color:var(--text-dim); font-size:0.9rem;">Computer Vision & DirectX multiprocessing architecture overriding Python GIL for God-Mode predictive combat automation.</p>
-                <div style="margin-top:1rem; display:flex; gap:10px;">
-                    <span class="status-pill" style="padding:5px 12px; border:1px solid rgba(125,211,252,0.3); color:var(--accent); background:rgba(125,211,252,0.05); font-weight:normal; border-radius:6px;">Python</span>
-                    <span class="status-pill" style="padding:5px 12px; border:1px solid rgba(125,211,252,0.3); color:var(--accent); background:rgba(125,211,252,0.05); font-weight:normal; border-radius:6px;">OpenCV</span>
+                <h3 style="font-size:1.2rem; margin-bottom:10px;">SYSTEM MONITOR DASHBOARD</h3>
+                <p style="color:var(--text-dim); font-size:0.9rem;">Production Flask app monitoring system telemetry, containerized with Docker, deployed on Oracle Cloud Free Tier with full CI/CD security pipeline (Gitleaks + Semgrep + Trivy). Self-hosted at bbmlab.duckdns.org with A+ security headers.</p>
+                <div style="margin-top:1rem; display:flex; flex-wrap:wrap; gap:10px;">
+                    <span class="status-pill" style="padding:5px 12px; border:1px solid rgba(167,243,208,0.3); color:var(--accent-mint); background:rgba(167,243,208,0.05); font-weight:normal; border-radius:6px;">Flask</span>
+                    <span class="status-pill" style="padding:5px 12px; border:1px solid rgba(167,243,208,0.3); color:var(--accent-mint); background:rgba(167,243,208,0.05); font-weight:normal; border-radius:6px;">Docker</span>
+                    <span class="status-pill" style="padding:5px 12px; border:1px solid rgba(167,243,208,0.3); color:var(--accent-mint); background:rgba(167,243,208,0.05); font-weight:normal; border-radius:6px;">GitHub Actions</span>
+                    <span class="status-pill" style="padding:5px 12px; border:1px solid rgba(167,243,208,0.3); color:var(--accent-mint); background:rgba(167,243,208,0.05); font-weight:normal; border-radius:6px;">Oracle Cloud</span>
+                </div>
+                <div style="margin-top:10px;">
+                    <a href="https://github.com/1SeaDarkNess1/devsecops_portfolio" target="_blank" class="mono" style="color:var(--accent-sky); font-size:0.8rem; text-decoration:none;">VIEW SOURCE ↗</a>
                 </div>
             </div>
             <div class="glass cd-body">
@@ -727,14 +785,14 @@ html = """<!DOCTYPE html>
         const hist = { cpu:[], ram:[], disk:[], up:[] };
         for(let i=0; i<30; i++) { hist.cpu.push(50); hist.ram.push(50); hist.disk.push(50); hist.up.push(99.9); } // populate defaults
 
-        function drawSpark(id, dataArr, maxVal) {
+        function drawSpark(id, dataArr, maxVal, color) {
             const el = document.getElementById(id);
             if(!el) return;
+            el.style.stroke = color || 'var(--accent)';
             // Map 30 points across 100 SVG width, height 50.
             let path = '';
             for(let i=0; i<dataArr.length; i++) {
                 const x = (i / 29) * 100;
-                // invert y so higher value is higher line segment
                 const y = 50 - ((dataArr[i] / maxVal) * 50);
                 path += `${i===0?'M':'L'} ${x},${y} `;
             }
@@ -751,25 +809,25 @@ html = """<!DOCTYPE html>
                     const c = data.cpu.percent || 0;
                     document.getElementById('tele-cpu').innerText = Math.floor(c);
                     hist.cpu.shift(); hist.cpu.push(c);
-                    drawSpark('spark-cpu', hist.cpu, 100);
+                    drawSpark('spark-cpu', hist.cpu, 100, 'var(--accent-mint)');
 
                     // RAM
                     const r = data.ram.percent || 0;
                     document.getElementById('tele-ram').innerText = Math.floor(r);
                     hist.ram.shift(); hist.ram.push(r);
-                    drawSpark('spark-ram', hist.ram, 100);
+                    drawSpark('spark-ram', hist.ram, 100, 'var(--accent-sky)');
 
                     // DISK
                     const d = data.disk.percent || 0;
                     document.getElementById('tele-disk').innerText = Math.floor(d);
                     hist.disk.shift(); hist.disk.push(d);
-                    drawSpark('spark-disk', hist.disk, 100);
+                    drawSpark('spark-disk', hist.disk, 100, 'var(--accent-violet)');
 
-                    // Uptime string to arbitrary 99.9x float for slight jitter effect
+                    // Uptime
                     const uv = 99.9 + Math.random()*0.05;
                     document.getElementById('tele-up').innerText = uv.toFixed(1);
                     hist.up.shift(); hist.up.push(uv);
-                    drawSpark('spark-up', hist.up, 100.1);
+                    drawSpark('spark-up', hist.up, 100.1, 'var(--accent-rose)');
                     // Update Live ops uptime 
                     if(document.getElementById('uptime-val')) document.getElementById('uptime-val').innerText = uv.toFixed(2)+'%';
 
@@ -858,8 +916,8 @@ html = """<!DOCTYPE html>
                 const tr = await fetch('/api/threats');
                 if(tr.ok) { 
                     const data = await tr.json(); 
-                    threatsData = data.attacks || [];
-                    document.getElementById('threat-counter').innerText = (data.total || 0).toLocaleString() + '+';
+                    threatsData = Array.isArray(data) ? data : (data.attacks || []);
+                    document.getElementById('threat-counter').innerText = (data.total || threatsData.length).toLocaleString() + '+';
                 }
             } catch(e){ console.error("Threat fetch fail", e); }
 
@@ -935,37 +993,48 @@ html = """<!DOCTYPE html>
         /* ==============================================================
            MODULE 8: COMPLIANCE CHECKLIST
         ============================================================== */
-        function initCompliance() {
-            const cisItems = ["Non-Root Containers enforced", "Immutable filesystems configured", "No privileged containers running", "Secrets Vaulted via KMS", "Network Policies active", "Vulnerability scans pre-deploy"];
-            const owaItems = ["WAF rules block Injection", "Strict CSP mitigates XSS", "Auth failures throttled (Fail2Ban)", "Insecure design components flagged", "Dependencies audited (Syft)", "Audit trails shipped securely"];
-            const nistItems = ["Asset tracking automated", "Threat mapping continuous", "Access governed by IAM", "Logs retained 365 days", "Incident response playbook ready"];
+        async function initCompliance() {
+            try {
+                const res = await fetch('/api/compliance');
+                if(!res.ok) return;
+                const data = await res.json();
 
-            function popUI(id, items) {
-                const ul = document.getElementById(id);
-                items.forEach(it => {
-                    ul.innerHTML += `<li class="comp-item">
-                        <svg viewBox="0 0 16 16" class="comp-check"><path d="M2 8 l 4 4 l 8 -8"></path></svg>
-                        <span>${it}</span>
-                    </li>`;
-                });
-            }
-            popUI('list-cis', cisItems); popUI('list-owasp', owaItems); popUI('list-nist', nistItems);
+                function popUI(id, fwKey) {
+                    const ul = document.getElementById('list-' + id);
+                    const score = document.getElementById('score-' + id);
+                    const fw = data[fwKey];
+                    if(!fw) return;
 
-            const wrap = document.getElementById('compliance-wrapper');
-            let played = false;
-            const obs = new IntersectionObserver(e => {
-                if(e[0].isIntersecting && !played) {
-                    played = true;
-                    document.getElementById('bar-cis').style.width = '100%';
-                    document.getElementById('bar-owasp').style.width = '100%';
-                    document.getElementById('bar-nist').style.width = '90%';
-                    // Stagger items
-                    const allL = document.querySelectorAll('.comp-item');
-                    allL.forEach((it, i) => { setTimeout(()=> it.classList.add('visible'), i*80 + 500); });
-                    obs.disconnect();
+                    score.innerText = `${fw.passed}/${fw.total}`;
+                    ul.innerHTML = '';
+                    fw.controls.forEach(c => {
+                        ul.innerHTML += `<li class="comp-item ${c.passed ? '' : 'failed'}">
+                            <svg viewBox="0 0 16 16" class="comp-check"><path d="M2 8 l 4 4 l 8 -8" style="stroke: ${c.passed ? 'var(--ok)' : 'var(--crit)'}"></path></svg>
+                            <span style="${c.passed ? '' : 'text-decoration:line-through; color:var(--text-mute);'}">${c.name}</span>
+                        </li>`;
+                    });
                 }
-            }, {threshold: 0.3});
-            obs.observe(wrap);
+
+                popUI('cis', 'cis_docker');
+                popUI('owasp', 'owasp_top10');
+                popUI('nist', 'nist_csf');
+
+                const wrap = document.getElementById('compliance-wrapper');
+                let played = false;
+                const obs = new IntersectionObserver(e => {
+                    if(e[0].isIntersecting && !played) {
+                        played = true;
+                        document.getElementById('bar-cis').style.width = data.cis_docker.percentage + '%';
+                        document.getElementById('bar-owasp').style.width = data.owasp_top10.percentage + '%';
+                        document.getElementById('bar-nist').style.width = data.nist_csf.percentage + '%';
+                        
+                        const allL = document.querySelectorAll('.comp-item');
+                        allL.forEach((it, i) => { setTimeout(()=> it.classList.add('visible'), i*50 + 500); });
+                        obs.disconnect();
+                    }
+                }, {threshold: 0.3});
+                obs.observe(wrap);
+            } catch(e) { console.error("Compliance fetch fail", e); }
         }
 
         // Fire all init scripts that need DOM or initial load

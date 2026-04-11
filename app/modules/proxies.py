@@ -2,7 +2,7 @@ from flask import Blueprint, jsonify, request
 import requests, socket, ipaddress
 from urllib.parse import urlparse
 from time import time
-from extensions import limiter
+from app.extensions import limiter
 
 proxies_bp = Blueprint('proxies', __name__)
 

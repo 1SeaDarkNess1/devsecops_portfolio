@@ -28,6 +28,7 @@ jobs:
           key: ${{ secrets.VPS_SSH_KEY }}
           source: "."
           target: "/home/bbm/devsecops_portfolio"
+          rm: false # Safeguard the server-side .env file
 
       # Pasul 3: Intram pe server si pornim Docker-ul
       - name: Deploy cu Docker pe Server
@@ -44,5 +45,11 @@ jobs:
             docker rm portfolio-app || true
             # Construim imaginea noua din codul adus proaspat
             docker build -t bbm-portfolio .
-            # Pornim aplicatia pe portul 80 (HTTP) si il legam de portul 5000 din container
-            docker run -d -p 5000:5000 -v /var/log/auth.log:/app/host_auth.log:ro --name portfolio-app bbm-portfolio
+            # Pornim aplicatia cu env-file si restart policy
+            docker run -d \
+              --name portfolio-app \
+              --restart unless-stopped \
+              -p 5000:5000 \
+              -v /var/log/auth.log:/app/host_auth.log:ro \
+              --env-file /home/bbm/devsecops_portfolio/.env \
+              bbm-portfolio
