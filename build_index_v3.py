@@ -521,8 +521,7 @@ html = """<!DOCTYPE html>
             // First proxy fallback in case Observatory blocks client-side
             let data = null;
             try {
-                // We use our Flask Proxy for guaranteed result avoiding CORS & Observatory limits.
-                const res = await fetch('/api/proxy/headers?url=https://bbmlab.duckdns.org');
+                const res = await fetch('/api/security/headers');
                 if(res.ok) data = await res.json();
             } catch(e) { console.error("Headers fetch fail", e); }
             
@@ -584,8 +583,7 @@ html = """<!DOCTYPE html>
         ============================================================== */
         async function fetchSSL() {
             try {
-                // This API is CORS friendly
-                const res = await fetch('https://crt.sh/?q=bbmlab.duckdns.org&output=json');
+                const res = await fetch('/api/security/ssl');
                 if(res.ok) {
                     const data = await res.json();
                     if(data && data.length > 0) {
@@ -671,7 +669,7 @@ html = """<!DOCTYPE html>
         let globalCVEs = [];
         async function fetchCVEs() {
             try {
-                const res = await fetch('/api/proxy/nvd?keyword=docker');
+                const res = await fetch('/api/security/cves?q=docker');
                 if(res.ok) {
                     const data = await res.json();
                     if(data.vulnerabilities) {
