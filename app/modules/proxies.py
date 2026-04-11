@@ -81,6 +81,34 @@ def ssl_inspect():
     except Exception as e:
         return jsonify({'error': str(e)}), 502
 
+def _parse_cve(item):
+    cve = item.get('cve', {})
+    metrics = cve.get('metrics', {})
+    metric_list = (metrics.get('cvssMetricV31') or 
+                   metrics.get('cvssMetricV30') or 
+                   metrics.get('cvssMetricV2') or [])
+    score = 0
+    severity = 'NONE'
+    if metric_list:
+        cvss_data = metric_list[0].get('cvssData', {})
+        score = cvss_data.get('baseScore', 0)
+        severity = cvss_data.get('baseSeverity', metric_list[0].get('baseSeverity', 'NONE'))
+    
+    descriptions = cve.get('descriptions', [])
+    desc = next((d['value'] for d in descriptions if d.get('lang') == 'en'), '')
+    
+    return {
+        'id': cve.get('id'),
+        'score': round(score, 1),
+        'severity': severity,
+        'description': desc[:140],
+        'published': cve.get('published', '')[:10],
+        # Compatibility keys for frontend
+        'cvss': round(score, 1),
+        'sev': severity,
+        'desc': desc[:140]
+    }
+
 # ─── MODUL 4: CVE Feed ───
 @proxies_bp.route('/api/security/cves')
 def cve_feed():
@@ -91,24 +119,7 @@ def cve_feed():
         data = cached(f'cve:{keyword}', 1800, lambda: safe_fetch(
             f'https://services.nvd.nist.gov/rest/json/cves/2.0?keywordSearch={keyword}&resultsPerPage=8',
             timeout=10).json())
-        cves = []
-        for item in data.get('vulnerabilities', [])[:8]:
-            cve_data = item['cve']
-            metrics = cve_data.get('metrics', {})
-            metric_list = (metrics.get('cvssMetricV31') or 
-                           metrics.get('cvssMetricV30') or 
-                           metrics.get('cvssMetricV2') or [])
-            score = metric_list[0]['cvssData']['baseScore'] if metric_list else 0
-            cves.append({
-                'id': cve_data['id'],
-                'score': score,
-                'cvss': score, # compatibility
-                'severity': 'CRITICAL' if score >= 9 else 'HIGH' if score >= 7 else 'MEDIUM' if score >= 4 else 'LOW',
-                'sev': 'CRITICAL' if score >= 9 else 'HIGH' if score >= 7 else 'MEDIUM' if score >= 4 else 'LOW', # compatibility
-                'description': (cve_data.get('descriptions', [{}])[0].get('value', ''))[:140],
-                'desc': (cve_data.get('descriptions', [{}])[0].get('value', ''))[:140], # compatibility
-                'published': cve_data.get('published', '')[:10],
-            })
+        cves = [_parse_cve(item) for item in data.get('vulnerabilities', [])[:8]]
         return jsonify({'keyword': keyword, 'vulnerabilities': cves, 'total': len(cves)})
     except Exception as e:
         return jsonify({'error': str(e)}), 502
