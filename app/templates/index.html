@@ -247,16 +247,21 @@ h1, h2, h3, h4 { font-family: 'Sora', sans-serif; color: #fff; }
   justify-content: center;
   text-align: center;
   position: relative;
-  padding: 120px 32px 80px;
-  overflow: hidden;
+  padding: 140px 48px 100px;
+  overflow: visible;
 }
 .hero__title-wrap {
   position: relative;
   display: inline-block;
-  padding: 100px 120px;
+  padding: 120px 160px 140px;
   margin-bottom: 48px;
   perspective: 1000px;
+  overflow: visible;
+  isolation: auto;
 }
+.hero__title-wrap,
+.hero__title-wrap::before,
+.hero__title-wrap::after { overflow: visible; }
 
 /* Layer 1: Aurora fog — three large rotating blurred ellipses */
 .hero__title-wrap::before {
@@ -309,11 +314,13 @@ h1, h2, h3, h4 { font-family: 'Sora', sans-serif; color: #fff; }
 .hero__title {
   font-family: var(--font-display);
   font-weight: 900;
-  font-size: clamp(5rem, 16vw, 14rem);
+  font-size: clamp(4.5rem, 14vw, 12rem);
   letter-spacing: -0.055em;
   line-height: 0.88;
   position: relative;
   display: inline-block;
+  padding: 0 0.1em;
+  overflow: visible;
   background: linear-gradient(180deg,
     #FFFFFF 0%,
     #F8FFF3 25%,
@@ -461,6 +468,33 @@ h1, h2, h3, h4 { font-family: 'Sora', sans-serif; color: #fff; }
 .grid-4 { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 2rem; }
 .grid-2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(500px, 1fr)); gap: 2rem; }
 
+/* Live Ops Strip — centered 4-up grid with equal-height cards */
+#live-ops .grid-4 {
+  grid-template-columns: repeat(4, 1fr);
+  gap: 24px;
+  max-width: 1200px;
+  margin: 0 auto;
+  width: 100%;
+}
+#live-ops .grid-4 > .glass {
+  min-height: 220px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  padding: 32px 24px;
+  gap: 14px;
+}
+#live-ops .ssl-container { height: auto; min-height: 220px; padding: 28px 22px; }
+#live-ops .ssl-card { width: 100%; height: auto; min-height: 180px; max-width: 280px; margin: 0 auto; padding: 1.25rem; }
+@media (max-width: 1100px) {
+  #live-ops .grid-4 { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 600px) {
+  #live-ops .grid-4 { grid-template-columns: 1fr; }
+}
+
 /* SHARED CARD STYLES */
 .cd-body { padding: 1.5rem; display: flex; flex-direction: column; gap: 1rem; }
 .cd-title { font-size: 0.85rem; text-transform: uppercase; letter-spacing: 1px; color: var(--text-dim); }
@@ -498,20 +532,55 @@ h1, h2, h3, h4 { font-family: 'Sora', sans-serif; color: #fff; }
 .ssl-fingerprint:hover { color: var(--accent); }
 
 /* MODULE 3: PIPELINE FEED */
-.pipeline-list { display: flex; flex-direction: column; gap: 8px; }
-.pipe-row { 
-  display: grid; grid-template-columns: 20px 80px 1fr 80px 80px; align-items: center; gap: 15px;
-  padding: 12px; background: rgba(255,255,255,0.02); border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);
-  font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; cursor: pointer; transition: 0.2s;
+#pipeline .glass.cd-body { padding: 28px 32px; }
+.pipeline-list { display: flex; flex-direction: column; gap: 10px; }
+.pipe-row {
+  display: grid;
+  grid-template-columns: 14px 90px 1fr 80px 120px;
+  align-items: center;
+  gap: 20px;
+  padding: 14px 20px;
+  background: rgba(255,255,255,0.02);
+  border-radius: 14px;
+  border: 1px solid rgba(255,255,255,0.05);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: background 0.3s var(--ease-liquid), border-color 0.3s var(--ease-liquid);
 }
-.pipe-row:hover { background: rgba(255,255,255,0.05); }
-.pipe-status { width: 10px; height: 10px; border-radius: 50%; }
+.pipe-row:hover {
+  background: rgba(190, 242, 100, 0.04);
+  border-color: rgba(190, 242, 100, 0.15);
+}
+.pipe-status { width: 10px; height: 10px; border-radius: 50%; justify-self: center; }
 .pipe-status.ok { background: var(--ok); box-shadow: 0 0 8px var(--ok); }
 .pipe-status.fail { background: var(--crit); box-shadow: 0 0 8px var(--crit); }
 .pipe-status.prog { border: 2px solid var(--accent); border-top-color: transparent; border-radius: 50%; width: 14px; height: 14px; animation: spin 1s linear infinite; background: transparent;}
 @keyframes spin { 100% { transform: rotate(360deg); } }
-.pipe-sha { color: #a3b2c1; }
-.pipe-msg { color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-family: 'Outfit'; }
+.pipe-sha { color: var(--aqua); font-size: 0.78rem; }
+.pipe-msg { color: var(--text-1); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-family: 'Outfit'; font-size: 0.88rem; }
+.pipe-time { font-family: var(--font-mono); font-size: 0.78rem; color: var(--text-3); text-align: right; }
+.pipe-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 12px;
+  border-radius: 50px;
+  font-family: var(--font-mono);
+  font-size: 0.66rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  justify-self: end;
+  white-space: nowrap;
+  max-width: 100%;
+}
+.pipe-pill--ok { background: rgba(134,239,172,0.08); border: 1px solid rgba(134,239,172,0.22); color: var(--ok); }
+.pipe-pill--fail { background: rgba(253,164,175,0.08); border: 1px solid rgba(253,164,175,0.22); color: var(--crit); }
+.pipe-pill--run { background: rgba(94,234,212,0.08); border: 1px solid rgba(94,234,212,0.22); color: var(--aqua); }
+@media (max-width: 900px) {
+  .pipe-row { grid-template-columns: 12px 80px 1fr 100px; gap: 14px; }
+  .pipe-time { display: none; }
+}
 .pipe-new { animation: rowSlide 0.5s ease-out, rowFlash 1s ease-out; }
 @keyframes rowSlide { from { transform: translateY(-10px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
 @keyframes rowFlash { 0% { box-shadow: inset 0 0 20px var(--accent); } 100% { box-shadow: none; } }
@@ -554,10 +623,99 @@ h1, h2, h3, h4 { font-family: 'Sora', sans-serif; color: #fff; }
 .sbom-row { cursor: pointer; }
 .sbom-row:hover { background: rgba(255,255,255,0.03); }
 
-/* MODULE 7: THREAT GLOBE */
-#globe-container { width: 100%; height: 500px; border-radius: 20px; background: radial-gradient(circle at center, rgba(94,234,212,0.05) 0%, transparent 70%); overflow: hidden; position: relative;}
-.globe-overlay { position: absolute; bottom: 20px; left: 20px; font-family: 'JetBrains Mono'; pointer-events: none;}
-.globe-count { font-size: 2rem; color: var(--crit); font-weight: bold;}
+/* MODULE 7: THREAT GLOBE — cinematic card */
+.threat-card {
+  padding: 0 !important;
+  overflow: hidden;
+  position: relative;
+  aspect-ratio: 1 / 0.95;
+  min-height: 460px;
+  max-height: 560px;
+}
+.threat-card__header {
+  position: absolute;
+  top: 22px;
+  left: 26px;
+  right: 26px;
+  z-index: 5;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  pointer-events: none;
+}
+.threat-card__label {
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--text-3);
+}
+.threat-card__live {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  color: var(--lime);
+  letter-spacing: 0.15em;
+}
+.threat-card__live::before {
+  content: '';
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--lime);
+  box-shadow: 0 0 10px var(--lime);
+  animation: live-pulse 1.8s ease-in-out infinite;
+}
+@keyframes live-pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
+
+#globe-container {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  background: radial-gradient(circle at center, rgba(94,234,212,0.06) 0%, transparent 70%);
+}
+#globe-container canvas {
+  display: block;
+  width: 100% !important;
+  height: 100% !important;
+}
+
+.threat-card__footer {
+  position: absolute;
+  bottom: 24px;
+  left: 26px;
+  right: 26px;
+  z-index: 5;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  pointer-events: none;
+}
+.threat-card__counter {
+  font-family: var(--font-display);
+  font-weight: 900;
+  font-size: 2.4rem;
+  color: var(--lime);
+  line-height: 1;
+  text-shadow: 0 0 30px rgba(190, 242, 100, 0.5);
+}
+.threat-card__counter-label {
+  font-family: var(--font-mono);
+  font-size: 0.62rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--text-3);
+  margin-top: 7px;
+}
+.threat-card__coords {
+  font-family: var(--font-mono);
+  font-size: 0.62rem;
+  color: var(--text-3);
+  text-align: right;
+  line-height: 1.6;
+}
 
 /* MODULE 8: COMPLIANCE SCORE CARD */
 .comp-col { flex: 1; display: flex; flex-direction: column; gap: 15px;}
@@ -782,12 +940,20 @@ footer::before {
 
         <div class="grid-2">
             <!-- MODULE 7: THREAT GLOBE -->
-            <div class="glass cd-body" style="padding:0;">
-                <div style="padding: 1.5rem 1.5rem 0 1.5rem;" class="cd-title">THREAT MAP 3D</div>
-                <div id="globe-container">
-                    <div class="globe-overlay">
-                        <div class="globe-count" id="threat-counter">0</div>
-                        <div style="color:var(--text-mute); font-size:0.8rem;">ATTACKS BLOCKED THIS MONTH</div>
+            <div class="glass threat-card">
+                <div class="threat-card__header">
+                    <span class="threat-card__label">Threat Map 3D</span>
+                    <span class="threat-card__live">LIVE</span>
+                </div>
+                <div id="globe-container"></div>
+                <div class="threat-card__footer">
+                    <div>
+                        <div id="threat-counter" class="threat-card__counter">10+</div>
+                        <div class="threat-card__counter-label">Attacks Blocked This Month</div>
+                    </div>
+                    <div class="threat-card__coords">
+                        SERVER: FRA<br>
+                        50.11°N · 8.68°E
                     </div>
                 </div>
             </div>
@@ -1074,12 +1240,17 @@ footer::before {
 
                     const timeStr = fmtLocalTime(r.started, false);
 
+                    let pillCls = 'pipe-pill--run';
+                    if(stClass === 'ok') pillCls = 'pipe-pill--ok';
+                    else if(stClass === 'fail') pillCls = 'pipe-pill--fail';
+                    const pillLabel = (r.conclusion || r.status || 'run').toString();
+
                     hts += `<div class="pipe-row pipe-new" style="animation-delay:${i*0.1}s">
                         <div class="pipe-status ${stClass}"></div>
                         <div class="pipe-sha">${r.sha || r.id}</div>
                         <div class="pipe-msg">${r.message || 'CI Build'}</div>
-                        <div style="color:var(--text-dim);">${timeStr}</div>
-                        <div style="text-align:right;"><span class="status-pill" style="padding:2px 8px; font-size:0.7rem; border-color:transparent; box-shadow:none;">${r.conclusion || r.status || 'RUN'}</span></div>
+                        <div class="pipe-time">${timeStr}</div>
+                        <span class="pipe-pill ${pillCls}">${pillLabel}</span>
                     </div>`;
 
                     // Populate top mini-card Last Deploy from runs[0]
@@ -1329,98 +1500,238 @@ footer::before {
         });
 
         /* ==============================================================
-           MODULE 7: THREAT GLOBE 3D
+           MODULE 7: THREAT GLOBE 3D — cinematic rebuild
         ============================================================== */
-        async function initGlobe() {
+        function initGlobe() {
             const container = document.getElementById('globe-container');
+            if (!container || !window.THREE) return;
+
+            const W = () => container.clientWidth;
+            const H = () => container.clientHeight;
+            if (W() === 0 || H() === 0) { setTimeout(initGlobe, 200); return; }
+
             const scene = new THREE.Scene();
-            const camera = new THREE.PerspectiveCamera(45, container.clientWidth / container.clientHeight, 0.1, 1000);
-            const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
-            renderer.setSize(container.clientWidth, container.clientHeight);
+            scene.fog = new THREE.FogExp2(0x0a1410, 0.08);
+
+            const camera = new THREE.PerspectiveCamera(50, W() / H(), 0.1, 1000);
+            camera.position.set(0, 0, 3.2);
+
+            const renderer = new THREE.WebGLRenderer({
+                alpha: true,
+                antialias: true,
+                powerPreference: 'high-performance'
+            });
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+            renderer.setSize(W(), H());
+            renderer.setClearColor(0x000000, 0);
             container.appendChild(renderer.domElement);
 
-            const geometry = new THREE.SphereGeometry(2, 64, 64);
-            const material = new THREE.MeshBasicMaterial({ color: 0xBEF264, wireframe: true, transparent: true, opacity: 0.1 });
-            const globe = new THREE.Mesh(geometry, material);
-            scene.add(globe);
+            // Globe group (parent for rotation)
+            const globeGroup = new THREE.Group();
+            scene.add(globeGroup);
 
-            // Fetch Real-time Threats from Blueprint
-            let threatsData = [];
-            try {
-                const tr = await fetch('/api/threats');
-                if(tr.ok) { 
-                    const data = await tr.json(); 
-                    threatsData = Array.isArray(data) ? data : (data.attacks || []);
-                    document.getElementById('threat-counter').innerText = (data.total || threatsData.length).toLocaleString() + '+';
-                }
-            } catch(e){ console.error("Threat fetch fail", e); }
+            const RADIUS = 1.0;
 
-            // Convert lat/lng to 3D sphere coordinate
-            function getVec3(lat, lng, radius) {
-                const phi = (90 - lat)*(Math.PI/180);
-                const theta = (lng + 180)*(Math.PI/180);
-                return new THREE.Vector3( -(radius * Math.sin(phi)*Math.cos(theta)), radius * Math.cos(phi), radius * Math.sin(phi)*Math.sin(theta) );
+            // Layer 1: Solid inner sphere (dark body)
+            const innerGeom = new THREE.SphereGeometry(RADIUS * 0.985, 64, 64);
+            const innerMat = new THREE.MeshBasicMaterial({
+                color: 0x0a1a14,
+                transparent: true,
+                opacity: 0.9
+            });
+            globeGroup.add(new THREE.Mesh(innerGeom, innerMat));
+
+            // Layer 2: Wireframe mesh (subtle green tech grid)
+            const wireGeom = new THREE.SphereGeometry(RADIUS, 48, 32);
+            const wireMat = new THREE.LineBasicMaterial({
+                color: 0xbef264,
+                transparent: true,
+                opacity: 0.18
+            });
+            const wireframe = new THREE.LineSegments(
+                new THREE.WireframeGeometry(wireGeom),
+                wireMat
+            );
+            globeGroup.add(wireframe);
+
+            // Layer 3: Dotted coastline approximation (fibonacci sphere distribution)
+            const dotsGeom = new THREE.BufferGeometry();
+            const dotPositions = [];
+            const DOT_COUNT = 800;
+            for (let i = 0; i < DOT_COUNT; i++) {
+                const phi = Math.acos(1 - 2 * (i + 0.5) / DOT_COUNT);
+                const theta = Math.PI * (1 + Math.sqrt(5)) * i;
+                const x = RADIUS * 1.002 * Math.sin(phi) * Math.cos(theta);
+                const y = RADIUS * 1.002 * Math.sin(phi) * Math.sin(theta);
+                const z = RADIUS * 1.002 * Math.cos(phi);
+                dotPositions.push(x, y, z);
+            }
+            dotsGeom.setAttribute('position', new THREE.Float32BufferAttribute(dotPositions, 3));
+            const dotsMat = new THREE.PointsMaterial({
+                color: 0x5eead4,
+                size: 0.009,
+                transparent: true,
+                opacity: 0.7,
+                sizeAttenuation: true
+            });
+            globeGroup.add(new THREE.Points(dotsGeom, dotsMat));
+
+            // Layer 4: Outer atmosphere glow sphere (backside shader)
+            const atmGeom = new THREE.SphereGeometry(RADIUS * 1.06, 64, 64);
+            const atmMat = new THREE.ShaderMaterial({
+                uniforms: {},
+                vertexShader: `
+                    varying vec3 vNormal;
+                    void main() {
+                        vNormal = normalize(normalMatrix * normal);
+                        gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+                    }
+                `,
+                fragmentShader: `
+                    varying vec3 vNormal;
+                    void main() {
+                        float intensity = pow(0.68 - dot(vNormal, vec3(0, 0, 1.0)), 2.8);
+                        gl_FragColor = vec4(0.745, 0.949, 0.392, 1.0) * intensity;
+                    }
+                `,
+                side: THREE.BackSide,
+                blending: THREE.AdditiveBlending,
+                transparent: true
+            });
+            scene.add(new THREE.Mesh(atmGeom, atmMat));
+
+            // Attack markers
+            const markersGroup = new THREE.Group();
+            globeGroup.add(markersGroup);
+
+            function latLngToVec3(lat, lng, r) {
+                r = r || RADIUS * 1.01;
+                const phi = (90 - lat) * (Math.PI / 180);
+                const theta = (lng + 180) * (Math.PI / 180);
+                return new THREE.Vector3(
+                    -r * Math.sin(phi) * Math.cos(theta),
+                     r * Math.cos(phi),
+                     r * Math.sin(phi) * Math.sin(theta)
+                );
             }
 
-            // Target (Frankfurt ~ 50N, 8E)
-            const targetVec = getVec3(50, 8, 2.02);
+            function addMarker(lat, lng) {
+                const pos = latLngToVec3(lat, lng, RADIUS * 1.01);
+                const dotGeom = new THREE.SphereGeometry(0.015, 16, 16);
+                const dotMat = new THREE.MeshBasicMaterial({ color: 0xfda4af, transparent: true, opacity: 1 });
+                const dot = new THREE.Mesh(dotGeom, dotMat);
+                dot.position.copy(pos);
+                dot.userData.pulsePhase = Math.random() * Math.PI * 2;
+                markersGroup.add(dot);
 
-            // Add Origin Dots & Arcs
-            const arcs = [];
-            threatsData.forEach((t, i) => {
-                const originVec = getVec3(t.lat, t.lng, 2.02);
-                // dot
-                const dotG = new THREE.SphereGeometry(0.04, 8, 8);
-                const dotM = new THREE.MeshBasicMaterial({ color: 0xFCA5A5 }); // Red for threat
-                const dotMesh = new THREE.Mesh(dotG, dotM);
-                dotMesh.position.copy(originVec);
-                globe.add(dotMesh);
+                // Vertical beam rising from surface
+                const beamHeight = 0.12;
+                const beamGeom = new THREE.CylinderGeometry(0.002, 0.002, beamHeight, 6);
+                const beamMat = new THREE.MeshBasicMaterial({
+                    color: 0xfda4af,
+                    transparent: true,
+                    opacity: 0.5
+                });
+                const beam = new THREE.Mesh(beamGeom, beamMat);
+                beam.position.copy(pos.clone().multiplyScalar(1 + beamHeight / (2 * RADIUS)));
+                beam.lookAt(new THREE.Vector3(0, 0, 0));
+                beam.rotateX(Math.PI / 2);
+                markersGroup.add(beam);
+            }
 
-                // Arc Curve
-                // Find a mid-point slightly elevated
-                const dist = originVec.distanceTo(targetVec);
-                const mid = originVec.clone().lerp(targetVec, 0.5);
-                mid.normalize().multiplyScalar(2 + dist*0.3); // Elevation
+            // Arcs from attackers to server (Frankfurt)
+            const arcsGroup = new THREE.Group();
+            globeGroup.add(arcsGroup);
+            const SERVER_LAT = 50.11;
+            const SERVER_LNG = 8.68;
 
-                const curve = new THREE.QuadraticBezierCurve3(originVec, mid, targetVec);
-                const pts = curve.getPoints(50);
-                const arcG = new THREE.BufferGeometry().setFromPoints(pts);
-                const arcM = new THREE.LineBasicMaterial({ color: 0xBEF264, transparent:true, opacity: 0 }); // start hidden
-                const arcLine = new THREE.Line(arcG, arcM);
-                globe.add(arcLine);
-                
-                // Store for animation
-                arcs.push({ line: arcLine, delay: Math.random()*5, life: 0, active: false });
-            });
+            function addArc(lat, lng) {
+                const start = latLngToVec3(lat, lng, RADIUS * 1.01);
+                const end = latLngToVec3(SERVER_LAT, SERVER_LNG, RADIUS * 1.01);
+                const mid = start.clone().add(end).multiplyScalar(0.5);
+                const midLength = mid.length();
+                mid.normalize().multiplyScalar(midLength + 0.35);
 
-            camera.position.z = 5;
-            
-            let time = 0;
-            // Arc logic -> spawn randomly
+                const curve = new THREE.QuadraticBezierCurve3(start, mid, end);
+                const points = curve.getPoints(50);
+                const geom = new THREE.BufferGeometry().setFromPoints(points);
+                const mat = new THREE.LineBasicMaterial({
+                    color: 0xbef264,
+                    transparent: true,
+                    opacity: 0.35
+                });
+                arcsGroup.add(new THREE.Line(geom, mat));
+            }
+
+            // Fetch real threats, fallback to static
+            fetch('/api/threats', { cache: 'no-store' })
+                .then(r => r.json())
+                .then(data => {
+                    const attacks = (Array.isArray(data) ? data : (data.attacks || [])).slice(0, 30);
+                    attacks.forEach(a => {
+                        const lat = (typeof a.lat === 'number') ? a.lat : null;
+                        const lng = (typeof a.lon === 'number') ? a.lon : (typeof a.lng === 'number' ? a.lng : null);
+                        if (lat != null && lng != null) {
+                            addMarker(lat, lng);
+                            addArc(lat, lng);
+                        }
+                    });
+                    const counterEl = document.getElementById('threat-counter');
+                    if (counterEl) {
+                        const total = data.total || attacks.length;
+                        if (total) counterEl.textContent = total.toLocaleString() + '+';
+                    }
+                })
+                .catch(() => {
+                    const samples = [
+                        [39.9, 116.4], [55.75, 37.6], [22.3, 114.1],
+                        [-23.5, -46.6], [34.05, -118.25], [1.35, 103.8]
+                    ];
+                    samples.forEach(s => { addMarker(s[0], s[1]); addArc(s[0], s[1]); });
+                });
+
+            // Animation loop
+            const clock = new THREE.Clock();
             function animate() {
-                requestAnimationFrame(animate);
-                globe.rotation.y += 0.001; // slow rotate
-                
-                time += 0.016; // approx delta
-                arcs.forEach(a => {
-                    if(!a.active) {
-                        a.delay -= 0.016;
-                        if(a.delay <= 0) { a.active = true; a.life = 1.0; a.line.material.opacity = 0.8; }
-                    } else {
-                        a.life -= 0.008; // fade out speed
-                        a.line.material.opacity = Math.max(0, a.life);
-                        if(a.life <= 0) { a.active = false; a.delay = Math.random() * 6 + 2; } // wait 2-8s to respawn
+                const t = clock.getElapsedTime();
+                globeGroup.rotation.y += 0.0015;
+                globeGroup.rotation.x = Math.sin(t * 0.2) * 0.08;
+
+                markersGroup.children.forEach(m => {
+                    if (m.geometry && m.geometry.type === 'SphereGeometry') {
+                        const p = m.userData.pulsePhase || 0;
+                        const s = 1 + Math.sin(t * 2 + p) * 0.2;
+                        m.scale.setScalar(s);
+                        m.material.opacity = 0.7 + Math.sin(t * 2 + p) * 0.3;
                     }
                 });
 
+                arcsGroup.children.forEach((arc, i) => {
+                    arc.material.opacity = 0.25 + Math.sin(t * 1.2 + i * 0.5) * 0.15;
+                });
+
                 renderer.render(scene, camera);
+                requestAnimationFrame(animate);
             }
             animate();
 
-            // Hover pause
-            let isHoverGlobe = false;
-            container.addEventListener('mouseenter', ()=> { isHoverGlobe = true; });
-            container.addEventListener('mouseleave', ()=> { isHoverGlobe = false; });
+            // Resize handler
+            if (window.ResizeObserver) {
+                const ro = new ResizeObserver(() => {
+                    const w = W(), h = H();
+                    if (w === 0 || h === 0) return;
+                    camera.aspect = w / h;
+                    camera.updateProjectionMatrix();
+                    renderer.setSize(w, h);
+                });
+                ro.observe(container);
+            } else {
+                window.addEventListener('resize', () => {
+                    camera.aspect = W() / H();
+                    camera.updateProjectionMatrix();
+                    renderer.setSize(W(), H());
+                });
+            }
         }
 
 
