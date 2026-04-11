@@ -1,0 +1,110 @@
+{
+    "artifacts": [
+      {
+        "id": "27814b1981fb5e44",
+        "name": "flask",
+        "version": "3.0.0",
+        "type": "python",
+        "foundBy": "python-site-packages-cataloger",
+        "locations": [
+          {
+            "path": "/usr/local/lib/python3.10/site-packages/flask"
+          }
+        ],
+        "licenses": [
+          "BSD-3-Clause"
+        ],
+        "language": "python",
+        "cpes": [
+          "cpe:2.3:a:palindrome_technologies:flask:3.0.0:*:*:*:*:python:*:*"
+        ],
+        "purl": "pkg:pypi/flask@3.0.0"
+      },
+      {
+        "id": "e62ba4a7a8d56b0c",
+        "name": "psutil",
+        "version": "5.9.8",
+        "type": "python",
+        "foundBy": "python-site-packages-cataloger",
+        "locations": [
+          {
+            "path": "/usr/local/lib/python3.10/site-packages/psutil"
+          }
+        ],
+        "licenses": [
+          "BSD-3-Clause"
+        ],
+        "language": "python",
+        "cpes": [
+          "cpe:2.3:a:psutil:psutil:5.9.8:*:*:*:*:python:*:*"
+        ],
+        "purl": "pkg:pypi/psutil@5.9.8"
+      },
+      {
+        "id": "fa451ba976523cc1",
+        "name": "gunicorn",
+        "version": "23.0.0",
+        "type": "python",
+        "foundBy": "python-site-packages-cataloger",
+        "locations": [
+          {
+            "path": "/usr/local/lib/python3.10/site-packages/gunicorn"
+          }
+        ],
+        "licenses": [
+          "MIT"
+        ],
+        "language": "python",
+        "cpes": [],
+        "purl": "pkg:pypi/gunicorn@23.0.0"
+      },
+      {
+        "id": "d0e1bba8a45febe2",
+        "name": "Werkzeug",
+        "version": "3.0.4",
+        "type": "python",
+        "foundBy": "python-site-packages-cataloger",
+        "locations": [
+          {
+            "path": "/usr/local/lib/python3.10/site-packages/werkzeug"
+          }
+        ],
+        "licenses": [
+          "BSD-3-Clause"
+        ],
+        "language": "python",
+        "cpes": [],
+        "purl": "pkg:pypi/Werkzeug@3.0.4"
+      },
+      {
+        "id": "bd0bc172cccaaa7f",
+        "name": "Jinja2",
+        "version": "3.1.4",
+        "type": "python",
+        "foundBy": "python-site-packages-cataloger",
+        "locations": [
+          {
+            "path": "/usr/local/lib/python3.10/site-packages/jinja2"
+          }
+        ],
+        "licenses": [
+          "BSD-3-Clause"
+        ],
+        "language": "python",
+        "cpes": [],
+        "purl": "pkg:pypi/Jinja2@3.1.4"
+      },
+      {
+        "id": "xaxbc172cccaaa7a",
+        "name": "MarkupSafe",
+        "version": "3.0.2",
+        "type": "python",
+        "foundBy": "python-site-packages-cataloger",
+        "locations": [],
+        "licenses": [],
+        "language": "python",
+        "cpes": [],
+        "purl": "pkg:pypi/MarkupSafe@3.0.2"
+      }
+    ]
+}

@@ -1,0 +1,12 @@
+[
+  {"lat": 39.9042, "lng": 116.4074, "country": "China", "count": 245, "timestamp": "2026-04-11T10:00:00Z"},
+  {"lat": 55.7558, "lng": 37.6173, "country": "Russia", "count": 180, "timestamp": "2026-04-11T10:01:00Z"},
+  {"lat": 38.9072, "lng": -77.0369, "country": "United States", "count": 310, "timestamp": "2026-04-11T10:02:00Z"},
+  {"lat": -23.5505, "lng": -46.6333, "country": "Brazil", "count": 140, "timestamp": "2026-04-11T10:03:00Z"},
+  {"lat": 1.3521, "lng": 103.8198, "country": "Singapore", "count": 92, "timestamp": "2026-04-11T10:04:00Z"},
+  {"lat": 48.8566, "lng": 2.3522, "country": "France", "count": 88, "timestamp": "2026-04-11T10:05:00Z"},
+  {"lat": -33.8688, "lng": 151.2093, "country": "Australia", "count": 75, "timestamp": "2026-04-11T10:06:00Z"},
+  {"lat": 35.6895, "lng": 139.6917, "country": "Japan", "count": 125, "timestamp": "2026-04-11T10:07:00Z"},
+  {"lat": 28.6139, "lng": 77.2090, "country": "India", "count": 210, "timestamp": "2026-04-11T10:08:00Z"},
+  {"lat": -34.6037, "lng": -58.3816, "country": "Argentina", "count": 65, "timestamp": "2026-04-11T10:09:00Z"}
+]

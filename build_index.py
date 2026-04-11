@@ -1,4 +1,117 @@
-<!DOCTYPE html>
+import os
+
+output_path = "d:/devsecops/devsecops_portfolio/app/templates/index.html"
+
+css = """
+/* RESET & FONTS */
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400&family=Sora:wght@800;900&family=JetBrains+Mono&display=swap');
+
+:root {
+  --glass-bg: rgba(255, 255, 255, 0.045);
+  --accent: #7DD3FC;
+  --bg-color: #0A0E1A;
+  --text-main: #ffffff;
+  --text-body: rgba(255, 255, 255, 0.75);
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: 'Outfit', sans-serif;
+  background-color: var(--bg-color);
+  color: var(--text-body);
+  line-height: 1.6;
+  overflow-x: hidden;
+}
+
+/* TYPOGRAPHY */
+h1, h2, h3, h4, h5, h6 { font-family: 'Sora', sans-serif; color: var(--text-main); }
+.mono { font-family: 'JetBrains Mono', monospace; }
+
+/* THE GLASS COMPONENT */
+.glass {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.07), rgba(255, 255, 255, 0.02));
+  backdrop-filter: blur(24px) saturate(1.8) brightness(1.1);
+  -webkit-backdrop-filter: blur(24px) saturate(1.8) brightness(1.1);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 28px;
+  box-shadow: 
+    inset 0 1px 0 rgba(255, 255, 255, 0.18),
+    inset 0 -1px 0 rgba(255, 255, 255, 0.04),
+    0 24px 60px -20px rgba(0, 0, 0, 0.5),
+    0 0 0 1px rgba(125, 211, 252, 0.04);
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.3s ease, border-color 0.3s ease;
+}
+.glass::before {
+  content: ""; position: absolute; top: 0; left: 10%; right: 10%; height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.6), transparent);
+}
+.glass:hover { transform: translateY(-3px); border-color: rgba(125, 211, 252, 0.3); }
+
+/* HERO SECTION */
+.hero { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; text-align: center; position: relative; }
+.hero__title { position: relative; font-size: clamp(4rem, 10vw, 8rem); font-weight: 900; z-index: 2; margin-bottom: 2rem; cursor: default; }
+.hero__char {
+  background: linear-gradient(180deg, #fff 0%, #fff 40%, rgba(255, 255, 255, 0.55) 100%);
+  -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
+  position: relative; text-shadow: 0 0 80px rgba(125, 211, 252, 0.15); display: inline-block;
+}
+.hero__title::before {
+  content: "BBM LAB"; position: absolute; inset: 0;
+  background: linear-gradient(110deg, transparent 35%, rgba(125, 211, 252, 0.9) 50%, transparent 65%);
+  -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
+  background-size: 200% 100%; animation: sheen 6s linear infinite; pointer-events: none;
+}
+@keyframes sheen { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+.hero__title::after {
+  content: ""; position: absolute; inset: -20px;
+  background: radial-gradient(ellipse, rgba(125, 211, 252, 0.08), transparent 60%);
+  filter: blur(40px); animation: breathe 5s ease-in-out infinite; z-index: -1;
+}
+@keyframes breathe { 0%, 100% { opacity: 0.4; transform: scale(1); } 50% { opacity: 0.8; transform: scale(1.05); } }
+
+.hero__subtitle { font-family: 'JetBrains Mono', monospace; font-size: 1.1rem; letter-spacing: 0.2rem; color: var(--accent); margin-bottom: 2rem; text-transform: uppercase; }
+.hero__status { display: inline-flex; align-items: center; gap: 10px; padding: 10px 24px; border-radius: 50px; border: 1px solid rgba(125,211,252,0.3); font-size: 0.9rem; font-weight: 500; background: rgba(125,211,252,0.05); color: var(--text-main); }
+.status-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 10px var(--accent); animation: pulse 2s infinite; }
+@keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+
+#dispersion-canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 1; }
+
+/* SECTIONS */
+.section { padding: 6rem 2rem; max-width: 1300px; margin: 0 auto; display: flex; flex-direction: column; gap: 3rem; }
+.section-header { text-align: center; margin-bottom: 2rem; }
+.section-header h2 { font-size: 2.5rem; letter-spacing: -2px; }
+.section-header .sub { font-family: 'JetBrains Mono', monospace; color: var(--accent); font-size: 0.9rem; text-transform: uppercase; margin-bottom: 10px; }
+
+/* GRID LAYOUTS */
+.grid-4 { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 2rem; }
+.grid-2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 2rem; }
+
+/* CARDS */
+.data-card { padding: 2rem; display: flex; flex-direction: column; gap: 1rem; }
+.data-card h3 { font-size: 1.2rem; font-weight: 800; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 1rem; }
+.data-value { font-family: 'JetBrains Mono', monospace; font-size: 2.2rem; color: var(--accent); margin: 1rem 0; }
+.data-label { font-size: 0.85rem; text-transform: uppercase; letter-spacing: 1px; color: rgba(255,255,255,0.5); }
+.badge { display: inline-block; padding: 4px 10px; border-radius: 6px; font-size: 0.75rem; font-weight: bold; font-family: 'JetBrains Mono', monospace; }
+.badge.critical { background: rgba(253, 230, 138, 0.15); color: #FDE68A; border: 1px solid rgba(253,230,138,0.3); } /* #FDE68A for critical */
+.badge.high { background: rgba(255, 100, 100, 0.15); color: #ff6464; border: 1px solid rgba(255,100,100,0.3); } 
+.badge.ok { background: rgba(125, 211, 252, 0.15); color: #7DD3FC; border: 1px solid rgba(125,211,252,0.3); }
+
+/* FEED ITEMS */
+.feed-item { padding: 1rem; border-bottom: 1px solid rgba(255,255,255,0.05); display: flex; flex-direction: column; gap: 8px; }
+.feed-item:last-child { border-bottom: none; }
+.feed-item .mono { font-size: 0.8rem; color: var(--accent); }
+.feed-item p { font-size: 0.95rem; }
+
+/* THREAT GLOBE CONTAINER */
+#globe-container { width: 100%; height: 400px; border-radius: 20px; overflow: hidden; background: rgba(0,0,0,0.2); }
+
+/* FOOTER */
+footer { text-align: center; padding: 4rem 0; border-top: 1px solid rgba(255,255,255,0.05); margin-top: 4rem; }
+"""
+
+html_structure = """<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -432,4 +545,9 @@
 
     </script>
 </body>
-</html>
+</html>"""
+
+with open(output_path, "w", encoding="utf-8") as f:
+    f.write(html_structure)
+
+print("Build complete.")

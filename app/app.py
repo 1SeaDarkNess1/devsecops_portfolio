@@ -6,8 +6,11 @@ import re
 import os
 import time
 import random
+import urllib.request
+import urllib.error
+import json
 
-app = Flask(__name__)
+app = Flask(__name__, static_folder='static')
 
 # Stare globala pentru Chaos Engineering
 chaos_state = {"end_time": 0}
@@ -154,6 +157,57 @@ def traffic_stream():
             "latency": f"{latency}ms", "agent": agent.split('/')[0]
         })
     return jsonify({"stream": traffic_lines})
+
+@app.route('/api/proxy/headers')
+def proxy_headers():
+    target_url = request.args.get('url', 'https://bbmlab.duckdns.org')
+    try:
+        req = urllib.request.Request(target_url, headers={'User-Agent': 'Mozilla/5.0'})
+        with urllib.request.urlopen(req, timeout=5) as response:
+            headers = dict(response.info())
+        score = 100
+        # Check specific headers
+        sts = headers.get('Strict-Transport-Security')
+        csp = headers.get('Content-Security-Policy')
+        xfo = headers.get('X-Frame-Options')
+        rp = headers.get('Referrer-Policy')
+        grade = "A"
+        if not sts: score -= 20
+        if not csp: score -= 30
+        if not xfo: score -= 10
+        if not rp: score -= 10
+        if score >= 90: grade = "A"
+        elif score >= 70: grade = "B"
+        elif score >= 50: grade = "C"
+        elif score >= 30: grade = "D"
+        else: grade = "F"
+        return jsonify({"url": target_url, "headers": headers, "score": score, "grade": grade})
+    except Exception as e:
+        return jsonify({"error": str(e), "grade": "F"}), 500
+
+@app.route('/api/proxy/crt')
+def proxy_crt():
+    domain = request.args.get('domain', 'bbmlab.duckdns.org')
+    try:
+        url = f"https://crt.sh/?q={domain}&output=json"
+        req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0'})
+        with urllib.request.urlopen(req, timeout=5) as response:
+            data = json.loads(response.read().decode())
+            return jsonify(data)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/api/proxy/nvd')
+def proxy_nvd():
+    keyword = request.args.get('keyword', 'docker')
+    try:
+        url = f"https://services.nvd.nist.gov/rest/json/cves/2.0?keywordSearch={keyword}&resultsPerPage=5"
+        req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0'})
+        with urllib.request.urlopen(req, timeout=10) as response:
+            data = json.loads(response.read().decode())
+            return jsonify(data)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 @app.route('/health')
 def health():
