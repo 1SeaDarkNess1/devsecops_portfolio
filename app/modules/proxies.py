@@ -94,9 +94,11 @@ def cve_feed():
         cves = []
         for item in data.get('vulnerabilities', [])[:8]:
             cve_data = item['cve']
-            metric = (cve_data.get('metrics', {}).get('cvssMetricV31') or
-                      cve_data.get('metrics', {}).get('cvssMetricV30') or [{}])[0]
-            score = metric.get('cvssData', {}).get('baseScore', 0)
+            metrics = cve_data.get('metrics', {})
+            metric_list = (metrics.get('cvssMetricV31') or 
+                           metrics.get('cvssMetricV30') or 
+                           metrics.get('cvssMetricV2') or [])
+            score = metric_list[0]['cvssData']['baseScore'] if metric_list else 0
             cves.append({
                 'id': cve_data['id'],
                 'score': score,

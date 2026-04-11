@@ -579,12 +579,16 @@ html = """<!DOCTYPE html>
            MODULE 1: SECURITY HEADERS SCANNER
         ============================================================== */
         async function fetchHeaders() {
-            // First proxy fallback in case Observatory blocks client-side
             let data = null;
             try {
-                const res = await fetch('/api/security/headers');
+                const res = await fetch('/api/security/headers', {cache: 'no-store'});
                 if(res.ok) data = await res.json();
-            } catch(e) { console.error("Headers fetch fail", e); }
+                else throw new Error("API Offline");
+            } catch(e) { 
+                console.error("Headers fetch fail", e);
+                document.getElementById('headers-list-ui').innerHTML = '<div class="mono" style="color:var(--crit); padding:10px;">API OFFLINE</div>';
+                return;
+            }
             
             if(data) {
                 const num = document.getElementById('gauge-num');
@@ -595,7 +599,6 @@ html = """<!DOCTYPE html>
                 document.getElementById('gauge-letter').innerText = grade;
                 document.getElementById('headers-mini-grade').innerText = grade;
                 
-                // Color grading
                 let col = 'var(--accent)';
                 if(score >= 90) col = 'var(--ok)';
                 else if(score < 50) col = 'var(--crit)';
@@ -605,19 +608,16 @@ html = """<!DOCTYPE html>
                 document.getElementById('gauge-letter').style.color = col;
                 document.getElementById('headers-mini-grade').style.color = col;
 
-                // Animate Numbers
                 let curr = 0;
-                let step = score / 60; // 60 frames
+                let step = score / 60;
                 function animTick() {
                     curr += step;
                     if(curr > score) curr = score;
                     num.innerText = Math.floor(curr);
-                    // 630 is perimeter for r=100
                     circ.style.strokeDashoffset = 630 - (630 * (curr/100));
                     if(curr < score) requestAnimationFrame(animTick);
                 }
                 
-                // Trigger gauge purely on scroll IntersectionObserver
                 const observer = new IntersectionObserver(entries => {
                     if(entries[0].isIntersecting) {
                         animTick(); observer.disconnect();
@@ -625,15 +625,15 @@ html = """<!DOCTYPE html>
                 }, { threshold: 0.5 });
                 observer.observe(document.getElementById('headers-gauge'));
 
-                // Render list
-                const reqHeaders = ['Strict-Transport-Security', 'Content-Security-Policy', 'X-Frame-Options', 'X-Content-Type-Options', 'Referrer-Policy', 'Permissions-Policy'];
+                // Render all 8 entries from checks object (lowercase keys)
                 const hList = document.getElementById('headers-list-ui');
                 hList.innerHTML = '';
-                reqHeaders.forEach(rh => {
-                    const found = data.headers && data.headers[rh] ? true : false;
+                const entries = Object.entries(data.checks || {});
+                entries.forEach(([key, passed]) => {
+                    const label = key.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join('-');
                     hList.innerHTML += `<div class="hl-item">
-                        <span class="icon ${found?'ok':'bad'}">${found?'✓':'✗'}</span> <span>${rh}</span>
-                        <div class="hl-tooltip">${found ? 'Enforced properly' : 'Missing configuration'}</div>
+                        <span class="icon ${passed?'ok':'bad'}">${passed?'✓':'✗'}</span> <span>${label}</span>
+                        <div class="hl-tooltip">${passed ? 'Enforced properly' : 'Missing configuration'}</div>
                     </div>`;
                 });
             }
@@ -644,23 +644,33 @@ html = """<!DOCTYPE html>
         ============================================================== */
         async function fetchSSL() {
             try {
-                const res = await fetch('/api/security/ssl');
+                const res = await fetch('/api/security/ssl', {cache: 'no-store'});
                 if(res.ok) {
-                    const data = await res.json();
-                    if(data && data.length > 0) {
-                        const cert = data[0];
-                        const issuerMatch = cert.issuer_name.match(/O=([^,]+)/);
-                        if(issuerMatch) document.getElementById('ssl-issuer').innerText = issuerMatch[1];
-                        document.getElementById('ssl-valid').innerText = cert.nvb.split('T')[0];
+                    const cert = await res.json();
+                    if(cert && cert.issuer_name) {
+                        // Extract CN from issuer_name
+                        const cnMatch = cert.issuer_name.match(/CN=([^,]+)/) || cert.issuer_name.match(/O=([^,]+)/);
+                        document.getElementById('ssl-issuer').innerText = cnMatch ? cnMatch[1] : cert.issuer_name;
                         
-                        // Fingerprint mock if not returned by generic endpoint
-                        const fp = cert.sha256_fingerprint || "81A3F10...B2";
-                        document.getElementById('ssl-fp').innerText = "SHA256: " + fp.substring(0,8) + "...";
-                        document.getElementById('ssl-fp').onmouseenter = (e) => { e.target.innerText = "SHA256: "+fp; }
-                        document.getElementById('ssl-fp').onmouseleave = (e) => { e.target.innerText = "SHA256: "+fp.substring(0,8)+"..."; }
+                        // Format Date DD/MM/YYYY
+                        const expiry = new Date(cert.not_after);
+                        const day = String(expiry.getDate()).padStart(2, '0');
+                        const mon = String(expiry.getMonth() + 1).padStart(2, '0');
+                        document.getElementById('ssl-valid').innerText = `${day}/${mon}/${expiry.getFullYear()}`;
+                        
+                        // Countdown
+                        const diff = expiry - new Date();
+                        const days = Math.ceil(diff / (1000 * 60 * 60 * 24));
+                        document.getElementById('ssl-valid').innerHTML += ` <span style="font-size:0.7rem; opacity:0.7;">(${days}d left)</span>`;
+
+                        const fp = cert.serial || "0543E02B...B5";
+                        document.getElementById('ssl-fp').innerText = "SERIAL: " + fp.substring(0,8).toUpperCase() + "...";
                     }
-                }
-            } catch(e) { console.error('crt.sh fail', e); }
+                } else { throw new Error("502"); }
+            } catch(e) { 
+                console.error('SSL fail', e); 
+                document.getElementById('ssl-issuer').innerText = "API OFFLINE";
+            }
             
             // 3D Tilt Logic
             const wrap = document.getElementById('ssl-wrapper');
@@ -731,24 +741,16 @@ html = """<!DOCTYPE html>
         let globalCVEs = [];
         async function fetchCVEs() {
             try {
-                const res = await fetch('/api/security/cves?q=docker');
+                const res = await fetch('/api/security/cves?q=docker', {cache: 'no-store'});
                 if(res.ok) {
                     const data = await res.json();
-                    if(data.vulnerabilities) {
-                        globalCVEs = data.vulnerabilities.map(v => {
-                            let sev = "MEDIUM"; let cvss = 5.0;
-                            try { sev = v.cve.metrics.cvssMetricV31[0].cvssData.baseSeverity; cvss = v.cve.metrics.cvssMetricV31[0].cvssData.baseScore; } catch(e){}
-                            return {
-                                id: v.cve.id,
-                                desc: v.cve.descriptions[0].value,
-                                sev: sev,
-                                cvss: cvss.toFixed(1)
-                            };
-                        });
-                        renderCVEs("All");
-                    }
-                }
-            } catch(e) { console.error("CVE Fetch", e); }
+                    globalCVEs = data.vulnerabilities || [];
+                    renderCVEs("All");
+                } else { throw new Error("API Offline"); }
+            } catch(e) { 
+                console.error("CVE Fetch", e);
+                document.getElementById('cve-grid').innerHTML = '<div class="mono" style="color:var(--crit); padding:20px;">API OFFLINE</div>';
+            }
             
             // Filter interaction
             document.querySelectorAll('.cve-chip').forEach(c => {
@@ -763,18 +765,18 @@ html = """<!DOCTYPE html>
             const grid = document.getElementById('cve-grid');
             grid.innerHTML = '';
             let filtered = globalCVEs;
-            if(filterArg !== 'All') filtered = globalCVEs.filter(c => c.sev === filterArg);
+            if(filterArg !== 'All') filtered = globalCVEs.filter(c => c.severity === filterArg);
             
             filtered.forEach((c, idx) => {
-                let cls = 'low'; let col = 'var(--accent)';
-                if(c.sev === 'CRITICAL') { cls = 'crit'; col = 'var(--crit)'; }
-                else if(c.sev === 'HIGH') { cls = 'high'; col = '#FB923C'; }
-                else if(c.sev === 'MEDIUM') { cls = 'med'; col = 'var(--warn)'; }
+                let cls = 'low'; let col = 'var(--accent-sky)';
+                if(c.severity === 'CRITICAL') { cls = 'crit'; col = 'var(--crit)'; }
+                else if(c.severity === 'HIGH') { cls = 'high'; col = '#FB923C'; }
+                else if(c.severity === 'MEDIUM') { cls = 'med'; col = '#FDE68A'; }
                 
                 grid.innerHTML += `<div class="cve-tile ${cls}" style="animation: rowSlide 0.3s ease-out ${idx*0.05}s backwards;">
                     <div class="cve-id">${c.id}</div>
-                    <div class="cve-score" style="color:${col}">${c.cvss}</div>
-                    <div class="cve-desc">${c.desc}</div>
+                    <div class="cve-score" style="color:${col}">${c.score.toFixed(1)}</div>
+                    <div class="cve-desc">${c.description}</div>
                 </div>`;
             });
         }
