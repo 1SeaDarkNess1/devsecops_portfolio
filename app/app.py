@@ -6,11 +6,52 @@ import re
 import os
 import time
 import random
-import urllib.request
-import urllib.error
 import json
+import requests
+from urllib.parse import urlparse
+import socket
+import ipaddress
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
 
 app = Flask(__name__, static_folder='static')
+
+limiter = Limiter(
+    get_remote_address,
+    app=app,
+    default_limits=["200 per day", "50 per hour"]
+)
+
+ALLOWED_HOSTS = {
+    'crt.sh',
+    'services.nvd.nist.gov',
+    'bbmlab.duckdns.org',
+}
+ALLOWED_SCHEMES = {'https'}
+
+def safe_fetch(url: str, timeout: int = 5):
+    """Fetch sigur cu validare scheme + host. Blocheaza file://, gopher://, SSRF."""
+    parsed = urlparse(url)
+    if parsed.scheme not in ALLOWED_SCHEMES:
+        raise ValueError(f"Scheme not allowed: {parsed.scheme}")
+    if parsed.hostname not in ALLOWED_HOSTS:
+        raise ValueError(f"Host not allowed: {parsed.hostname}")
+    # Block private IPs (defense-in-depth pentru DNS rebinding)
+    try:
+        ip = ipaddress.ip_address(socket.gethostbyname(parsed.hostname))
+        if ip.is_private or ip.is_loopback or ip.is_link_local:
+            raise ValueError(f"Private IP blocked: {ip}")
+    except (socket.gaierror, ValueError) as e:
+        raise ValueError(f"DNS resolution failed: {e}")
+
+    response = requests.get(
+        url,
+        timeout=timeout,
+        allow_redirects=False,
+        headers={'User-Agent': 'BBM-Lab-Security-Scanner/1.0'}
+    )
+    response.raise_for_status()
+    return response
 
 # Stare globala pentru Chaos Engineering
 chaos_state = {"end_time": 0}
@@ -159,12 +200,17 @@ def traffic_stream():
     return jsonify({"stream": traffic_lines})
 
 @app.route('/api/proxy/headers')
+@limiter.limit("10 per minute")
 def proxy_headers():
-    target_url = request.args.get('url', 'https://bbmlab.duckdns.org')
+    target_url = request.args.get('url', '').strip()
+    if not target_url:
+        return jsonify({'error': 'url param required'}), 400
+    parsed = urlparse(target_url)
+    if parsed.hostname != 'bbmlab.duckdns.org':
+        return jsonify({'error': 'only bbmlab.duckdns.org allowed'}), 403
     try:
-        req = urllib.request.Request(target_url, headers={'User-Agent': 'Mozilla/5.0'})
-        with urllib.request.urlopen(req, timeout=5) as response:
-            headers = dict(response.info())
+        response = safe_fetch(target_url, timeout=5)
+        headers = dict(response.headers)
         score = 100
         # Check specific headers
         sts = headers.get('Strict-Transport-Security')
@@ -182,32 +228,36 @@ def proxy_headers():
         elif score >= 30: grade = "D"
         else: grade = "F"
         return jsonify({"url": target_url, "headers": headers, "score": score, "grade": grade})
-    except Exception as e:
-        return jsonify({"error": str(e), "grade": "F"}), 500
+    except ValueError as e:
+        return jsonify({'error': str(e), 'grade': 'F'}), 400
+    except requests.RequestException as e:
+        return jsonify({'error': 'upstream fetch failed', 'grade': 'F'}), 502
 
 @app.route('/api/proxy/crt')
 def proxy_crt():
     domain = request.args.get('domain', 'bbmlab.duckdns.org')
     try:
         url = f"https://crt.sh/?q={domain}&output=json"
-        req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0'})
-        with urllib.request.urlopen(req, timeout=5) as response:
-            data = json.loads(response.read().decode())
-            return jsonify(data)
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
+        response = safe_fetch(url, timeout=5)
+        data = response.json()
+        return jsonify(data)
+    except ValueError as e:
+        return jsonify({'error': str(e)}), 400
+    except requests.RequestException as e:
+        return jsonify({'error': 'upstream fetch failed'}), 502
 
 @app.route('/api/proxy/nvd')
 def proxy_nvd():
     keyword = request.args.get('keyword', 'docker')
     try:
         url = f"https://services.nvd.nist.gov/rest/json/cves/2.0?keywordSearch={keyword}&resultsPerPage=5"
-        req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0'})
-        with urllib.request.urlopen(req, timeout=10) as response:
-            data = json.loads(response.read().decode())
-            return jsonify(data)
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
+        response = safe_fetch(url, timeout=10)
+        data = response.json()
+        return jsonify(data)
+    except ValueError as e:
+        return jsonify({'error': str(e)}), 400
+    except requests.RequestException as e:
+        return jsonify({'error': 'upstream fetch failed'}), 502
 
 @app.route('/health')
 def health():

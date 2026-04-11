@@ -167,7 +167,7 @@ h1, h2, h3, h4 { font-family: 'Sora', sans-serif; color: #fff; }
 .cve-tile.low { border-top: 2px solid var(--accent); } .cve-tile.low:hover { box-shadow: 0 10px 30px -10px rgba(125,211,252,0.4); }
 .cve-id { font-family: 'JetBrains Mono', monospace; font-size: 0.75rem; color: var(--text-dim); }
 .cve-score { position: absolute; top: 15px; right: 15px; font-family: 'Sora'; font-size: 1.2rem; font-weight: 800; }
-.cve-desc { font-size: 0.85rem; color: var(--text); overflow: hidden; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; line-height: 1.4;}
+.cve-desc { font-size: 0.85rem; color: var(--text); overflow: hidden; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; line-clamp: 3; line-height: 1.4;}
 
 /* MODULE 5: TELEMETRY SPARKLINES */
 .metric-stripe { display: flex; align-items: flex-end; gap: 10px; height: 80px; }
@@ -211,7 +211,7 @@ html = """<!DOCTYPE html>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>BBM LAB | Continuous Security Posture</title>
     <style>{css}</style>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="{{ url_for('static', filename='vendor/three.min.js') }}"></script>
 </head>
 <body>
 
@@ -972,6 +972,6 @@ html = """<!DOCTYPE html>
 """
 
 with open(output_path, "w", encoding="utf-8") as f:
-    f.write(html)
+    f.write(html.replace('{css}', css))
 
 print("V3 Build Complete.")
