@@ -1207,18 +1207,68 @@ footer::before {
                     hist.disk.shift(); hist.disk.push(d);
                     drawSpark('spark-disk', hist.disk, 100, 'var(--accent-violet)');
 
-                    // Uptime
-                    const uv = 99.9 + Math.random()*0.05;
-                    document.getElementById('tele-up').innerText = uv.toFixed(1);
-                    hist.up.shift(); hist.up.push(uv);
-                    drawSpark('spark-up', hist.up, 100.1, 'var(--accent-rose)');
-                    // Update Live ops uptime 
-                    if(document.getElementById('uptime-val')) document.getElementById('uptime-val').innerText = uv.toFixed(2)+'%';
-
                 }
             } catch(e) {}
         }
         setInterval(fetchMetrics, 3000);
+
+        /* ==============================================================
+           MODULE 5b: REAL UPTIME (UptimeRobot proxy /api/uptime)
+        ============================================================== */
+        async function fetchUptime() {
+            const teleUp = document.getElementById('tele-up');
+            const upVal  = document.getElementById('uptime-val');
+            const liveOp = document.querySelector('#live-ops [id="uptime-val"] + div');
+            try {
+                const res = await fetch('/api/uptime', {cache: 'no-store'});
+                const data = await res.json().catch(() => ({}));
+                if(!res.ok || !data.ok) {
+                    if(teleUp) teleUp.innerText = '--';
+                    if(upVal)  upVal.innerText  = '--';
+                    if(liveOp) { liveOp.innerText = data.error || 'Uptime API offline'; liveOp.style.color = 'var(--crit)'; }
+                    return;
+                }
+                const r30 = (data.ratios && data.ratios['30d']) != null ? data.ratios['30d'] : null;
+                const r7  = (data.ratios && data.ratios['7d'])  != null ? data.ratios['7d']  : null;
+                const r1  = (data.ratios && data.ratios['1d'])  != null ? data.ratios['1d']  : null;
+
+                // Headline: 30-day ratio (falls back to 7d then 1d)
+                const headline = r30 != null ? r30 : (r7 != null ? r7 : (r1 != null ? r1 : null));
+                if(headline != null) {
+                    if(teleUp) teleUp.innerText = headline.toFixed(2);
+                    if(upVal)  upVal.innerText  = headline.toFixed(2) + '%';
+                }
+
+                // Status colour — 2 = up, 8 = seems down, 9 = down, 0 = paused
+                const statusColor = (data.status === 2) ? 'var(--ok)'
+                                  : (data.status === 0) ? 'var(--warn)'
+                                  : 'var(--crit)';
+                if(upVal) upVal.style.color = statusColor;
+                if(liveOp) {
+                    liveOp.innerText = (data.status === 2) ? 'Operational' : (data.status === 0 ? 'Paused' : 'Degraded');
+                    liveOp.style.color = statusColor;
+                }
+
+                // Sparkline — seed with 1d/7d/30d ratios so it actually shows a trend
+                const trendVals = [r30, r7, r1].filter(v => v != null);
+                if(trendVals.length > 0) {
+                    // Expand into 30 points with small jitter within ±0.01 for visual interest
+                    const expanded = [];
+                    for(let i = 0; i < 30; i++) {
+                        const slot = Math.min(trendVals.length - 1, Math.floor((i / 30) * trendVals.length));
+                        expanded.push(trendVals[slot]);
+                    }
+                    hist.up = expanded;
+                    drawSpark('spark-up', hist.up, 100, 'var(--lime)');
+                }
+            } catch(e) {
+                console.error('Uptime fetch fail', e);
+                if(teleUp) teleUp.innerText = '--';
+                if(upVal)  upVal.innerText  = '--';
+            }
+        }
+        // UptimeRobot free tier = 10 req/min — backend caches 120s, so 60s is safe.
+        setInterval(fetchUptime, 60000);
 
         /* ==============================================================
            MODULE 6: SBOM VIEWER
@@ -1448,6 +1498,7 @@ footer::before {
             fetchPipeline();
             fetchCVEs();
             fetchMetrics();
+            fetchUptime();
             fetchSbom();
             setTimeout(initGlobe, 500);
             initCompliance();

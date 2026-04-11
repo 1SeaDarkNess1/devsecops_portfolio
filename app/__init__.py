@@ -8,6 +8,7 @@ from .modules.sbom import sbom_bp
 from .modules.threats import threats_bp
 from .modules.compliance import compliance_bp
 from .modules.telemetry import telemetry_bp
+from .modules.uptime import uptime_bp
 
 def create_app():
     app = Flask(__name__, static_folder='static')
@@ -22,6 +23,7 @@ def create_app():
     app.register_blueprint(threats_bp)
     app.register_blueprint(compliance_bp)
     app.register_blueprint(telemetry_bp)
+    app.register_blueprint(uptime_bp)
 
     @app.route('/')
     def index():
