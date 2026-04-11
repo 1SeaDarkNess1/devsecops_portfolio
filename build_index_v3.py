@@ -626,29 +626,30 @@ html = """<!DOCTYPE html>
             const listObj = document.getElementById('pipeline-list');
             document.getElementById('pipeline-sync').innerText = 'Syncing...';
             try {
-                const res = await fetch('https://api.github.com/repos/1SeaDarkNess1/devsecops_portfolio/actions/runs?per_page=5');
+                const res = await fetch('/api/github/runs');
                 if(res.ok) {
                     const data = await res.json();
                     let hts = '';
-                    const runs = data.workflow_runs || [];
+                    const runs = data.runs || [];
                     runs.forEach((r, i) => {
                         let stClass = 'ok';
                         if(r.status === 'in_progress' || r.status === 'queued') stClass = 'prog';
                         else if(r.conclusion === 'failure') stClass = 'fail';
                         
-                        const timeStr = r.created_at.replace('T', ' ').replace('Z', '');
+                        // Extract time or relative if possible, but we'll stick to a clean display
+                        const timeStr = r.started ? r.started.replace('T', ' ').replace('Z', '').split(' ')[1] : '--:--';
                         
                         hts += `<div class="pipe-row pipe-new" style="animation-delay:${i*0.1}s">
                             <div class="pipe-status ${stClass}"></div>
-                            <div class="pipe-sha">#${r.id}</div>
-                            <div class="pipe-msg">${r.display_title || 'CI Build'}</div>
-                            <div style="color:var(--text-dim);">${timeStr.split(' ')[1]}</div>
-                            <div style="text-align:right;"><span class="status-pill" style="padding:2px 8px; font-size:0.7rem; border-color:transparent;">${r.conclusion || 'RUN'}</span></div>
+                            <div class="pipe-sha">${r.sha || r.id}</div>
+                            <div class="pipe-msg">${r.message || 'CI Build'}</div>
+                            <div style="color:var(--text-dim);">${timeStr}</div>
+                            <div style="text-align:right;"><span class="status-pill" style="padding:2px 8px; font-size:0.7rem; border-color:transparent;">${r.conclusion || r.status || 'RUN'}</span></div>
                         </div>`;
                         
                         // Populate top mini-card Last Deploy
                         if(i===0) {
-                            document.getElementById('deploy-val').innerText = timeStr.split(' ')[1];
+                            document.getElementById('deploy-val').innerText = timeStr;
                             document.getElementById('deploy-ago').innerText = r.conclusion ? "Status: " + r.conclusion.toUpperCase() : "Deploying...";
                             if(stClass === 'fail') document.getElementById('deploy-val').style.color = 'var(--crit)';
                             else if(stClass === 'ok') document.getElementById('deploy-val').style.color = 'var(--ok)';

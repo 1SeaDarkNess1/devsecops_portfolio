@@ -9,12 +9,14 @@ import random
 
 from extensions import limiter
 from modules.proxies import proxies_bp
+from modules.github_feed import github_bp
 
 app = Flask(__name__, static_folder='static')
 
 # Initialize extensions and blueprints
 limiter.init_app(app)
 app.register_blueprint(proxies_bp)
+app.register_blueprint(github_bp)
 
 # Stare globala pentru Chaos Engineering
 chaos_state = {"end_time": 0}
