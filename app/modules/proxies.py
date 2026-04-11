@@ -81,22 +81,45 @@ def ssl_inspect():
     except Exception as e:
         return jsonify({'error': str(e)}), 502
 
+def _classify_severity(score):
+    """Classify CVSS score per NVD v3.x standard.
+
+    Overrides NVD's baseSeverity field, which is inconsistent for old
+    CVSS v2-era CVEs (e.g. a 10.0 from 2014 can be reported as HIGH).
+    """
+    try:
+        s = float(score)
+    except (TypeError, ValueError):
+        return 'NONE'
+    if s >= 9.0:
+        return 'CRITICAL'
+    if s >= 7.0:
+        return 'HIGH'
+    if s >= 4.0:
+        return 'MEDIUM'
+    if s > 0:
+        return 'LOW'
+    return 'NONE'
+
+
 def _parse_cve(item):
     cve = item.get('cve', {})
     metrics = cve.get('metrics', {})
-    metric_list = (metrics.get('cvssMetricV31') or 
-                   metrics.get('cvssMetricV30') or 
+    metric_list = (metrics.get('cvssMetricV31') or
+                   metrics.get('cvssMetricV30') or
                    metrics.get('cvssMetricV2') or [])
     score = 0
-    severity = 'NONE'
     if metric_list:
         cvss_data = metric_list[0].get('cvssData', {})
         score = cvss_data.get('baseScore', 0)
-        severity = cvss_data.get('baseSeverity', metric_list[0].get('baseSeverity', 'NONE'))
-    
+
+    # Always classify from the numeric score — never trust NVD's
+    # baseSeverity field (inconsistent for pre-v3.x records).
+    severity = _classify_severity(score)
+
     descriptions = cve.get('descriptions', [])
     desc = next((d['value'] for d in descriptions if d.get('lang') == 'en'), '')
-    
+
     return {
         'id': cve.get('id'),
         'score': round(score, 1),

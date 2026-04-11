@@ -607,6 +607,33 @@ h1, h2, h3, h4 { font-family: 'Sora', sans-serif; color: #fff; }
 .cve-score { position: absolute; top: 15px; right: 15px; font-family: 'Sora'; font-size: 1.2rem; font-weight: 800; }
 .cve-desc { font-size: 0.85rem; color: var(--text); overflow: hidden; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; line-clamp: 3; line-height: 1.4;}
 
+/* CVE empty state — shown when a filter has zero matches */
+.cve-empty {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 60px 20px;
+  color: var(--text-3);
+}
+.cve-empty__icon {
+  font-size: 2.5rem;
+  color: var(--lime);
+  margin-bottom: 12px;
+  text-shadow: 0 0 20px rgba(190, 242, 100, 0.5);
+}
+.cve-empty__title {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 1.1rem;
+  color: var(--text-2);
+  text-transform: capitalize;
+  margin-bottom: 6px;
+}
+.cve-empty__sub {
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  color: var(--text-3);
+}
+
 /* MODULE 5: TELEMETRY SPARKLINES */
 .metric-stripe { display: flex; align-items: flex-end; gap: 10px; height: 80px; }
 .metric-num { font-size: 2.5rem; font-weight: 700; font-family: 'JetBrains Mono'; line-height: 1; width:80px;}
@@ -740,12 +767,42 @@ footer::before {
 @keyframes heartbeat { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.2); } }
 
 @media (max-width: 768px) {
+  /* Disable bleeding pseudo-elements on mobile —
+     .hero__title::before (prism sweep) and .hero__title::after (echo stroke)
+     don't wrap with the main title, leaving desktop-sized ghost text behind. */
+  .hero__title::before,
+  .hero__title::after { display: none; }
+
   .glass { backdrop-filter: blur(16px) saturate(1.4); -webkit-backdrop-filter: blur(16px) saturate(1.4); }
   .grid-2 { grid-template-columns: 1fr; }
   .nav-island { gap: 10px; width: 92%; justify-content: space-around; padding: 10px 14px; }
   .nav-island a { font-size: 0.7rem; padding: 4px 8px; }
-  .hero__title { font-size: clamp(3rem, 14vw, 6rem); }
-  .hero__title-wrap { padding: 40px 20px; }
+
+  .hero {
+    padding: 100px 24px 60px;
+    overflow: visible;
+  }
+  .hero__title-wrap {
+    padding: 60px 32px 80px;
+    overflow: visible;
+  }
+  .hero__title-wrap::before {
+    inset: -40px;
+    filter: blur(40px);
+  }
+  .hero__title {
+    font-size: clamp(3.5rem, 18vw, 6rem);
+    letter-spacing: -0.05em;
+    line-height: 0.9;
+    white-space: nowrap;
+  }
+}
+
+@media (max-width: 480px) {
+  .hero__title {
+    font-size: clamp(2.8rem, 16vw, 5rem);
+    white-space: nowrap;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -1304,10 +1361,26 @@ footer::before {
         }
         function renderCVEs(filterArg) {
             const grid = document.getElementById('cve-grid');
+            if(!grid) return;
             grid.innerHTML = '';
-            let filtered = globalCVEs;
-            if(filterArg !== 'All') filtered = globalCVEs.filter(c => c.severity === filterArg);
-            
+            let filtered = globalCVEs || [];
+            if(filterArg && filterArg !== 'All') {
+                filtered = filtered.filter(c => (c.severity || '').toUpperCase() === filterArg.toUpperCase());
+            }
+
+            // Empty state — a zero Critical list is actually a positive signal
+            if(filtered.length === 0) {
+                const label = (filterArg && filterArg !== 'All') ? filterArg.toLowerCase() : '';
+                grid.innerHTML = `
+                    <div class="cve-empty">
+                        <div class="cve-empty__icon">✓</div>
+                        <div class="cve-empty__title">No ${label} vulnerabilities</div>
+                        <div class="cve-empty__sub">Last NVD sync: ${new Date().toLocaleTimeString('en-GB')}</div>
+                    </div>
+                `;
+                return;
+            }
+
             filtered.forEach((c, idx) => {
                 let cls = 'low'; let col = 'var(--accent-sky)';
                 if(c.severity === 'CRITICAL') { cls = 'crit'; col = 'var(--crit)'; }
@@ -1449,22 +1522,32 @@ footer::before {
               const data = await res.json();
               if (data.error) throw new Error(data.error);
 
+              // Fallback chain: prefer 30d, fall back to shorter windows or all-time.
+              // A fresh monitor can legitimately report uptime_30d = 0.
+              const pct = Number(
+                data.uptime_30d > 0 ? data.uptime_30d :
+                data.uptime_7d  > 0 ? data.uptime_7d  :
+                data.uptime_1d  > 0 ? data.uptime_1d  :
+                data.uptime_all_time || 0
+              );
+
               // ─── Live Ops Strip: big percentage ───
               if (upValEl) {
-                const pct = Number(data.uptime_30d ?? 0);
                 upValEl.textContent = pct.toFixed(2) + '%';
               }
 
               // ─── Live Ops Strip: status sub-label (UP / DOWN / DEGRADED) ───
+              // Never land on UNKNOWN when the monitor exists — fall back to PENDING.
               if (liveOpStatus) {
-                const statusText = data.status_text || 'UNKNOWN';
+                const statusText = (data.status_text && data.status_text !== 'UNKNOWN')
+                  ? data.status_text
+                  : (data.status === 2 ? 'UP' : 'PENDING');
                 liveOpStatus.textContent = statusText === 'UP' ? 'Operational' : statusText;
                 liveOpStatus.style.color = statusText === 'UP' ? LIME : '#FDA4AF';
               }
 
               // ─── Infrastructure: big number (no decimals, cleaner) ───
               if (teleUpEl) {
-                const pct = Number(data.uptime_30d ?? 0);
                 teleUpEl.textContent = pct >= 99.995 ? '100' : pct.toFixed(1);
               }
 
