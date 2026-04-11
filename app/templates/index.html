@@ -1454,7 +1454,7 @@ footer::before {
                 }
             } catch(e) {}
         }
-        setInterval(fetchMetrics, 3000);
+        setInterval(fetchMetrics, 10000); // 10s — was 3s, caused 429 rate-limit hits
 
         /* ═══════════════════════════════════════════════════
            MODULE 5b: REAL UPTIME (UptimeRobot proxy /api/uptime)
