@@ -1325,8 +1325,8 @@ footer::before {
         /* ==============================================================
            MODULE 5: LIVE TELEMETRY SPARKLINES
         ============================================================== */
-        const hist = { cpu:[], ram:[], disk:[], up:[] };
-        for(let i=0; i<30; i++) { hist.cpu.push(50); hist.ram.push(50); hist.disk.push(50); hist.up.push(99.9); } // populate defaults
+        const hist = { cpu:[], ram:[], disk:[] };
+        for(let i=0; i<30; i++) { hist.cpu.push(50); hist.ram.push(50); hist.disk.push(50); } // populate defaults (uptime sparkline is driven by /api/uptime response_times, see MODULE 5b)
 
         function drawSpark(id, dataArr, maxVal, color) {
             const el = document.getElementById(id);
@@ -1383,63 +1383,109 @@ footer::before {
         }
         setInterval(fetchMetrics, 3000);
 
-        /* ==============================================================
+        /* ═══════════════════════════════════════════════════
            MODULE 5b: REAL UPTIME (UptimeRobot proxy /api/uptime)
-        ============================================================== */
-        async function fetchUptime() {
-            const teleUp = document.getElementById('tele-up');
-            const upVal  = document.getElementById('uptime-val');
-            const liveOp = document.querySelector('#live-ops [id="uptime-val"] + div');
-            try {
-                const res = await fetch('/api/uptime', {cache: 'no-store'});
-                const data = await res.json().catch(() => ({}));
-                if(!res.ok || !data.ok) {
-                    if(teleUp) teleUp.innerText = '--';
-                    if(upVal)  upVal.innerText  = '--';
-                    if(liveOp) { liveOp.innerText = data.error || 'Uptime API offline'; liveOp.style.color = 'var(--crit)'; }
-                    return;
-                }
-                const r30 = (data.ratios && data.ratios['30d']) != null ? data.ratios['30d'] : null;
-                const r7  = (data.ratios && data.ratios['7d'])  != null ? data.ratios['7d']  : null;
-                const r1  = (data.ratios && data.ratios['1d'])  != null ? data.ratios['1d']  : null;
+           Fetches live monitor data, updates both Live Ops Strip
+           and Infrastructure sparkline with real response times.
+           ═══════════════════════════════════════════════════ */
+        (function initUptimePoll() {
+          const UPTIME_REFRESH_MS = 60_000; // 60s — backend caches 5 min anyway
+          const LIME = '#BEF264';
 
-                // Headline: 30-day ratio (falls back to 7d then 1d)
-                const headline = r30 != null ? r30 : (r7 != null ? r7 : (r1 != null ? r1 : null));
-                if(headline != null) {
-                    if(teleUp) teleUp.innerText = headline.toFixed(2);
-                    if(upVal)  upVal.innerText  = headline.toFixed(2) + '%';
-                }
+          // Resolve target elements once
+          const upValEl = document.getElementById('uptime-val');        // Live Ops Strip big %
+          const teleUpEl = document.getElementById('tele-up');          // Infrastructure big number
+          const sparkPath = document.getElementById('spark-up');        // Infrastructure SVG path
+          const sparkSvg = sparkPath ? sparkPath.closest('svg') : null;
 
-                // Status colour — 2 = up, 8 = seems down, 9 = down, 0 = paused
-                const statusColor = (data.status === 2) ? 'var(--ok)'
-                                  : (data.status === 0) ? 'var(--warn)'
-                                  : 'var(--crit)';
-                if(upVal) upVal.style.color = statusColor;
-                if(liveOp) {
-                    liveOp.innerText = (data.status === 2) ? 'Operational' : (data.status === 0 ? 'Paused' : 'Degraded');
-                    liveOp.style.color = statusColor;
-                }
+          // Optional sub-label next to Live Ops uptime (green "Operational" text)
+          const liveOpStatus = document.querySelector('#uptime-val + div, [data-uptime-substatus]');
 
-                // Sparkline — seed with 1d/7d/30d ratios so it actually shows a trend
-                const trendVals = [r30, r7, r1].filter(v => v != null);
-                if(trendVals.length > 0) {
-                    // Expand into 30 points with small jitter within ±0.01 for visual interest
-                    const expanded = [];
-                    for(let i = 0; i < 30; i++) {
-                        const slot = Math.min(trendVals.length - 1, Math.floor((i / 30) * trendVals.length));
-                        expanded.push(trendVals[slot]);
-                    }
-                    hist.up = expanded;
-                    drawSpark('spark-up', hist.up, 100, 'var(--lime)');
-                }
-            } catch(e) {
-                console.error('Uptime fetch fail', e);
-                if(teleUp) teleUp.innerText = '--';
-                if(upVal)  upVal.innerText  = '--';
+          function renderSpark(values) {
+            if (!sparkPath || !values || values.length < 2) return;
+
+            // Use 100x50 viewBox (matches existing SVG preserveAspectRatio="none")
+            const W = 100, H = 50;
+            const max = Math.max(...values);
+            const min = Math.min(...values);
+            const range = (max - min) || 1;
+            const n = values.length;
+
+            // Build path points; invert Y so lower ms = higher on chart
+            const points = values.map((v, i) => {
+              const x = (i / (n - 1)) * W;
+              const y = H - ((v - min) / range) * H * 0.85 - H * 0.075; // 7.5% padding top/bottom
+              return `${x.toFixed(2)},${y.toFixed(2)}`;
+            });
+
+            // Line path
+            const linePath = 'M ' + points.join(' L ');
+            sparkPath.setAttribute('d', linePath);
+            sparkPath.setAttribute('stroke', LIME);
+            sparkPath.setAttribute('stroke-width', '1.8');
+            sparkPath.setAttribute('fill', 'none');
+            sparkPath.setAttribute('stroke-linecap', 'round');
+            sparkPath.setAttribute('stroke-linejoin', 'round');
+
+            // Area fill under the line (add as sibling if not present)
+            if (sparkSvg) {
+              let areaPath = sparkSvg.querySelector('#spark-up-area');
+              if (!areaPath) {
+                areaPath = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+                areaPath.setAttribute('id', 'spark-up-area');
+                areaPath.setAttribute('fill', 'rgba(190,242,100,0.10)');
+                areaPath.setAttribute('stroke', 'none');
+                sparkPath.parentNode.insertBefore(areaPath, sparkPath);
+              }
+              const areaD = `M 0,${H} L ${points.join(' L ')} L ${W},${H} Z`;
+              areaPath.setAttribute('d', areaD);
             }
-        }
-        // UptimeRobot free tier = 10 req/min — backend caches 120s, so 60s is safe.
-        setInterval(fetchUptime, 60000);
+          }
+
+          async function pollUptime() {
+            try {
+              const res = await fetch('/api/uptime', { cache: 'no-store' });
+              if (!res.ok) throw new Error('HTTP ' + res.status);
+              const data = await res.json();
+              if (data.error) throw new Error(data.error);
+
+              // ─── Live Ops Strip: big percentage ───
+              if (upValEl) {
+                const pct = Number(data.uptime_30d ?? 0);
+                upValEl.textContent = pct.toFixed(2) + '%';
+              }
+
+              // ─── Live Ops Strip: status sub-label (UP / DOWN / DEGRADED) ───
+              if (liveOpStatus) {
+                const statusText = data.status_text || 'UNKNOWN';
+                liveOpStatus.textContent = statusText === 'UP' ? 'Operational' : statusText;
+                liveOpStatus.style.color = statusText === 'UP' ? LIME : '#FDA4AF';
+              }
+
+              // ─── Infrastructure: big number (no decimals, cleaner) ───
+              if (teleUpEl) {
+                const pct = Number(data.uptime_30d ?? 0);
+                teleUpEl.textContent = pct >= 99.995 ? '100' : pct.toFixed(1);
+              }
+
+              // ─── Infrastructure: sparkline from response times ───
+              if (Array.isArray(data.response_times) && data.response_times.length > 1) {
+                renderSpark(data.response_times);
+              }
+
+              // Optional telemetry for debug (non-visible)
+              document.documentElement.dataset.uptimeAvgMs = String(data.avg_response_ms ?? 0);
+              document.documentElement.dataset.uptimeSamples = String((data.response_times || []).length);
+            } catch (e) {
+              console.warn('[uptime] poll failed:', e.message);
+              // Keep previous values visible — don't flash "--" on transient errors
+            }
+          }
+
+          // Initial fetch + periodic refresh
+          pollUptime();
+          setInterval(pollUptime, UPTIME_REFRESH_MS);
+        })();
 
         /* ==============================================================
            MODULE 6: SBOM VIEWER
@@ -1809,7 +1855,7 @@ footer::before {
             fetchPipeline();
             fetchCVEs();
             fetchMetrics();
-            fetchUptime();
+            // Uptime poll is self-starting (IIFE in MODULE 5b)
             fetchSbom();
             setTimeout(initGlobe, 500);
             initCompliance();
