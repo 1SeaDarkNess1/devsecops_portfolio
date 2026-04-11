@@ -8,40 +8,63 @@
 @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;700&family=JetBrains+Mono:wght@400;700&family=Sora:wght@800;900&display=swap');
 
 :root {
+  /* Deep space backgrounds */
   --bg-deep: #08111F;
   --bg-elev-1: #0D1A2D;
   --bg-elev-2: #122238;
-  --glass-1: rgba(255,255,255,0.045);
-  --glass-2: rgba(255,255,255,0.08);
-  --glass-border: rgba(255,255,255,0.10);
+  --bg-elev-3: #18293F;
 
-  /* Primary accents — spring but pro */
+  /* Glass surfaces — layered for depth */
+  --glass-1: rgba(255,255,255,0.045);
+  --glass-2: rgba(255,255,255,0.075);
+  --glass-3: rgba(255,255,255,0.11);
+  --glass-border: rgba(255,255,255,0.10);
+  --glass-border-bright: rgba(255,255,255,0.18);
+  --glass-spec: rgba(255,255,255,0.55);
+
+  /* Spring Pro accent palette */
   --mint: #A7F3D0;
   --sky: #7DD3FC;
   --lilac: #C4B5FD;
-  
-  /* Legacy mapping for compat */
-  --accent-mint: var(--mint);
-  --accent-sky: var(--sky);
-  --accent: var(--sky);
-  --ok: var(--mint);
+  --pearl: #E0F2FE;
+
+  /* Status (used sparingly) */
+  --ok: #6EE7B7;
   --warn: #FCD34D;
   --crit: #FCA5A5;
-  --bg: var(--bg-deep);
-  --text: var(--text-1);
 
-  /* Text */
+  /* Text hierarchy */
   --text-1: rgba(255,255,255,0.96);
   --text-2: rgba(255,255,255,0.62);
   --text-3: rgba(255,255,255,0.38);
+  --text-mono: rgba(255,255,255,0.75);
+
+  /* Typography */
+  --font-display: 'Sora', -apple-system, sans-serif;
+  --font-body: 'Outfit', -apple-system, sans-serif;
+  --font-mono: 'JetBrains Mono', 'SF Mono', monospace;
+
+  /* Easing */
+  --ease-liquid: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-bounce: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --ease-smooth: cubic-bezier(0.4, 0, 0.2, 1);
+
+  /* Legacy aliases (kept so existing JS/CSS references keep working) */
+  --accent-mint: var(--mint);
+  --accent-sky: var(--sky);
+  --accent: var(--sky);
+  --accent-violet: var(--lilac);
+  --accent-rose: var(--mint);
+  --bg: var(--bg-deep);
+  --text: var(--text-1);
   --text-dim: var(--text-2);
   --text-mute: var(--text-3);
 
   /* Gradients */
-  --gradient-prism: linear-gradient(110deg, transparent 30%, var(--mint) 45%, var(--sky) 50%, var(--lilac) 55%, transparent 70%);
-  --gradient-aurora: radial-gradient(ellipse 60% 40% at 30% 50%, rgba(167,243,208,0.18), transparent 60%),
-                     radial-gradient(ellipse 60% 40% at 70% 50%, rgba(125,211,252,0.18), transparent 60%),
-                     radial-gradient(ellipse 40% 30% at 50% 50%, rgba(196,181,253,0.12), transparent 60%);
+  --gradient-prism: linear-gradient(110deg, transparent 28%, var(--mint) 44%, var(--sky) 50%, var(--lilac) 56%, transparent 72%);
+  --gradient-aurora: radial-gradient(ellipse 60% 40% at 28% 50%, rgba(167,243,208,0.22), transparent 60%),
+                     radial-gradient(ellipse 60% 40% at 72% 50%, rgba(125,211,252,0.22), transparent 60%),
+                     radial-gradient(ellipse 40% 30% at 50% 50%, rgba(196,181,253,0.15), transparent 60%);
 }
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -60,127 +83,219 @@ h1, h2, h3, h4 { font-family: 'Sora', sans-serif; color: #fff; }
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); border-radius: 3px; }
 
-/* THE GLASS COMPONENT */
+/* THE GLASS COMPONENT — Apple Liquid Glass (7-layer stack) */
 .glass {
-  background: linear-gradient(135deg, var(--glass-2) 0%, var(--glass-1) 100%);
-  backdrop-filter: blur(28px) saturate(1.9) brightness(1.08);
-  -webkit-backdrop-filter: blur(28px) saturate(1.9) brightness(1.08);
+  position: relative;
+  background: linear-gradient(135deg,
+    rgba(255, 255, 255, 0.085) 0%,
+    rgba(255, 255, 255, 0.025) 100%);
+  backdrop-filter: blur(32px) saturate(2.0) brightness(1.10);
+  -webkit-backdrop-filter: blur(32px) saturate(2.0) brightness(1.10);
   border: 1px solid var(--glass-border);
   border-radius: 28px;
-  position: relative;
   overflow: hidden;
+  isolation: isolate;
+  transition: transform 0.5s var(--ease-liquid),
+              border-color 0.5s var(--ease-liquid),
+              box-shadow 0.5s var(--ease-liquid);
   box-shadow:
-    inset 0 1px 0 rgba(255,255,255,0.20),
-    inset 0 -1px 0 rgba(255,255,255,0.04),
-    inset 1px 0 0 rgba(255,255,255,0.05),
-    0 24px 60px -20px rgba(0,0,0,0.55),
-    0 0 0 1px rgba(125,211,252,0.04),
-    0 0 80px -40px rgba(125,211,252,0.25);
-  transition: all 0.5s cubic-bezier(0.23, 1, 0.32, 1);
+    /* Layer 3: inset top light */
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.22),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.04),
+    /* Layer 4: inset bottom shadow */
+    inset 0 -1px 0 0 rgba(255, 255, 255, 0.04),
+    /* Layer 5: outer drop shadow */
+    0 24px 60px -20px rgba(0, 0, 0, 0.55),
+    0 8px 24px -10px rgba(0, 0, 0, 0.35),
+    /* Layer 6: outer accent glow ring */
+    0 0 0 1px rgba(125, 211, 252, 0.04),
+    0 0 100px -40px rgba(125, 211, 252, 0.20);
 }
 
+/* Layer 2: Top specular edge highlight (the signature Apple line) */
 .glass::before {
   content: '';
   position: absolute;
-  top: 0; left: 12%; right: 12%;
+  top: 0;
+  left: 14%;
+  right: 14%;
   height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.5), transparent);
+  background: linear-gradient(90deg,
+    transparent 0%,
+    var(--glass-spec) 50%,
+    transparent 100%);
   pointer-events: none;
+  z-index: 2;
+}
+
+/* Layer 1 over: subtle inner gradient highlight (pseudo-refraction) */
+.glass::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg,
+    rgba(255, 255, 255, 0.08) 0%,
+    rgba(255, 255, 255, 0.02) 30%,
+    transparent 60%);
+  pointer-events: none;
+  z-index: 1;
+  opacity: 0.6;
+}
+
+/* Glass content must sit above the pseudo-element layers */
+.glass > * {
+  position: relative;
+  z-index: 3;
 }
 
 .glass:hover {
-  transform: translateY(-2px);
-  border-color: rgba(255,255,255,0.18);
+  transform: translateY(-3px);
+  border-color: var(--glass-border-bright);
   box-shadow:
-    inset 0 1px 0 rgba(255,255,255,0.25),
-    inset 0 -1px 0 rgba(255,255,255,0.04),
-    0 32px 80px -20px rgba(0,0,0,0.65),
-    0 0 0 1px rgba(125,211,252,0.08),
-    0 0 100px -30px rgba(167,243,208,0.35);
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.30),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.06),
+    inset 0 -1px 0 0 rgba(255, 255, 255, 0.04),
+    0 32px 80px -20px rgba(0, 0, 0, 0.65),
+    0 12px 32px -8px rgba(0, 0, 0, 0.45),
+    0 0 0 1px rgba(167, 243, 208, 0.08),
+    0 0 120px -30px rgba(167, 243, 208, 0.35);
 }
 
-/* NAV */
+/* NAV ISLAND */
 .nav-island {
-  position: fixed; top: 20px; left: 50%; transform: translateX(-50%); z-index: 1000;
-  display: flex; gap: 20px; padding: 12px 24px; border-radius: 50px;
-  scroll-margin-top: 120px;
+  position: fixed;
+  top: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 14px 32px;
+  background: rgba(8, 17, 31, 0.72);
+  backdrop-filter: blur(40px) saturate(2.0);
+  -webkit-backdrop-filter: blur(40px) saturate(2.0);
+  border: 1px solid var(--glass-border);
+  border-radius: 50px;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.15),
+    0 16px 40px -10px rgba(0, 0, 0, 0.6),
+    0 0 0 1px rgba(125, 211, 252, 0.05);
+  will-change: transform;
+  animation: nav-slide-down 1.2s var(--ease-liquid) 0.4s both;
 }
-.nav-island a { color: var(--text-dim); text-decoration: none; font-size: 0.9rem; font-weight: 500; transition: all 0.3s; padding: 6px 16px; border-radius: 30px; }
-.nav-island a:hover, .nav-island a.active { color: var(--sky); background: rgba(125,211,252,0.12); }
+@keyframes nav-slide-down {
+  from { opacity: 0; transform: translateX(-50%) translateY(-30px); }
+  to { opacity: 1; transform: translateX(-50%) translateY(0); }
+}
+/* Nav is opaque-enough — disable the .glass pseudo layers that would double the specular line */
+.nav-island.glass::before,
+.nav-island.glass::after { display: none; }
+.nav-island a {
+  padding: 8px 18px;
+  border-radius: 30px;
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-size: 0.78rem;
+  letter-spacing: 0.08em;
+  color: var(--text-2);
+  text-transform: uppercase;
+  text-decoration: none;
+  transition: all 0.3s var(--ease-smooth);
+}
+.nav-island a:hover { color: var(--text-1); background: rgba(255,255,255,0.06); }
+.nav-island a.active { color: var(--sky); background: rgba(125,211,252,0.12); }
 
 /* SECTIONS */
-.section { padding: 5rem 2rem; max-width: 1400px; margin: 0 auto; display: flex; flex-direction: column; gap: 2.5rem; position: relative; z-index: 10; scroll-margin-top: 120px; }
+.section { padding: 5rem 2rem; max-width: 1400px; margin: 0 auto; display: flex; flex-direction: column; gap: 2.5rem; position: relative; z-index: 10; scroll-margin-top: 140px; }
 .section-title {
   position: relative;
-  font-family: 'Sora', sans-serif;
+  font-family: var(--font-display);
   font-weight: 800;
-  font-size: clamp(2rem, 4vw, 3.2rem);
+  font-size: clamp(2rem, 4vw, 3.4rem);
   color: var(--text-1);
-  margin-bottom: 48px;
-  padding-top: 24px;
+  letter-spacing: -0.03em;
+  margin-bottom: 56px;
+  padding-top: 28px;
+  scroll-margin-top: 140px;
 }
 
 .section-title::before {
   content: '';
   position: absolute;
   top: 0; left: 0;
-  width: 64px; height: 2px;
-  background: linear-gradient(90deg, var(--sky), var(--mint));
+  width: 72px; height: 2px;
+  background: linear-gradient(90deg, var(--sky) 0%, var(--mint) 100%);
   border-radius: 2px;
-  box-shadow: 0 0 20px rgba(125,211,252,0.5);
+  box-shadow: 0 0 24px rgba(125,211,252,0.55);
 }
 
 /* HERO */
-.hero { 
-  min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; 
+.hero {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  position: relative;
+  padding: 120px 32px 80px;
+  overflow: hidden;
 }
 .hero__title-wrap {
   position: relative;
   display: inline-block;
-  padding: 60px 80px;
+  padding: 80px 100px;
+  margin-bottom: 48px;
 }
 
 .hero__title-wrap::before {
   content: '';
   position: absolute;
-  inset: -40px;
+  inset: -80px;
   background: var(--gradient-aurora);
-  filter: blur(50px);
-  animation: aurora 14s ease-in-out infinite;
+  filter: blur(60px);
+  animation: aurora 16s ease-in-out infinite;
   z-index: -1;
   pointer-events: none;
 }
 
 @keyframes aurora {
   0%, 100% { transform: scale(1) rotate(0deg); opacity: 0.55; }
-  33% { transform: scale(1.12) rotate(2deg); opacity: 0.85; }
-  66% { transform: scale(1.06) rotate(-2deg); opacity: 0.70; }
+  33% { transform: scale(1.15) rotate(3deg); opacity: 0.90; }
+  66% { transform: scale(1.08) rotate(-3deg); opacity: 0.72; }
 }
 
 .hero__title {
-  font-family: 'Sora', sans-serif;
+  font-family: var(--font-display);
   font-weight: 900;
   font-size: clamp(5rem, 16vw, 14rem);
   letter-spacing: -0.06em;
   line-height: 0.85;
   position: relative;
   display: inline-block;
-  background: linear-gradient(180deg, #ffffff 0%, #ffffff 38%, rgba(167,243,208,0.72) 100%);
+  background: linear-gradient(180deg,
+    #ffffff 0%,
+    #ffffff 38%,
+    rgba(224, 242, 254, 0.85) 75%,
+    rgba(167, 243, 208, 0.70) 100%);
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
-  filter: drop-shadow(0 0 90px rgba(125,211,252,0.28));
-  animation: float 9s ease-in-out infinite;
+  filter: drop-shadow(0 0 100px rgba(125, 211, 252, 0.30));
+  animation: float 10s ease-in-out infinite;
+  will-change: transform, filter;
+  user-select: none;
 }
 
 @keyframes float {
   0%, 100% {
     transform: translateY(0);
-    filter: drop-shadow(0 0 90px rgba(125,211,252,0.28));
+    filter: drop-shadow(0 0 100px rgba(125, 211, 252, 0.30));
   }
   50% {
-    transform: translateY(-10px);
-    filter: drop-shadow(0 24px 110px rgba(167,243,208,0.42));
+    transform: translateY(-12px);
+    filter: drop-shadow(0 28px 120px rgba(167, 243, 208, 0.45));
   }
 }
 
@@ -188,19 +303,24 @@ h1, h2, h3, h4 { font-family: 'Sora', sans-serif; color: #fff; }
   content: 'BBM LAB';
   position: absolute;
   inset: 0;
-  background: var(--gradient-prism);
-  background-size: 300% 100%;
+  background: linear-gradient(110deg,
+    transparent 28%,
+    var(--mint) 44%,
+    var(--sky) 50%,
+    var(--lilac) 56%,
+    transparent 72%);
+  background-size: 320% 100%;
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
-  animation: prism 8s linear infinite;
+  animation: prism 9s linear infinite;
   mix-blend-mode: screen;
   pointer-events: none;
 }
 
 @keyframes prism {
-  0% { background-position: 250% 0; }
-  100% { background-position: -250% 0; }
+  0% { background-position: 280% 0; }
+  100% { background-position: -280% 0; }
 }
 
 .hero__title::after {
@@ -208,30 +328,15 @@ h1, h2, h3, h4 { font-family: 'Sora', sans-serif; color: #fff; }
   position: absolute;
   inset: 0;
   color: transparent;
-  -webkit-text-stroke: 1px rgba(167,243,208,0.16);
-  filter: blur(0.6px);
-  animation: echo 9s ease-in-out infinite;
+  -webkit-text-stroke: 1px rgba(167, 243, 208, 0.18);
+  filter: blur(0.8px);
+  animation: echo 10s ease-in-out infinite;
   pointer-events: none;
 }
 
 @keyframes echo {
-  0%, 100% { transform: translate(0, 0); opacity: 0.42; }
+  0%, 100% { transform: translate(0, 0); opacity: 0.40; }
   50% { transform: translate(2px, -2px); opacity: 0.75; }
-}
-
-@keyframes prism { 0% { background-position: 200% 0 } 100% { background-position: -200% 0 } }
-@keyframes float {
-  0%, 100% { transform: translateY(0) scale(1); filter: drop-shadow(0 0 80px rgba(125,211,252,0.25))}
-  50% { transform: translateY(-8px) scale(1.005); filter: drop-shadow(0 20px 100px rgba(167,243,208,0.35))}
-}
-@keyframes echo {
-  0%, 100% { transform: translate(0,0); opacity: .4 }
-  50% { transform: translate(2px,-2px); opacity: .7 }
-}
-@keyframes aurora {
-  0%, 100% { transform: scale(1) rotate(0deg); opacity: .6 }
-  33% { transform: scale(1.1) rotate(2deg); opacity: .9 }
-  66% { transform: scale(1.05) rotate(-2deg); opacity: .7 }
 }
 /* Dispersion Canvas */
 #dispersion-canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 1;}
@@ -239,18 +344,21 @@ h1, h2, h3, h4 { font-family: 'Sora', sans-serif; color: #fff; }
 .status-pill {
   display: inline-flex;
   align-items: center;
-  gap: 12px;
-  padding: 14px 28px;
+  gap: 14px;
+  padding: 14px 32px;
   border-radius: 50px;
   background: rgba(167,243,208,0.06);
-  border: 1px solid rgba(167,243,208,0.20);
-  backdrop-filter: blur(20px);
-  font-family: 'JetBrains Mono', monospace;
+  border: 1px solid rgba(167,243,208,0.22);
+  backdrop-filter: blur(24px) saturate(1.8);
+  -webkit-backdrop-filter: blur(24px) saturate(1.8);
+  font-family: var(--font-mono);
   font-size: 0.78rem;
-  letter-spacing: 0.18em;
+  letter-spacing: 0.20em;
   color: var(--mint);
   text-transform: uppercase;
-  box-shadow: 0 0 40px -10px rgba(167,243,208,0.35);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.15),
+    0 0 50px -10px rgba(167,243,208,0.40);
 }
 
 .status-pill::before {
@@ -331,12 +439,19 @@ h1, h2, h3, h4 { font-family: 'Sora', sans-serif; color: #fff; }
 .cve-chip { padding: 4px 12px; border-radius: 20px; font-size: 0.8rem; border: 1px solid rgba(255,255,255,0.2); cursor: pointer; transition: 0.2s; }
 .cve-chip:hover, .cve-chip.active { background: rgba(255,255,255,0.1); border-color: var(--text); }
 .cve-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 15px; }
-.cve-tile { border: 1px solid var(--glass-border); background: var(--glass-1); border-radius: 16px; padding: 16px; transition: all 0.3s; }
-.cve-tile.crit { border-color: rgba(252,165,165,0.35); background: rgba(252,165,165,0.04); }
-.cve-tile.high { border-color: rgba(252,211,77,0.30); background: rgba(252,211,77,0.04); }
-.cve-tile.med { border-color: rgba(125,211,252,0.25); background: rgba(125,211,252,0.03); }
-.cve-tile.low { border-color: var(--glass-border); background: var(--glass-1); opacity: 0.7; }
-.cve-tile:hover { transform: translateY(-3px); border-color: rgba(255,255,255,0.25); }
+.cve-tile {
+  position: relative;
+  border: 1px solid var(--glass-border);
+  background: var(--glass-1);
+  border-radius: 16px;
+  padding: 16px;
+  transition: transform 0.3s var(--ease-smooth), border-color 0.3s var(--ease-smooth), box-shadow 0.3s var(--ease-smooth);
+}
+.cve-tile.crit { border-color: rgba(252,165,165,0.18); background: rgba(252,165,165,0.025); box-shadow: inset 0 1px 0 rgba(255,255,255,0.05), 0 0 40px -20px rgba(252,165,165,0.25); }
+.cve-tile.high { border-color: rgba(252,211,77,0.16); background: rgba(252,211,77,0.025); box-shadow: inset 0 1px 0 rgba(255,255,255,0.05), 0 0 40px -20px rgba(252,211,77,0.22); }
+.cve-tile.med  { border-color: rgba(125,211,252,0.15); background: rgba(125,211,252,0.02); box-shadow: inset 0 1px 0 rgba(255,255,255,0.05); }
+.cve-tile.low  { border-color: var(--glass-border); background: var(--glass-1); opacity: 0.7; }
+.cve-tile:hover { transform: translateY(-3px); border-color: var(--glass-border-bright); }
 .cve-id { font-family: 'JetBrains Mono', monospace; font-size: 0.75rem; color: var(--text-dim); }
 .cve-score { position: absolute; top: 15px; right: 15px; font-family: 'Sora'; font-size: 1.2rem; font-weight: 800; }
 .cve-desc { font-size: 0.85rem; color: var(--text); overflow: hidden; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; line-clamp: 3; line-height: 1.4;}
@@ -387,13 +502,20 @@ footer::before {
 @media (max-width: 768px) {
   .glass { backdrop-filter: blur(16px) saturate(1.4); -webkit-backdrop-filter: blur(16px) saturate(1.4); }
   .grid-2 { grid-template-columns: 1fr; }
-  .nav-island { gap: 10px; width: 90%; justify-content: space-around; padding: 10px; }
+  .nav-island { gap: 10px; width: 92%; justify-content: space-around; padding: 10px 14px; }
   .nav-island a { font-size: 0.7rem; padding: 4px 8px; }
+  .hero__title { font-size: clamp(3rem, 14vw, 6rem); }
+  .hero__title-wrap { padding: 40px 20px; }
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  .hero__title { animation: float 9s ease-in-out infinite; }
-  .status-pill::before { animation: dot-pulse 2.4s ease-in-out infinite; }
+@media (prefers-reduced-motion: reduce) {
+  .hero__title,
+  .hero__title::before,
+  .hero__title::after,
+  .hero__title-wrap::before,
+  .status-pill::before,
+  .nav-island { animation: none !important; }
+  .glass, .cve-tile { transition: none !important; }
 }
 </style>
     <script src="{{ url_for('static', filename='vendor/three.min.js') }}"></script>
@@ -628,11 +750,17 @@ footer::before {
                 </div>
             </div>
             <div class="glass cd-body">
-                <h3 style="font-size:1.2rem; margin-bottom:10px;">DEVSECOPS LIQUID GLASS</h3>
-                <p style="color:var(--text-dim); font-size:0.9rem;">Monolithic Next-Gen UI architecture featuring real-time API integrations, NVD feeds, and Github CI polling.</p>
-                <div style="margin-top:1rem; display:flex; gap:10px;">
-                    <span class="status-pill" style="padding:5px 12px; border:1px solid rgba(125,211,252,0.3); color:var(--accent); background:rgba(125,211,252,0.05); font-weight:normal; border-radius:6px;">Flask</span>
-                    <span class="status-pill" style="padding:5px 12px; border:1px solid rgba(125,211,252,0.3); color:var(--accent); background:rgba(125,211,252,0.05); font-weight:normal; border-radius:6px;">Three.js</span>
+                <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:12px;">
+                    <h3 style="font-size:1.2rem; margin-bottom:10px;">THREAT INTELLIGENCE PLATFORM</h3>
+                    <span class="status-pill" style="padding:4px 12px; font-size:0.65rem; letter-spacing:0.15em; color:var(--lilac); background:rgba(196,181,253,0.08); border:1px solid rgba(196,181,253,0.28); border-radius:20px; box-shadow:none;">◌ COMING SOON</span>
+                </div>
+                <p style="color:var(--text-dim); font-size:0.9rem;">Next-generation SOC dashboard with ML-powered anomaly detection, real-time log correlation, and automated incident response playbooks. Built on cloud-native principles.</p>
+                <div style="margin-top:1rem; display:flex; flex-wrap:wrap; gap:10px;">
+                    <span class="status-pill" style="padding:5px 12px; border:1px solid rgba(125,211,252,0.3); color:var(--accent); background:rgba(125,211,252,0.05); font-weight:normal; border-radius:6px; box-shadow:none;">Python</span>
+                    <span class="status-pill" style="padding:5px 12px; border:1px solid rgba(125,211,252,0.3); color:var(--accent); background:rgba(125,211,252,0.05); font-weight:normal; border-radius:6px; box-shadow:none;">FastAPI</span>
+                    <span class="status-pill" style="padding:5px 12px; border:1px solid rgba(125,211,252,0.3); color:var(--accent); background:rgba(125,211,252,0.05); font-weight:normal; border-radius:6px; box-shadow:none;">Kafka</span>
+                    <span class="status-pill" style="padding:5px 12px; border:1px solid rgba(125,211,252,0.3); color:var(--accent); background:rgba(125,211,252,0.05); font-weight:normal; border-radius:6px; box-shadow:none;">Elasticsearch</span>
+                    <span class="status-pill" style="padding:5px 12px; border:1px solid rgba(125,211,252,0.3); color:var(--accent); background:rgba(125,211,252,0.05); font-weight:normal; border-radius:6px; box-shadow:none;">Kubernetes</span>
                 </div>
             </div>
         </div>
@@ -821,45 +949,76 @@ footer::before {
         /* ==============================================================
            MODULE 3: GITHUB ACTIONS PIPELINE
         ============================================================== */
+        function fmtLocalTime(iso, withSeconds) {
+            if(!iso) return '--:--';
+            const d = new Date(iso);
+            if(isNaN(d.getTime())) return '--:--';
+            return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: withSeconds ? '2-digit' : undefined, hour12: false });
+        }
+
         async function fetchPipeline() {
             const listObj = document.getElementById('pipeline-list');
-            document.getElementById('pipeline-sync').innerText = 'Syncing...';
+            const syncEl = document.getElementById('pipeline-sync');
+            const deployVal = document.getElementById('deploy-val');
+            const deployAgo = document.getElementById('deploy-ago');
+            syncEl.innerText = 'Syncing...';
             try {
-                const res = await fetch('/api/github/runs');
-                if(res.ok) {
-                    const data = await res.json();
-                    let hts = '';
-                    const runs = data.runs || [];
-                    runs.forEach((r, i) => {
-                        let stClass = 'ok';
-                        if(r.status === 'in_progress' || r.status === 'queued') stClass = 'prog';
-                        else if(r.conclusion === 'failure') stClass = 'fail';
-                        
-                        // Extract time or relative if possible, but we'll stick to a clean display
-                        const timeStr = r.started ? r.started.replace('T', ' ').replace('Z', '').split(' ')[1] : '--:--';
-                        
-                        hts += `<div class="pipe-row pipe-new" style="animation-delay:${i*0.1}s">
-                            <div class="pipe-status ${stClass}"></div>
-                            <div class="pipe-sha">${r.sha || r.id}</div>
-                            <div class="pipe-msg">${r.message || 'CI Build'}</div>
-                            <div style="color:var(--text-dim);">${timeStr}</div>
-                            <div style="text-align:right;"><span class="status-pill" style="padding:2px 8px; font-size:0.7rem; border-color:transparent;">${r.conclusion || r.status || 'RUN'}</span></div>
-                        </div>`;
-                        
-                        // Populate top mini-card Last Deploy
-                        if(i===0) {
-                            document.getElementById('deploy-val').innerText = timeStr;
-                            document.getElementById('deploy-ago').innerText = r.conclusion ? "Status: " + r.conclusion.toUpperCase() : "Deploying...";
-                            if(stClass === 'fail') document.getElementById('deploy-val').style.color = 'var(--crit)';
-                            else if(stClass === 'ok') document.getElementById('deploy-val').style.color = 'var(--ok)';
-                        }
-                    });
-                    
-                    if(hts !== '') listObj.innerHTML = hts;
-                    
-                    setTimeout(()=> { document.getElementById('pipeline-sync').innerText = 'Synced'; }, 800);
+                const res = await fetch('/api/github/runs', {cache: 'no-store'});
+                const data = await res.json().catch(() => ({}));
+                const runs = Array.isArray(data.runs) ? data.runs : [];
+
+                if(!res.ok || data.error) {
+                    listObj.innerHTML = `<div class="mono" style="color:var(--crit); padding:20px; text-align:center;">API OFFLINE — ${(data.error || res.status || 'unreachable')}</div>`;
+                    syncEl.innerText = 'Offline';
+                    deployVal.innerText = '--:--:--';
+                    deployAgo.innerText = 'GitHub API offline';
+                    return;
                 }
-            } catch(e) { console.error('Github API error', e); }
+
+                if(runs.length === 0) {
+                    listObj.innerHTML = `<div class="mono" style="color:var(--text-dim); padding:20px; text-align:center;">No workflow runs returned</div>`;
+                    syncEl.innerText = 'Synced';
+                    deployVal.innerText = '--:--:--';
+                    deployAgo.innerText = 'No runs yet';
+                    return;
+                }
+
+                let hts = '';
+                runs.forEach((r, i) => {
+                    let stClass = 'ok';
+                    if(r.status === 'in_progress' || r.status === 'queued') stClass = 'prog';
+                    else if(r.conclusion === 'failure') stClass = 'fail';
+
+                    const timeStr = fmtLocalTime(r.started, false);
+
+                    hts += `<div class="pipe-row pipe-new" style="animation-delay:${i*0.1}s">
+                        <div class="pipe-status ${stClass}"></div>
+                        <div class="pipe-sha">${r.sha || r.id}</div>
+                        <div class="pipe-msg">${r.message || 'CI Build'}</div>
+                        <div style="color:var(--text-dim);">${timeStr}</div>
+                        <div style="text-align:right;"><span class="status-pill" style="padding:2px 8px; font-size:0.7rem; border-color:transparent; box-shadow:none;">${r.conclusion || r.status || 'RUN'}</span></div>
+                    </div>`;
+
+                    // Populate top mini-card Last Deploy from runs[0]
+                    if(i === 0) {
+                        deployVal.innerText = fmtLocalTime(r.started, true);
+                        const conc = (r.conclusion || '').toUpperCase();
+                        deployAgo.innerText = conc ? `Status: ${conc}` : (r.status ? `Status: ${r.status.toUpperCase()}` : 'Deploying...');
+                        if(stClass === 'fail') { deployVal.style.color = 'var(--crit)'; deployAgo.style.color = 'var(--crit)'; }
+                        else if(stClass === 'ok') { deployVal.style.color = 'var(--ok)'; deployAgo.style.color = 'var(--ok)'; }
+                        else { deployVal.style.color = 'var(--accent)'; deployAgo.style.color = 'var(--text-mute)'; }
+                    }
+                });
+
+                listObj.innerHTML = hts;
+                setTimeout(() => { syncEl.innerText = 'Synced'; }, 800);
+            } catch(e) {
+                console.error('Github API error', e);
+                listObj.innerHTML = `<div class="mono" style="color:var(--crit); padding:20px; text-align:center;">API OFFLINE — ${e.message || 'network error'}</div>`;
+                syncEl.innerText = 'Offline';
+                deployVal.innerText = '--:--:--';
+                deployAgo.innerText = 'GitHub API offline';
+            }
         }
         setInterval(fetchPipeline, 60000); // 60s
 
