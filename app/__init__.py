@@ -72,6 +72,6 @@ def create_app():
 
     @app.route('/api/health')
     def health():
-        return jsonify({'status': 'ok', 'service': 'bbmlab', 'version': '1.0'}), 200
+        return jsonify({'status': 'ok', 'service': 'bbmlab', 'version': '1.0', 'timestamp': time()}), 200
 
     return app

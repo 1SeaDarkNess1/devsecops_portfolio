@@ -45,7 +45,7 @@ jobs:
             docker rm portfolio-app || true
             # Construim imaginea noua din codul adus proaspat
             docker build -t bbm-portfolio .
-            # Pornim aplicatia cu env-file si restart policy
+            # Pornim aplicația cu env-file și restart policy
             docker run -d \
               --name portfolio-app \
               --restart unless-stopped \

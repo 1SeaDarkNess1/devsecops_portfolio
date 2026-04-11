@@ -28,7 +28,18 @@ jobs:
         with:
           config: "p/default"
 
-      # Pasul 4: Scanam Containerul Docker de virusi si pachete vechi
+      # Pasul 4: Smoke test pre-deploy (Vulnerabilitate: Regresii de import)
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Smoke test imports
+        run: |
+          pip install --quiet -r requirements.txt
+          python -c "from app import create_app; app = create_app(); print('✓ Flask app imports OK'); print(f'✓ {len(list(app.url_map.iter_rules()))} routes registered')"
+
+      # Pasul 5: Scanam Containerul Docker de virusi si pachete vechi
       - name: Run Trivy vulnerability scanner
         uses: aquasecurity/trivy-action@master
         with:
