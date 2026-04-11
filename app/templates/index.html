@@ -400,9 +400,12 @@ footer { padding: 4rem 2rem; text-align: center; font-family: 'JetBrains Mono'; 
 
             <!-- MODULE 6: SBOM VIEWER -->
             <div class="glass cd-body" style="padding-top: 1.5rem;">
-                <div style="display:flex; justify-content:space-between; margin-bottom: 20px;">
+                <div style="display:flex; justify-content:space-between; margin-bottom: 20px; align-items:center;">
                     <div class="cd-title">SBOM VIEWER (SYFT)</div>
-                    <div class="mono" style="font-size:0.8rem; color:var(--text-dim);" id="sbom-count">-- components</div>
+                    <div style="display:flex; gap:12px; align-items:center;">
+                        <div id="trivy-status" style="display:flex; gap:5px;"></div>
+                        <div class="mono" style="font-size:0.8rem; color:var(--text-dim);" id="sbom-count">-- components</div>
+                    </div>
                 </div>
                 <input type="text" class="sbom-search" id="sbom-search" placeholder="Search package or vulnerability...">
                 <div class="sbom-table-container">
@@ -775,28 +778,40 @@ footer { padding: 4rem 2rem; text-align: center; font-family: 'JetBrains Mono'; 
         let globalSbom = [];
         async function fetchSbom() {
             try {
-                const res = await fetch('/static/sbom.json');
+                const res = await fetch('/api/sbom');
                 if(res.ok) {
                     const data = await res.json();
-                    if(data.artifacts) {
-                        globalSbom = data.artifacts;
-                        document.getElementById('sbom-count').innerText = `${globalSbom.length} components`;
+                    if(data.components) {
+                        globalSbom = data.components;
+                        document.getElementById('sbom-count').innerText = `${data.total} components`;
                         renderSbom(globalSbom);
                     }
                 }
             } catch(e) { console.error('SBOM fail', e); }
+            fetchTrivy();
+        }
+        async function fetchTrivy() {
+            try {
+                const res = await fetch('/api/trivy');
+                if(res.ok) {
+                    const data = await res.json();
+                    const status = document.getElementById('trivy-status');
+                    status.innerHTML = '';
+                    if(data.counts.CRITICAL > 0) status.innerHTML += `<span class="status-pill" style="color:var(--crit); border-color:var(--crit); font-size:0.7rem; padding:2px 6px;">${data.counts.CRITICAL} CRIT</span>`;
+                    if(data.counts.HIGH > 0) status.innerHTML += `<span class="status-pill" style="color:#FB923C; border-color:#FB923C; font-size:0.7rem; padding:2px 6px;">${data.counts.HIGH} HIGH</span>`;
+                }
+            } catch(e) {}
         }
         function renderSbom(arr) {
             const tb = document.getElementById('sbom-tbody');
             if(arr.length === 0) { tb.innerHTML = `<tr><td colspan="4">No match</td></tr>`; return; }
             let hts = '';
             arr.slice(0, 30).forEach(a => { // show max 30
-                const lic = a.licenses && a.licenses[0] ? a.licenses[0] : 'UNKNOWN';
                 hts += `<tr class="sbom-row">
                     <td>${a.name}</td>
                     <td style="color:var(--accent);">${a.version}</td>
                     <td><span class="status-pill" style="padding:2px 6px; font-size:0.7rem;">${a.type}</span></td>
-                    <td>${lic}</td>
+                    <td>${a.license}</td>
                 </tr>`;
             });
             tb.innerHTML = hts;
@@ -809,7 +824,7 @@ footer { padding: 4rem 2rem; text-align: center; font-family: 'JetBrains Mono'; 
                 const term = e.target.value.toLowerCase();
                 if(term === '') renderSbom(globalSbom);
                 else {
-                    const matched = globalSbom.filter(x => x.name.toLowerCase().includes(term) || (x.licenses&&x.licenses[0]&&x.licenses[0].toLowerCase().includes(term)));
+                    const matched = globalSbom.filter(x => x.name.toLowerCase().includes(term) || x.license.toLowerCase().includes(term));
                     renderSbom(matched);
                 }
             }, 150);
@@ -831,16 +846,16 @@ footer { padding: 4rem 2rem; text-align: center; font-family: 'JetBrains Mono'; 
             const globe = new THREE.Mesh(geometry, material);
             scene.add(globe);
 
-            // Fetch Mocked Threats targeting FRA
-            let threats = [];
+            // Fetch Real-time Threats from Blueprint
+            let threatsData = [];
             try {
-                const tr = await fetch('/static/threats.json');
+                const tr = await fetch('/api/threats');
                 if(tr.ok) { 
-                    threats = await tr.json(); 
-                    let c = 0; threats.forEach(x => c += x.count);
-                    document.getElementById('threat-counter').innerText = c.toLocaleString() + '+';
+                    const data = await tr.json(); 
+                    threatsData = data.attacks || [];
+                    document.getElementById('threat-counter').innerText = (data.total || 0).toLocaleString() + '+';
                 }
-            } catch(e){}
+            } catch(e){ console.error("Threat fetch fail", e); }
 
             // Convert lat/lng to 3D sphere coordinate
             function getVec3(lat, lng, radius) {
@@ -854,7 +869,7 @@ footer { padding: 4rem 2rem; text-align: center; font-family: 'JetBrains Mono'; 
 
             // Add Origin Dots & Arcs
             const arcs = [];
-            threats.forEach((t, i) => {
+            threatsData.forEach((t, i) => {
                 const originVec = getVec3(t.lat, t.lng, 2.02);
                 // dot
                 const dotG = new THREE.SphereGeometry(0.04, 8, 8);

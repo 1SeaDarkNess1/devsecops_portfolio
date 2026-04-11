@@ -10,6 +10,8 @@ import random
 from extensions import limiter
 from modules.proxies import proxies_bp
 from modules.github_feed import github_bp
+from modules.sbom import sbom_bp
+from modules.threats import threats_bp
 
 app = Flask(__name__, static_folder='static')
 
@@ -17,6 +19,8 @@ app = Flask(__name__, static_folder='static')
 limiter.init_app(app)
 app.register_blueprint(proxies_bp)
 app.register_blueprint(github_bp)
+app.register_blueprint(sbom_bp)
+app.register_blueprint(threats_bp)
 
 # Stare globala pentru Chaos Engineering
 chaos_state = {"end_time": 0}
@@ -83,41 +87,6 @@ def trigger_chaos():
     # Haosul dureaza exact 8 secunde
     chaos_state["end_time"] = time.time() + 8
     return jsonify({"status": "success", "message": "Chaos Engine Initiated"})
-
-@app.route('/api/threats')
-def threats():
-    LOG_PATH = '/app/host_auth.log'
-    TAIL_LINES = 50
-    MAX_RESULTS = 5
-    ATTACK_KEYWORDS = re.compile(r'Failed password|Invalid user|Ban', re.IGNORECASE)
-    IP_PATTERN = re.compile(r'(\d{1,3}\.\d{1,3})\.\d{1,3}\.\d{1,3}')
-    USER_PATTERN = re.compile(r'((?:password|user)\s+(?:for\s+))\S+', re.IGNORECASE)
-
-    if not os.path.isfile(LOG_PATH):
-        return jsonify({'threats': [], 'source': LOG_PATH, 'status': 'file_not_found'})
-
-    try:
-        with open(LOG_PATH, 'r', encoding='utf-8', errors='replace') as f:
-            lines = f.readlines()
-    except (PermissionError, OSError) as e:
-        return jsonify({'threats': [], 'source': LOG_PATH, 'status': str(e)})
-
-    tail = lines[-TAIL_LINES:] if len(lines) > TAIL_LINES else lines
-    masked_threats = []
-    for raw_line in tail:
-        line = raw_line.strip()
-        if not line or not ATTACK_KEYWORDS.search(line):
-            continue
-        line = IP_PATTERN.sub(r'\1.***.***', line)
-        line = USER_PATTERN.sub(r'\1[REDACTED]', line)
-        masked_threats.append(line)
-
-    return jsonify({
-        'threats': masked_threats[-MAX_RESULTS:],
-        'total_scanned': len(tail),
-        'total_matched': len(masked_threats),
-        'source': LOG_PATH
-    })
 
 @app.route('/api/analyze', methods=['POST'])
 def analyze_payload():
