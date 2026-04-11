@@ -1515,55 +1515,112 @@ footer::before {
             }
           }
 
+          /**
+           * Dual-schema reader. The backend historically has shipped two
+           * different /api/uptime shapes:
+           *
+           *   A) {ok, status, ratios: {"1d","7d","30d"}, monitor, updated}
+           *      — repo version (modules/uptime.py) using custom_uptime_ratio
+           *
+           *   B) {status, status_text, uptime_1d, uptime_7d, uptime_30d,
+           *       uptime_all_time, response_times[], avg_response_ms}
+           *      — alternate custom backend previously deployed
+           *
+           * pollUptime must render correctly against either one; whichever
+           * backend you rebuild against, the card will show real data.
+           */
+          function pickUptimePct(data) {
+            if (!data || typeof data !== 'object') return null;
+            const r = data.ratios || {};
+            const candidates = [
+              data.uptime_30d,    r['30d'],
+              data.uptime_7d,     r['7d'],
+              data.uptime_1d,     r['1d'],
+              data.uptime_all_time,
+            ];
+            for (const v of candidates) {
+              const n = Number(v);
+              if (Number.isFinite(n) && n > 0) return n;
+            }
+            return null;
+          }
+
+          function pickStatusText(data) {
+            if (!data) return 'PENDING';
+            // Schema B: explicit status_text — trust it unless it's literally UNKNOWN
+            if (data.status_text && data.status_text !== 'UNKNOWN') return data.status_text;
+            // Derive from UptimeRobot numeric status code
+            // 0 = paused, 1 = not checked, 2 = up, 8 = seems down, 9 = down
+            switch (data.status) {
+              case 2: return 'UP';
+              case 0: return 'PAUSED';
+              case 8: return 'DEGRADED';
+              case 9: return 'DOWN';
+              case 1: return 'PENDING';
+              default: return 'PENDING';
+            }
+          }
+
           async function pollUptime() {
+            let data = null;
             try {
               const res = await fetch('/api/uptime', { cache: 'no-store' });
-              if (!res.ok) throw new Error('HTTP ' + res.status);
-              const data = await res.json();
-              if (data.error) throw new Error(data.error);
+              const raw = await res.text();
+              try { data = JSON.parse(raw); } catch { data = null; }
 
-              // Fallback chain: prefer 30d, fall back to shorter windows or all-time.
-              // A fresh monitor can legitimately report uptime_30d = 0.
-              const pct = Number(
-                data.uptime_30d > 0 ? data.uptime_30d :
-                data.uptime_7d  > 0 ? data.uptime_7d  :
-                data.uptime_1d  > 0 ? data.uptime_1d  :
-                data.uptime_all_time || 0
-              );
+              // Expose last response on window for live console debug
+              window.__lastUptimeResponse = { status: res.status, ok: res.ok, data, raw: raw.slice(0, 400) };
+              console.log('[uptime] poll', { status: res.status, data });
+
+              if (!res.ok) throw new Error('HTTP ' + res.status);
+              if (!data) throw new Error('non-JSON response: ' + raw.slice(0, 80));
+              if (data.error) throw new Error(data.error);
+              if (data.ok === false) throw new Error(data.error || 'backend reported ok=false');
+
+              const pct = pickUptimePct(data);
+              const statusText = pickStatusText(data);
 
               // ─── Live Ops Strip: big percentage ───
               if (upValEl) {
-                upValEl.textContent = pct.toFixed(2) + '%';
+                upValEl.textContent = (pct != null ? pct.toFixed(2) : '—') + '%';
               }
 
-              // ─── Live Ops Strip: status sub-label (UP / DOWN / DEGRADED) ───
-              // Never land on UNKNOWN when the monitor exists — fall back to PENDING.
+              // ─── Live Ops Strip: status sub-label ───
               if (liveOpStatus) {
-                const statusText = (data.status_text && data.status_text !== 'UNKNOWN')
-                  ? data.status_text
-                  : (data.status === 2 ? 'UP' : 'PENDING');
                 liveOpStatus.textContent = statusText === 'UP' ? 'Operational' : statusText;
                 liveOpStatus.style.color = statusText === 'UP' ? LIME : '#FDA4AF';
               }
 
-              // ─── Infrastructure: big number (no decimals, cleaner) ───
+              // ─── Infrastructure: big number ───
               if (teleUpEl) {
-                teleUpEl.textContent = pct >= 99.995 ? '100' : pct.toFixed(1);
+                if (pct != null) {
+                  teleUpEl.textContent = pct >= 99.995 ? '100' : pct.toFixed(1);
+                } else {
+                  teleUpEl.textContent = '—';
+                }
               }
 
-              // ─── Infrastructure: sparkline from response times ───
+              // ─── Infrastructure sparkline from response_times (Schema B only) ───
               if (Array.isArray(data.response_times) && data.response_times.length > 1) {
                 renderSpark(data.response_times);
               }
 
-              // Optional telemetry for debug (non-visible)
-              document.documentElement.dataset.uptimeAvgMs = String(data.avg_response_ms ?? 0);
-              document.documentElement.dataset.uptimeSamples = String((data.response_times || []).length);
+              // Debug breadcrumbs on <html> dataset for quick inspection
+              document.documentElement.dataset.uptimePct = String(pct ?? '');
+              document.documentElement.dataset.uptimeStatus = statusText;
+              document.documentElement.dataset.uptimeSchema =
+                (data.ratios ? 'A' : (data.uptime_30d != null || data.uptime_all_time != null ? 'B' : '?'));
             } catch (e) {
-              console.warn('[uptime] poll failed:', e.message);
-              // Keep previous values visible — don't flash "--" on transient errors
+              console.warn('[uptime] poll failed:', e && e.message, data);
+              // Keep previous values visible — don't flash 0% on transient errors.
+              document.documentElement.dataset.uptimeError = (e && e.message) || 'unknown';
             }
           }
+
+          // Expose for live debugging in DevTools console:
+          //   await window.__pollUptime()     → re-run manually
+          //   window.__lastUptimeResponse     → last raw response
+          window.__pollUptime = pollUptime;
 
           // Initial fetch + periodic refresh
           pollUptime();
