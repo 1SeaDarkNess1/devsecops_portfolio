@@ -25,6 +25,8 @@ from time import time
 import requests
 from flask import Blueprint, jsonify
 
+from ..extensions import limiter
+
 uptime_bp = Blueprint('uptime', __name__)
 
 UR_ENDPOINT = 'https://api.uptimerobot.com/v2/getMonitors'
@@ -37,6 +39,7 @@ _CACHE_TTL = 120  # seconds
 
 
 @uptime_bp.route('/api/uptime')
+@limiter.exempt
 def uptime():
     now = time()
     if _cache['data'] and (now - _cache['ts']) < _CACHE_TTL:
