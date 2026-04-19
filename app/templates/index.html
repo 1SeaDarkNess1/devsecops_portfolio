@@ -1226,119 +1226,7 @@
       background: rgba(255, 255, 255, 0.03);
     }
 
-    /* MODULE 7: THREAT GLOBE — cinematic card */
-    .threat-card {
-      padding: 0 !important;
-      overflow: hidden;
-      position: relative;
-      aspect-ratio: 1 / 0.95;
-      min-height: 460px;
-      max-height: 560px;
-    }
-
-    .threat-card__header {
-      position: absolute;
-      top: 22px;
-      left: 26px;
-      right: 26px;
-      z-index: 5;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      pointer-events: none;
-    }
-
-    .threat-card__label {
-      font-family: var(--font-mono);
-      font-size: 0.68rem;
-      letter-spacing: 0.22em;
-      text-transform: uppercase;
-      color: var(--text-3);
-    }
-
-    .threat-card__live {
-      display: inline-flex;
-      align-items: center;
-      gap: 7px;
-      font-family: var(--font-mono);
-      font-size: 0.65rem;
-      color: var(--lime);
-      letter-spacing: 0.15em;
-    }
-
-    .threat-card__live::before {
-      content: '';
-      width: 6px;
-      height: 6px;
-      border-radius: 50%;
-      background: var(--lime);
-      box-shadow: 0 0 10px var(--lime);
-      animation: live-pulse 1.8s ease-in-out infinite;
-    }
-
-    @keyframes live-pulse {
-
-      0%,
-      100% {
-        opacity: 1;
-      }
-
-      50% {
-        opacity: 0.3;
-      }
-    }
-
-    #globe-container {
-      position: absolute;
-      inset: 0;
-      width: 100%;
-      height: 100%;
-      background: radial-gradient(circle at center, rgba(94, 234, 212, 0.06) 0%, transparent 70%);
-    }
-
-    #globe-container canvas {
-      display: block;
-      width: 100% !important;
-      height: 100% !important;
-    }
-
-    .threat-card__footer {
-      position: absolute;
-      bottom: 24px;
-      left: 26px;
-      right: 26px;
-      z-index: 5;
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-end;
-      pointer-events: none;
-    }
-
-    .threat-card__counter {
-      font-family: var(--font-display);
-      font-weight: 900;
-      font-size: 2.4rem;
-      color: var(--lime);
-      line-height: 1;
-      text-shadow: 0 0 30px rgba(190, 242, 100, 0.5);
-    }
-
-    .threat-card__counter-label {
-      font-family: var(--font-mono);
-      font-size: 0.62rem;
-      letter-spacing: 0.18em;
-      text-transform: uppercase;
-      color: var(--text-3);
-      margin-top: 7px;
-    }
-
-    .threat-card__coords {
-      font-family: var(--font-mono);
-      font-size: 0.62rem;
-      color: var(--text-3);
-      text-align: right;
-      line-height: 1.6;
-    }
+    /* MODULE 7: THREAT GLOBE 3D — styles live in app/static/css/globe.css */
 
     /* MODULE 8: COMPLIANCE SCORE CARD */
     .comp-col {
@@ -1527,7 +1415,9 @@
       }
     }
   </style>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/globe.css') }}">
   <script src="{{ url_for('static', filename='vendor/three.min.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/globe.js') }}" defer></script>
 </head>
 
 <body>
@@ -1760,21 +1650,41 @@
     </div>
 
     <div class="grid-2">
-      <!-- MODULE 7: THREAT GLOBE -->
-      <div class="glass threat-card">
-        <div class="threat-card__header">
-          <span class="threat-card__label">Threat Map 3D</span>
-          <span class="threat-card__live">LIVE</span>
+      <!-- MODULE 7: THREAT GLOBE 3D -->
+      <div class="glass globe-card">
+        <div class="globe-head">
+          <div class="t">THREAT MAP 3D · <span class="src">NVD · GreyNoise</span></div>
+          <div class="live-tag"><span class="d"></span>LIVE</div>
         </div>
-        <div id="globe-container"></div>
-        <div class="threat-card__footer">
-          <div>
-            <div id="threat-counter" class="threat-card__counter">10+</div>
-            <div class="threat-card__counter-label">Attacks Blocked This Month</div>
+
+        <!-- three.js canvas mounts here — no overlays over it -->
+        <div class="globe-viewport" id="globe-container" aria-label="3D threat map"></div>
+
+        <!-- legend + stats: BELOW globe, two columns -->
+        <div class="globe-meta">
+          <div class="globe-legend">
+            <div class="lg-row"><i class="sw lime"></i>HQ · FRA</div>
+            <div class="lg-row"><i class="sw coral"></i>High intensity</div>
+            <div class="lg-row"><i class="sw amber"></i>Medium</div>
+            <div class="lg-row"><i class="sw aqua"></i>Arc shimmer</div>
           </div>
-          <div class="threat-card__coords">
-            SERVER: FRA<br>
-            50.11°N · 8.68°E
+          <div class="globe-stats">
+            <div class="row"><span class="k">countries</span><span class="v" id="gb-countries">—</span></div>
+            <div class="row"><span class="k">attacks / 30d</span><span class="v" id="gb-attacks">—</span></div>
+            <div class="row"><span class="k">top origin</span><span class="v" id="gb-top">—</span></div>
+          </div>
+        </div>
+
+        <div class="globe-foot">
+          <div class="block">
+            <div class="big"><span id="gb-total">0</span><span class="plus">+</span></div>
+            <div class="sub">Attacks Blocked · 30d</div>
+          </div>
+          <div class="block right">
+            <div class="meta">
+              SERVER · <span class="v">FRA</span><br>
+              <span class="v">50.11°N · 8.68°E</span>
+            </div>
           </div>
         </div>
       </div>
@@ -2536,240 +2446,8 @@
     });
 
     /* ==============================================================
-       MODULE 7: THREAT GLOBE 3D — cinematic rebuild
+       MODULE 7: THREAT GLOBE 3D — implementation in app/static/js/globe.js
     ============================================================== */
-    function initGlobe() {
-      const container = document.getElementById('globe-container');
-      if (!container || !window.THREE) return;
-
-      const W = () => container.clientWidth;
-      const H = () => container.clientHeight;
-      if (W() === 0 || H() === 0) { setTimeout(initGlobe, 200); return; }
-
-      const scene = new THREE.Scene();
-      scene.fog = new THREE.FogExp2(0x0a1410, 0.08);
-
-      const camera = new THREE.PerspectiveCamera(50, W() / H(), 0.1, 1000);
-      camera.position.set(0, 0, 3.2);
-
-      const renderer = new THREE.WebGLRenderer({
-        alpha: true,
-        antialias: true,
-        powerPreference: 'high-performance'
-      });
-      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-      renderer.setSize(W(), H());
-      renderer.setClearColor(0x000000, 0);
-      container.appendChild(renderer.domElement);
-
-      // Globe group (parent for rotation)
-      const globeGroup = new THREE.Group();
-      scene.add(globeGroup);
-
-      const RADIUS = 1.0;
-
-      // Layer 1: Solid inner sphere (dark body)
-      const innerGeom = new THREE.SphereGeometry(RADIUS * 0.985, 64, 64);
-      const innerMat = new THREE.MeshBasicMaterial({
-        color: 0x0a1a14,
-        transparent: true,
-        opacity: 0.9
-      });
-      globeGroup.add(new THREE.Mesh(innerGeom, innerMat));
-
-      // Layer 2: Wireframe mesh (subtle green tech grid)
-      const wireGeom = new THREE.SphereGeometry(RADIUS, 48, 32);
-      const wireMat = new THREE.LineBasicMaterial({
-        color: 0xbef264,
-        transparent: true,
-        opacity: 0.18
-      });
-      const wireframe = new THREE.LineSegments(
-        new THREE.WireframeGeometry(wireGeom),
-        wireMat
-      );
-      globeGroup.add(wireframe);
-
-      // Layer 3: Dotted coastline approximation (fibonacci sphere distribution)
-      const dotsGeom = new THREE.BufferGeometry();
-      const dotPositions = [];
-      const DOT_COUNT = 800;
-      for (let i = 0; i < DOT_COUNT; i++) {
-        const phi = Math.acos(1 - 2 * (i + 0.5) / DOT_COUNT);
-        const theta = Math.PI * (1 + Math.sqrt(5)) * i;
-        const x = RADIUS * 1.002 * Math.sin(phi) * Math.cos(theta);
-        const y = RADIUS * 1.002 * Math.sin(phi) * Math.sin(theta);
-        const z = RADIUS * 1.002 * Math.cos(phi);
-        dotPositions.push(x, y, z);
-      }
-      dotsGeom.setAttribute('position', new THREE.Float32BufferAttribute(dotPositions, 3));
-      const dotsMat = new THREE.PointsMaterial({
-        color: 0x5eead4,
-        size: 0.009,
-        transparent: true,
-        opacity: 0.7,
-        sizeAttenuation: true
-      });
-      globeGroup.add(new THREE.Points(dotsGeom, dotsMat));
-
-      // Layer 4: Outer atmosphere glow sphere (backside shader)
-      const atmGeom = new THREE.SphereGeometry(RADIUS * 1.06, 64, 64);
-      const atmMat = new THREE.ShaderMaterial({
-        uniforms: {},
-        vertexShader: `
-                    varying vec3 vNormal;
-                    void main() {
-                        vNormal = normalize(normalMatrix * normal);
-                        gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
-                    }
-                `,
-        fragmentShader: `
-                    varying vec3 vNormal;
-                    void main() {
-                        float intensity = pow(0.68 - dot(vNormal, vec3(0, 0, 1.0)), 2.8);
-                        gl_FragColor = vec4(0.745, 0.949, 0.392, 1.0) * intensity;
-                    }
-                `,
-        side: THREE.BackSide,
-        blending: THREE.AdditiveBlending,
-        transparent: true
-      });
-      scene.add(new THREE.Mesh(atmGeom, atmMat));
-
-      // Attack markers
-      const markersGroup = new THREE.Group();
-      globeGroup.add(markersGroup);
-
-      function latLngToVec3(lat, lng, r) {
-        r = r || RADIUS * 1.01;
-        const phi = (90 - lat) * (Math.PI / 180);
-        const theta = (lng + 180) * (Math.PI / 180);
-        return new THREE.Vector3(
-          -r * Math.sin(phi) * Math.cos(theta),
-          r * Math.cos(phi),
-          r * Math.sin(phi) * Math.sin(theta)
-        );
-      }
-
-      function addMarker(lat, lng) {
-        const pos = latLngToVec3(lat, lng, RADIUS * 1.01);
-        const dotGeom = new THREE.SphereGeometry(0.015, 16, 16);
-        const dotMat = new THREE.MeshBasicMaterial({ color: 0xfda4af, transparent: true, opacity: 1 });
-        const dot = new THREE.Mesh(dotGeom, dotMat);
-        dot.position.copy(pos);
-        dot.userData.pulsePhase = Math.random() * Math.PI * 2;
-        markersGroup.add(dot);
-
-        // Vertical beam rising from surface
-        const beamHeight = 0.12;
-        const beamGeom = new THREE.CylinderGeometry(0.002, 0.002, beamHeight, 6);
-        const beamMat = new THREE.MeshBasicMaterial({
-          color: 0xfda4af,
-          transparent: true,
-          opacity: 0.5
-        });
-        const beam = new THREE.Mesh(beamGeom, beamMat);
-        beam.position.copy(pos.clone().multiplyScalar(1 + beamHeight / (2 * RADIUS)));
-        beam.lookAt(new THREE.Vector3(0, 0, 0));
-        beam.rotateX(Math.PI / 2);
-        markersGroup.add(beam);
-      }
-
-      // Arcs from attackers to server (Frankfurt)
-      const arcsGroup = new THREE.Group();
-      globeGroup.add(arcsGroup);
-      const SERVER_LAT = 50.11;
-      const SERVER_LNG = 8.68;
-
-      function addArc(lat, lng) {
-        const start = latLngToVec3(lat, lng, RADIUS * 1.01);
-        const end = latLngToVec3(SERVER_LAT, SERVER_LNG, RADIUS * 1.01);
-        const mid = start.clone().add(end).multiplyScalar(0.5);
-        const midLength = mid.length();
-        mid.normalize().multiplyScalar(midLength + 0.35);
-
-        const curve = new THREE.QuadraticBezierCurve3(start, mid, end);
-        const points = curve.getPoints(50);
-        const geom = new THREE.BufferGeometry().setFromPoints(points);
-        const mat = new THREE.LineBasicMaterial({
-          color: 0xbef264,
-          transparent: true,
-          opacity: 0.35
-        });
-        arcsGroup.add(new THREE.Line(geom, mat));
-      }
-
-      // Fetch real threats, fallback to static
-      fetch('/api/threats', { cache: 'no-store' })
-        .then(r => r.json())
-        .then(data => {
-          const attacks = (Array.isArray(data) ? data : (data.attacks || [])).slice(0, 30);
-          attacks.forEach(a => {
-            const lat = (typeof a.lat === 'number') ? a.lat : null;
-            const lng = (typeof a.lon === 'number') ? a.lon : (typeof a.lng === 'number' ? a.lng : null);
-            if (lat != null && lng != null) {
-              addMarker(lat, lng);
-              addArc(lat, lng);
-            }
-          });
-          const counterEl = document.getElementById('threat-counter');
-          if (counterEl) {
-            const total = data.total || attacks.length;
-            if (total) counterEl.textContent = total.toLocaleString() + '+';
-          }
-        })
-        .catch(() => {
-          const samples = [
-            [39.9, 116.4], [55.75, 37.6], [22.3, 114.1],
-            [-23.5, -46.6], [34.05, -118.25], [1.35, 103.8]
-          ];
-          samples.forEach(s => { addMarker(s[0], s[1]); addArc(s[0], s[1]); });
-        });
-
-      // Animation loop
-      const clock = new THREE.Clock();
-      function animate() {
-        const t = clock.getElapsedTime();
-        globeGroup.rotation.y += 0.0015;
-        globeGroup.rotation.x = Math.sin(t * 0.2) * 0.08;
-
-        markersGroup.children.forEach(m => {
-          if (m.geometry && m.geometry.type === 'SphereGeometry') {
-            const p = m.userData.pulsePhase || 0;
-            const s = 1 + Math.sin(t * 2 + p) * 0.2;
-            m.scale.setScalar(s);
-            m.material.opacity = 0.7 + Math.sin(t * 2 + p) * 0.3;
-          }
-        });
-
-        arcsGroup.children.forEach((arc, i) => {
-          arc.material.opacity = 0.25 + Math.sin(t * 1.2 + i * 0.5) * 0.15;
-        });
-
-        renderer.render(scene, camera);
-        requestAnimationFrame(animate);
-      }
-      animate();
-
-      // Resize handler
-      if (window.ResizeObserver) {
-        const ro = new ResizeObserver(() => {
-          const w = W(), h = H();
-          if (w === 0 || h === 0) return;
-          camera.aspect = w / h;
-          camera.updateProjectionMatrix();
-          renderer.setSize(w, h);
-        });
-        ro.observe(container);
-      } else {
-        window.addEventListener('resize', () => {
-          camera.aspect = W() / H();
-          camera.updateProjectionMatrix();
-          renderer.setSize(W(), H());
-        });
-      }
-    }
-
 
     /* ==============================================================
        MODULE 8: COMPLIANCE CHECKLIST
@@ -2847,7 +2525,6 @@
       fetchMetrics();
       // Uptime poll is self-starting (IIFE in MODULE 5b)
       fetchSbom();
-      setTimeout(initGlobe, 500);
       initCompliance();
     };
 
