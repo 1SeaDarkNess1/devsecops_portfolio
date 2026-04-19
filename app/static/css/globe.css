@@ -1,0 +1,154 @@
+/* ===== Globe card layout — canvas full-bleed, zero overlay ===== */
+
+.globe-card {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.globe-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 2px 4px 0;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.22em;
+  color: var(--fg-label, #6b7a7f);
+  text-transform: uppercase;
+}
+.globe-head .t .src { color: var(--fg-secondary, #9aa3a7); opacity: 0.75; }
+.globe-head .live-tag {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: rgba(190, 242, 100, 0.1);
+  border: 1px solid rgba(190, 242, 100, 0.22);
+  color: #BEF264;
+  font-weight: 500;
+}
+.globe-head .live-tag .d {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: #BEF264;
+  box-shadow: 0 0 10px rgba(190, 242, 100, 0.8);
+  animation: globe-pulse 2.4s ease-in-out infinite;
+}
+
+/* Canvas viewport — square sphere, no overlay */
+.globe-viewport {
+  position: relative;
+  aspect-ratio: 1 / 1;
+  width: 100%;
+  overflow: hidden;
+  border-radius: 18px;
+  background:
+    radial-gradient(circle at 50% 50%, rgba(15, 28, 24, 0.6), rgba(8, 17, 31, 0.2) 65%, transparent 100%);
+  cursor: grab;
+}
+.globe-viewport:active { cursor: grabbing; }
+.globe-viewport canvas {
+  display: block;
+  width: 100% !important;
+  height: 100% !important;
+}
+
+/* Legend + stats — BELOW globe, two columns, zero overlap */
+.globe-meta {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 24px;
+  align-items: start;
+  padding: 0 4px;
+}
+.globe-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.globe-legend .lg-row {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9.5px;
+  letter-spacing: 0.18em;
+  color: var(--fg-secondary, #9aa3a7);
+  text-transform: uppercase;
+  display: inline-flex; gap: 8px; align-items: center;
+  background: rgba(255, 255, 255, 0.03);
+  padding: 5px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+.globe-legend .sw { width: 7px; height: 7px; border-radius: 50%; display: inline-block; }
+.globe-legend .sw.lime  { background: #BEF264; box-shadow: 0 0 8px rgba(190, 242, 100, 0.7); }
+.globe-legend .sw.coral { background: #fca5a5; }
+.globe-legend .sw.amber { background: #fbbf24; }
+.globe-legend .sw.aqua  { background: #5EEAD4; box-shadow: 0 0 8px rgba(94, 234, 212, 0.6); }
+
+.globe-stats {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  min-width: 180px;
+  padding: 10px 14px;
+  background: rgba(8, 17, 31, 0.35);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 10px;
+}
+.globe-stats .row {
+  display: flex; justify-content: space-between; gap: 14px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10.5px;
+  letter-spacing: 0.1em;
+}
+.globe-stats .k { color: var(--fg-label, #6b7a7f); text-transform: uppercase; }
+.globe-stats .v { color: #BEF264; font-weight: 500; }
+
+/* Footer — totem with blocked-attacks count */
+.globe-foot {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  padding: 18px 4px 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+}
+.globe-foot .big {
+  font-family: 'Sora', sans-serif;
+  font-size: 44px;
+  font-weight: 800;
+  color: #fff;
+  line-height: 1;
+  letter-spacing: -0.02em;
+}
+.globe-foot .big .plus { font-size: 0.55em; color: #5EEAD4; margin-left: 2px; }
+.globe-foot .sub {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.22em;
+  color: var(--fg-label, #6b7a7f);
+  text-transform: uppercase;
+  margin-top: 8px;
+}
+.globe-foot .block.right { text-align: right; }
+.globe-foot .meta {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  color: var(--fg-secondary, #9aa3a7);
+  text-transform: uppercase;
+  line-height: 1.7;
+}
+.globe-foot .meta .v { color: #fff; }
+
+@keyframes globe-pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50%      { opacity: 0.55; transform: scale(0.85); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .globe-head .live-tag .d { animation: none; }
+}
+
+@media (max-width: 780px) {
+  .globe-meta { grid-template-columns: 1fr; }
+  .globe-stats { min-width: 0; }
+  .globe-foot .big { font-size: 36px; }
+}
