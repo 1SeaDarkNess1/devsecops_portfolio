@@ -49,8 +49,8 @@
   function loadMaskCanvas() {
     return new Promise((resolve) => {
       const img = new Image();
-      img.crossOrigin = 'anonymous';
-      img.src = 'https://unpkg.com/three-globe@2.31.1/example/img/earth-topology.png';
+      // Served locally to avoid CSP blocking unpkg.com
+      img.src = '/static/img/earth-mask.png';
       img.onload = () => {
         const c = document.createElement('canvas');
         c.width = 1024; c.height = 512;
