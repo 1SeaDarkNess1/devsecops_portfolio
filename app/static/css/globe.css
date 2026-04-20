@@ -3,7 +3,8 @@
 .globe-card {
   display: flex;
   flex-direction: column;
-  gap: 18px;
+  gap: 14px;
+  min-width: 0;
 }
 
 .globe-head {
@@ -39,6 +40,9 @@
   position: relative;
   aspect-ratio: 1 / 1;
   width: 100%;
+  max-height: 520px;
+  max-width: 520px;
+  margin: 0 auto;
   overflow: hidden;
   border-radius: 18px;
   background:

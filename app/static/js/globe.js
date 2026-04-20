@@ -107,11 +107,12 @@
     renderer.setSize(w0, w0, false);
     mount.appendChild(renderer.domElement);
 
-    // --- dark core ---
+    // --- dark core (opaque, writes depth so back-side markers are occluded) ---
     const core = new THREE.Mesh(
-      new THREE.SphereGeometry(1, 64, 64),
-      new THREE.MeshBasicMaterial({ color: 0x0b1914, transparent: true, opacity: 0.95 })
+      new THREE.SphereGeometry(0.998, 64, 64),
+      new THREE.MeshBasicMaterial({ color: 0x0b1914 })
     );
+    core.renderOrder = 0;
     scene.add(core);
 
     // --- Fresnel atmosphere ---
@@ -233,7 +234,8 @@
 
     // --- interaction ---
     let dragging = false, lastX = 0, lastY = 0;
-    let targetY = 0.3, targetX = 0, rotY = 0.3, rotX = 0;
+    // Initial view: slight tilt + rotated so Europe/Africa face the camera
+    let targetY = -0.35, targetX = 0.15, rotY = -0.35, rotX = 0.15;
     let autoRot = !reducedMotion;
 
     mount.addEventListener('pointerdown', (e) => {
@@ -318,7 +320,8 @@
       const y =  Math.cos(phi);
       const z =  Math.sin(phi) * Math.sin(theta);
       const lat = 90 - (phi * 180 / Math.PI);
-      const lng = ((theta * 180 / Math.PI) % 360 + 540) % 360 - 180;
+      // ll2vec uses theta_v = (lng+180)*π/180, so lng = theta_deg - 180 (wrapped to [-180, 180])
+      const lng = ((theta * 180 / Math.PI - 180) % 360 + 540) % 360 - 180;
       if (isLandAt(mask, lat, lng)) {
         positions.push(x * 1.002, y * 1.002, z * 1.002);
       }
