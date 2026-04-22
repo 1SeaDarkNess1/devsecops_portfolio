@@ -75,7 +75,9 @@
     const px = Math.min(mask.width  - 1, Math.max(0, Math.floor(u * mask.width)));
     const py = Math.min(mask.height - 1, Math.max(0, Math.floor(v * mask.height)));
     const idx = (py * mask.width + px) * 4;
-    return mask.data[idx] > 90;
+    // earth-topology ocean ≈ 0, land varies 30-255; threshold 30 catches
+    // all continental shelves and interior while keeping oceans clean.
+    return mask.data[idx] > 30;
   }
 
   // ---------- Scene ----------
@@ -334,9 +336,9 @@
       vertexShader: `varying float vAlpha;
         void main(){
           vec4 mv = modelViewMatrix * vec4(position, 1.0);
-          vAlpha = clamp(-mv.z * 0.4 + 0.08, 0.0, 1.0);
+          vAlpha = clamp(-mv.z * 0.5 + 0.15, 0.0, 1.0);
           gl_Position = projectionMatrix * mv;
-          gl_PointSize = 2.2 * (1.6 / -mv.z);
+          gl_PointSize = 4.0 * (1.8 / -mv.z);
         }`,
       fragmentShader: `uniform vec3 uColor; varying float vAlpha;
         void main(){
