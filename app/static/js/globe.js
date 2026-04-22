@@ -72,17 +72,47 @@
     }
     const u = (lng + 180) / 360;
     const v = (90 - lat) / 180;
-    const px = Math.min(mask.width  - 1, Math.max(0, Math.floor(u * mask.width)));
-    const py = Math.min(mask.height - 1, Math.max(0, Math.floor(v * mask.height)));
-    const idx = (py * mask.width + px) * 4;
-    // earth-topology ocean ≈ 0, land varies 20-255; threshold 20 catches
-    // all continental shelves (flat interiors like Sahara/Australia)
-    // while keeping oceans clean.
-    return mask.data[idx] > 20;
+    const W = mask.width, H = mask.height;
+    const cx = Math.min(W - 1, Math.max(0, Math.floor(u * W)));
+    const cy = Math.min(H - 1, Math.max(0, Math.floor(v * H)));
+    // 3×3 dilation — if ANY neighbour pixel is above threshold, treat as land.
+    // Fills the pixel-scale holes produced by the anti-aliased topology PNG
+    // (flat interiors like Sahara/Gobi/Australian outback), so continents
+    // read as fully-filled silhouettes at every density we render.
+    const T = 10;
+    for (let dy = -1; dy <= 1; dy++) {
+      const py = Math.min(H - 1, Math.max(0, cy + dy));
+      for (let dx = -1; dx <= 1; dx++) {
+        const px = Math.min(W - 1, Math.max(0, cx + dx));
+        if (mask.data[(py * W + px) * 4] > T) return true;
+      }
+    }
+    return false;
+  }
+
+  // Reusable radial-gradient canvas → THREE.Texture for soft glows.
+  // One texture, many sprites: cheap on GPU, gives every marker a luminous
+  // halo instead of a flat dot.
+  function glowTexture() {
+    const size = 128;
+    const c = document.createElement('canvas');
+    c.width = c.height = size;
+    const ctx = c.getContext('2d');
+    const g = ctx.createRadialGradient(size/2, size/2, 0, size/2, size/2, size/2);
+    g.addColorStop(0.0, 'rgba(255,255,255,1.0)');
+    g.addColorStop(0.25, 'rgba(255,255,255,0.55)');
+    g.addColorStop(0.55, 'rgba(255,255,255,0.12)');
+    g.addColorStop(1.0, 'rgba(255,255,255,0.0)');
+    ctx.fillStyle = g;
+    ctx.fillRect(0, 0, size, size);
+    const tex = new THREE.CanvasTexture(c);
+    tex.minFilter = THREE.LinearFilter;
+    return tex;
   }
 
   // ---------- Scene ----------
   async function init() {
+    const GLOW_TEX = glowTexture();
     const threats = await loadThreats();
     threats.sort((a, b) => (b.count || 0) - (a.count || 0));
     const total = threats.reduce((s, t) => s + (t.count || 0), 0);
@@ -167,21 +197,41 @@
     const continents = await buildContinents(mask);
     scene.add(continents);
 
-    // --- HQ marker ---
+    // --- HQ marker: bright core + glow sprite + two staggered ripple rings ---
     const hqGroup = new THREE.Group();
+    const hqPos = hqVec.clone().multiplyScalar(1.012);
+
     const hqCore = new THREE.Mesh(
-      new THREE.SphereGeometry(0.018, 16, 16),
+      new THREE.SphereGeometry(0.02, 16, 16),
       new THREE.MeshBasicMaterial({ color: 0xBEF264 })
     );
-    hqCore.position.copy(hqVec.clone().multiplyScalar(1.01));
+    hqCore.position.copy(hqPos);
     hqGroup.add(hqCore);
-    const hqRing = new THREE.Mesh(
-      new THREE.RingGeometry(0.022, 0.028, 32),
-      new THREE.MeshBasicMaterial({ color: 0xBEF264, side: THREE.DoubleSide, transparent: true, opacity: 0.8 })
-    );
-    hqRing.position.copy(hqVec.clone().multiplyScalar(1.012));
-    hqRing.lookAt(0, 0, 0);
-    hqGroup.add(hqRing);
+
+    const hqGlow = new THREE.Sprite(new THREE.SpriteMaterial({
+      map: GLOW_TEX, color: 0xBEF264,
+      blending: THREE.AdditiveBlending, depthWrite: false, transparent: true, opacity: 0.95,
+    }));
+    hqGlow.position.copy(hqPos);
+    hqGlow.scale.setScalar(0.18);
+    hqGroup.add(hqGlow);
+
+    // Expanding ripple rings — two staggered copies on a 2s loop
+    const hqRipples = [];
+    for (let i = 0; i < 2; i++) {
+      const ring = new THREE.Mesh(
+        new THREE.RingGeometry(0.022, 0.028, 48),
+        new THREE.MeshBasicMaterial({
+          color: 0xBEF264, side: THREE.DoubleSide,
+          transparent: true, opacity: 0, depthWrite: false,
+        })
+      );
+      ring.position.copy(hqPos);
+      ring.lookAt(0, 0, 0);
+      ring.userData = { t: i * 0.5 }; // stagger by half a cycle
+      hqGroup.add(ring);
+      hqRipples.push(ring);
+    }
     scene.add(hqGroup);
 
     // --- threat markers + arcs ---
@@ -190,27 +240,44 @@
     const arcs = [];
     scene.add(markerGroup, arcGroup);
 
-    threats.forEach((t) => {
+    threats.forEach((t, idx) => {
       const origin = ll2vec(t.lat, t.lng);
+      const pos = origin.clone().multiplyScalar(1.01);
       const sev = t.count > 200 ? 'high' : t.count > 100 ? 'med' : 'low';
       const color = sev === 'high' ? 0xfca5a5 : sev === 'med' ? 0xfbbf24 : 0x5EEAD4;
 
+      // Bright dot (hard pixel on top)
       const dot = new THREE.Mesh(
-        new THREE.SphereGeometry(0.013, 12, 12),
+        new THREE.SphereGeometry(0.014, 14, 14),
         new THREE.MeshBasicMaterial({ color })
       );
-      dot.position.copy(origin.clone().multiplyScalar(1.01));
-      dot.userData = { base: 0.013, phase: Math.random() * Math.PI * 2 };
+      dot.position.copy(pos);
+      dot.userData = { kind: 'dot', phase: Math.random() * Math.PI * 2 };
       markerGroup.add(dot);
 
-      const halo = new THREE.Mesh(
-        new THREE.RingGeometry(0.02, 0.028, 24),
-        new THREE.MeshBasicMaterial({ color, side: THREE.DoubleSide, transparent: true, opacity: 0.45 })
+      // Soft additive glow sprite — turns every marker into a luminous pulse
+      const glowBase = 0.11 + (sev === 'high' ? 0.05 : sev === 'med' ? 0.025 : 0);
+      const glow = new THREE.Sprite(new THREE.SpriteMaterial({
+        map: GLOW_TEX, color,
+        blending: THREE.AdditiveBlending, depthWrite: false, transparent: true, opacity: 0.8,
+      }));
+      glow.position.copy(pos);
+      glow.scale.setScalar(glowBase);
+      glow.userData = { kind: 'glow', phase: Math.random() * Math.PI * 2, baseScale: glowBase };
+      markerGroup.add(glow);
+
+      // Expanding ripple ring — radiates outward once per cycle
+      const ripple = new THREE.Mesh(
+        new THREE.RingGeometry(0.018, 0.022, 40),
+        new THREE.MeshBasicMaterial({
+          color, side: THREE.DoubleSide,
+          transparent: true, opacity: 0, depthWrite: false,
+        })
       );
-      halo.position.copy(origin.clone().multiplyScalar(1.011));
-      halo.lookAt(0, 0, 0);
-      halo.userData = { phase: Math.random() * Math.PI * 2 };
-      markerGroup.add(halo);
+      ripple.position.copy(origin.clone().multiplyScalar(1.012));
+      ripple.lookAt(0, 0, 0);
+      ripple.userData = { kind: 'ripple', t: (idx % 6) / 6 }; // de-synced per marker
+      markerGroup.add(ripple);
 
       // elevated great-circle arc
       const mid = origin.clone().add(hqVec).multiplyScalar(0.5);
@@ -226,13 +293,24 @@
       arc.userData = { phase: Math.random() * Math.PI * 2 };
       arcGroup.add(arc);
 
-      const spark = new THREE.Mesh(
-        new THREE.SphereGeometry(0.011, 10, 10),
-        new THREE.MeshBasicMaterial({ color: 0x5EEAD4, transparent: true, opacity: 0.9 })
+      // Comet spark: hard core + trailing glow sprite for a textured "packet"
+      const sparkGroup = new THREE.Group();
+      const sparkCore = new THREE.Mesh(
+        new THREE.SphereGeometry(0.012, 10, 10),
+        new THREE.MeshBasicMaterial({ color: 0x5EEAD4 })
       );
-      spark.userData = { curve, t: Math.random(), speed: 0.004 + Math.random() * 0.004 };
-      arcGroup.add(spark);
-      arcs.push(spark);
+      const sparkGlow = new THREE.Sprite(new THREE.SpriteMaterial({
+        map: GLOW_TEX, color: 0x5EEAD4,
+        blending: THREE.AdditiveBlending, depthWrite: false, transparent: true, opacity: 0.9,
+      }));
+      sparkGlow.scale.setScalar(0.09);
+      sparkGroup.add(sparkCore, sparkGlow);
+      sparkGroup.userData = {
+        curve, glowMat: sparkGlow.material,
+        t: Math.random(), speed: 0.004 + Math.random() * 0.004,
+      };
+      arcGroup.add(sparkGroup);
+      arcs.push(sparkGroup);
     });
 
     // --- interaction ---
@@ -282,12 +360,23 @@
 
       if (!reducedMotion) {
         markerGroup.children.forEach(m => {
-          if (m.userData.base) {
-            m.scale.setScalar(1 + 0.35 * Math.sin(t * 2.5 + m.userData.phase));
-          } else {
-            const p = (Math.sin(t * 2.2 + (m.userData.phase || 0)) + 1) / 2;
-            m.material.opacity = 0.25 + 0.5 * p;
-            m.scale.setScalar(1 + p * 0.6);
+          const k = m.userData.kind;
+          if (k === 'dot') {
+            m.scale.setScalar(1 + 0.28 * Math.sin(t * 2.5 + m.userData.phase));
+          } else if (k === 'glow') {
+            // Breathing halo — size + opacity pulse together, preserving
+            // the per-marker base scale (severity-sized).
+            const p = (Math.sin(t * 2.2 + m.userData.phase) + 1) / 2;
+            m.material.opacity = 0.55 + 0.4 * p;
+            const base = m.userData.baseScale || 0.11;
+            m.scale.setScalar(base * (1 + 0.35 * p));
+          } else if (k === 'ripple') {
+            // One ring expanding outward, fading as it grows (radar-ping look).
+            m.userData.t = (m.userData.t + dt * 0.55) % 1;
+            const p = m.userData.t;
+            const s = 1 + p * 2.2;
+            m.scale.setScalar(s);
+            m.material.opacity = (1 - p) * 0.7;
           }
         });
         arcGroup.children.forEach(obj => {
@@ -299,11 +388,22 @@
           sp.userData.t += sp.userData.speed;
           if (sp.userData.t > 1) sp.userData.t = 0;
           sp.position.copy(sp.userData.curve.getPoint(sp.userData.t));
+          // Comet fades in/out at the endpoints, peaks mid-flight.
           const near = 1 - Math.abs(sp.userData.t - 0.5) * 2;
-          sp.material.opacity = 0.3 + near * 0.7;
+          if (sp.userData.glowMat) sp.userData.glowMat.opacity = 0.3 + near * 0.8;
         });
-        hqRing.scale.setScalar(1 + 0.25 * Math.sin(t * 2));
-        hqRing.material.opacity = 0.55 + 0.35 * Math.sin(t * 2 + 0.3);
+        // HQ core pulse
+        hqCore.scale.setScalar(1 + 0.18 * Math.sin(t * 2));
+        // HQ glow breathe
+        hqGlow.material.opacity = 0.75 + 0.2 * Math.sin(t * 2 + 0.3);
+        hqGlow.scale.setScalar(0.18 + 0.03 * Math.sin(t * 2));
+        // HQ ripple rings — staggered radar pings
+        hqRipples.forEach(r => {
+          r.userData.t = (r.userData.t + dt * 0.45) % 1;
+          const p = r.userData.t;
+          r.scale.setScalar(1 + p * 2.6);
+          r.material.opacity = (1 - p) * 0.85;
+        });
       }
 
       renderer.render(scene, camera);
@@ -314,7 +414,9 @@
 
   // ---------- Continents: dot cloud masked on Natural Earth texture ----------
   async function buildContinents(mask) {
-    const N = 90000;
+    // Higher N + 3×3 dilated mask + smaller point → denser, fully-filled
+    // continents without bleed into oceans.
+    const N = 140000;
     const positions = [];
     for (let i = 0; i < N; i++) {
       const phi = Math.acos(1 - 2 * (i + 0.5) / N);
@@ -340,7 +442,8 @@
           // Front hemisphere fully visible; back hemisphere fades out smoothly.
           vAlpha = clamp(-mv.z * 0.6 + 0.35, 0.0, 1.0);
           gl_Position = projectionMatrix * mv;
-          gl_PointSize = 4.6 * (1.8 / -mv.z);
+          // Slightly smaller dot now that N=140k; density carries the silhouette.
+          gl_PointSize = 3.8 * (1.8 / -mv.z);
         }`,
       fragmentShader: `uniform vec3 uColor; varying float vAlpha;
         void main(){
