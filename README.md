@@ -2,8 +2,8 @@
 
 > Live system monitoring dashboard cu pipeline CI/CD complet, security scanning automat și deploy pe VPS.
 
-[![CI Pipeline](https://github.com/1SeaDarkNess1/devsecops_portfolio/actions/workflows/ci.yml/badge.svg)](https://github.com/1SeaDarkNess1/devsecops_portfolio/actions/workflows/ci.yml)
-[![CD Pipeline](https://github.com/1SeaDarkNess1/devsecops_portfolio/actions/workflows/deploy.yml/badge.svg)](https://github.com/1SeaDarkNess1/devsecops_portfolio/actions/workflows/deploy.yml)
+[![CI Pipeline](https://github.com/seadarknesk/devsecops_portfolio/actions/workflows/ci.yml/badge.svg)](https://github.com/seadarknesk/devsecops_portfolio/actions/workflows/ci.yml)
+[![CD Pipeline](https://github.com/seadarknesk/devsecops_portfolio/actions/workflows/deploy.yml/badge.svg)](https://github.com/seadarknesk/devsecops_portfolio/actions/workflows/deploy.yml)
 ![Python](https://img.shields.io/badge/Python-3.11-blue?logo=python)
 ![Docker](https://img.shields.io/badge/Docker-containerized-blue?logo=docker)
 ![Nginx](https://img.shields.io/badge/Nginx-reverse--proxy-green?logo=nginx)
@@ -96,7 +96,7 @@ Se declanșează **doar după CI cu succes**:
 
 ```bash
 # Clonează repo-ul
-git clone https://github.com/1SeaDarkNess1/devsecops_portfolio
+git clone https://github.com/seadarknesk/devsecops_portfolio
 cd devsecops_portfolio
 
 # Rulează cu Docker

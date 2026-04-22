@@ -174,7 +174,7 @@ html_structure = """<!DOCTYPE html>
             <h2>PIPELINE STATUS</h2>
         </div>
         <div class="glass data-card">
-            <h3>GITHUB ACTIONS (1SeaDarkNess1/devsecops_portfolio)</h3>
+            <h3>GITHUB ACTIONS (seadarknesk/devsecops_portfolio)</h3>
             <div id="github-feed">
                 <div class="feed-item"><p>Loading Action Runs...</p></div>
             </div>
@@ -389,7 +389,7 @@ html_structure = """<!DOCTYPE html>
 
             // C. GitHub Actions
             try {
-                const gRes = await fetch('https://api.github.com/repos/1SeaDarkNess1/devsecops_portfolio/actions/runs?per_page=5');
+                const gRes = await fetch('https://api.github.com/repos/seadarknesk/devsecops_portfolio/actions/runs?per_page=5');
                 if(gRes.ok) {
                     const data = await gRes.json();
                     const container = document.getElementById('github-feed');

@@ -472,7 +472,7 @@ html = """<!DOCTYPE html>
         <div class="glass cd-body">
             <!-- MODULE 3: GITHUB FEED -->
             <div class="cd-title" style="display:flex; justify-content:space-between; align-items:center;">
-                <span>GITHUB ACTIONS ROUTER (1SeaDarkNess1/devsecops_portfolio)</span>
+                <span>GITHUB ACTIONS ROUTER (seadarknesk/devsecops_portfolio)</span>
                 <span class="mono" id="pipeline-sync">Syncing...</span>
             </div>
             <div class="pipeline-list" id="pipeline-list">
@@ -630,7 +630,7 @@ html = """<!DOCTYPE html>
                     <span class="status-pill" style="padding:5px 12px; border:1px solid rgba(167,243,208,0.3); color:var(--accent-mint); background:rgba(167,243,208,0.05); font-weight:normal; border-radius:6px;">Oracle Cloud</span>
                 </div>
                 <div style="margin-top:10px;">
-                    <a href="https://github.com/1SeaDarkNess1/devsecops_portfolio" target="_blank" class="mono" style="color:var(--accent-sky); font-size:0.8rem; text-decoration:none;">VIEW SOURCE ↗</a>
+                    <a href="https://github.com/seadarknesk/devsecops_portfolio" target="_blank" class="mono" style="color:var(--accent-sky); font-size:0.8rem; text-decoration:none;">VIEW SOURCE ↗</a>
                 </div>
             </div>
             <div class="glass cd-body">
