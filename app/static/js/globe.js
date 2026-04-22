@@ -75,14 +75,16 @@
     const W = mask.width, H = mask.height;
     const cx = Math.min(W - 1, Math.max(0, Math.floor(u * W)));
     const cy = Math.min(H - 1, Math.max(0, Math.floor(v * H)));
-    // 3×3 dilation — if ANY neighbour pixel is above threshold, treat as land.
-    // Fills the pixel-scale holes produced by the anti-aliased topology PNG
-    // (flat interiors like Sahara/Gobi/Australian outback), so continents
-    // read as fully-filled silhouettes at every density we render.
-    const T = 10;
-    for (let dy = -1; dy <= 1; dy++) {
+    // 5×5 dilation with a lenient threshold — if ANY pixel in the 25-cell
+    // neighbourhood reads above threshold, the candidate counts as land.
+    // Closes the last pixel-scale holes in anti-aliased regions (coastal
+    // transitions, small Pacific/Caribbean islands) without bleeding into
+    // open ocean: 5 pixels on a 1024×512 texture ≈ 200 km of reach, well
+    // within continental-shelf noise.
+    const T = 5;
+    for (let dy = -2; dy <= 2; dy++) {
       const py = Math.min(H - 1, Math.max(0, cy + dy));
-      for (let dx = -1; dx <= 1; dx++) {
+      for (let dx = -2; dx <= 2; dx++) {
         const px = Math.min(W - 1, Math.max(0, cx + dx));
         if (mask.data[(py * W + px) * 4] > T) return true;
       }
@@ -414,9 +416,9 @@
 
   // ---------- Continents: dot cloud masked on Natural Earth texture ----------
   async function buildContinents(mask) {
-    // Higher N + 3×3 dilated mask + smaller point → denser, fully-filled
+    // Higher N + 5×5 dilated mask + smaller point → denser, fully-filled
     // continents without bleed into oceans.
-    const N = 140000;
+    const N = 200000;
     const positions = [];
     for (let i = 0; i < N; i++) {
       const phi = Math.acos(1 - 2 * (i + 0.5) / N);
@@ -442,8 +444,8 @@
           // Front hemisphere fully visible; back hemisphere fades out smoothly.
           vAlpha = clamp(-mv.z * 0.6 + 0.35, 0.0, 1.0);
           gl_Position = projectionMatrix * mv;
-          // Slightly smaller dot now that N=140k; density carries the silhouette.
-          gl_PointSize = 3.8 * (1.8 / -mv.z);
+          // Smaller dot now that N=200k; density carries the silhouette.
+          gl_PointSize = 3.3 * (1.8 / -mv.z);
         }`,
       fragmentShader: `uniform vec3 uColor; varying float vAlpha;
         void main(){

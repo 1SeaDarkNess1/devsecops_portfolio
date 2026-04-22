@@ -1191,7 +1191,14 @@
       font-weight: 700;
       font-family: 'JetBrains Mono';
       line-height: 1;
-      width: 80px;
+      /* Was width: 80px — too narrow for 5-char values like "100.0" at
+         2.5rem, so the number visually overflowed and collided with the
+         sibling "%" div. Now sizes to content with a min-width floor so
+         short values (e.g. "20") still keep consistent visual weight. */
+      min-width: 80px;
+      flex-shrink: 0;
+      white-space: nowrap;
+      font-variant-numeric: tabular-nums;
     }
 
     .spark-svg {
