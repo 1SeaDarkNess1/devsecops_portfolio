@@ -641,19 +641,56 @@
       gap: 14px;
     }
 
+    /* Live-ops SSL cell: flatten the nested card so content sits dead-centre
+       (no more card-in-a-card with content clumped top-left). We keep the
+       .ssl-card element because the hover-tilt JS + flipIn animation target
+       it — just strip the double background/shadow/padding cap. */
     #live-ops .ssl-container {
       height: auto;
       min-height: 220px;
-      padding: 28px 22px;
+      padding: 32px 24px;
+      perspective: 1200px;
     }
 
     #live-ops .ssl-card {
       width: 100%;
       height: auto;
-      min-height: 180px;
-      max-width: 280px;
-      margin: 0 auto;
-      padding: 1.25rem;
+      min-height: 0;
+      max-width: none;
+      margin: 0;
+      padding: 0;
+      background: none;
+      box-shadow: none;
+      border-radius: 0;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      gap: 14px;
+    }
+
+    #live-ops .ssl-card > div {
+      width: 100%;
+    }
+
+    #live-ops .ssl-card .ssl-seal {
+      top: 6px;
+      right: 10px;
+      width: 34px;
+      height: 34px;
+      opacity: 0.3;
+      filter: blur(6px);
+    }
+
+    #live-ops .ssl-card .ssl-val {
+      margin: 0;
+      font-size: 1.15rem;
+      line-height: 1.35;
+    }
+
+    #live-ops .ssl-card .ssl-fingerprint {
+      margin-top: 6px;
     }
 
     @media (max-width: 1100px) {

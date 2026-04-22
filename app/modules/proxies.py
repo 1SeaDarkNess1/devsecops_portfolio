@@ -74,7 +74,13 @@ def _tls_cert_info(hostname, port=443, timeout=4):
             return s
     issuer = dict(x[0] for x in cert.get('issuer', []))
     subject = dict(x[0] for x in cert.get('subject', []))
-    issuer_str = ', '.join(f'{k}={v}' for k, v in issuer.items())
+    # Human-friendly display: "<Organization> <CommonName>" → e.g. "Let's Encrypt R13".
+    # Python's ssl.getpeercert() emits long attribute names (organizationName,
+    # commonName) instead of short OIDs (O, CN), so the frontend regex for
+    # `O=` / `CN=` never matched and the card rendered the raw key=value dump.
+    org = issuer.get('organizationName') or issuer.get('O', '')
+    cn  = issuer.get('commonName')       or issuer.get('CN', '')
+    issuer_str = f'{org} {cn}'.strip() or 'Unknown CA'
     return {
         'issuer': issuer_str,
         'issuer_name': issuer_str,
