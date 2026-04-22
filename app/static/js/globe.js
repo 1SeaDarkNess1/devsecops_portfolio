@@ -75,9 +75,10 @@
     const px = Math.min(mask.width  - 1, Math.max(0, Math.floor(u * mask.width)));
     const py = Math.min(mask.height - 1, Math.max(0, Math.floor(v * mask.height)));
     const idx = (py * mask.width + px) * 4;
-    // earth-topology ocean ≈ 0, land varies 30-255; threshold 30 catches
-    // all continental shelves and interior while keeping oceans clean.
-    return mask.data[idx] > 30;
+    // earth-topology ocean ≈ 0, land varies 20-255; threshold 20 catches
+    // all continental shelves (flat interiors like Sahara/Australia)
+    // while keeping oceans clean.
+    return mask.data[idx] > 20;
   }
 
   // ---------- Scene ----------
@@ -313,7 +314,7 @@
 
   // ---------- Continents: dot cloud masked on Natural Earth texture ----------
   async function buildContinents(mask) {
-    const N = 60000;
+    const N = 90000;
     const positions = [];
     for (let i = 0; i < N; i++) {
       const phi = Math.acos(1 - 2 * (i + 0.5) / N);
@@ -336,15 +337,19 @@
       vertexShader: `varying float vAlpha;
         void main(){
           vec4 mv = modelViewMatrix * vec4(position, 1.0);
-          vAlpha = clamp(-mv.z * 0.5 + 0.15, 0.0, 1.0);
+          // Front hemisphere fully visible; back hemisphere fades out smoothly.
+          vAlpha = clamp(-mv.z * 0.6 + 0.35, 0.0, 1.0);
           gl_Position = projectionMatrix * mv;
-          gl_PointSize = 4.0 * (1.8 / -mv.z);
+          gl_PointSize = 4.6 * (1.8 / -mv.z);
         }`,
       fragmentShader: `uniform vec3 uColor; varying float vAlpha;
         void main(){
           vec2 c = gl_PointCoord - 0.5;
-          if (length(c) > 0.5) discard;
-          gl_FragColor = vec4(uColor, vAlpha);
+          float d = length(c);
+          if (d > 0.5) discard;
+          // Soft round dot with anti-aliased edge.
+          float edge = smoothstep(0.5, 0.35, d);
+          gl_FragColor = vec4(uColor, vAlpha * edge);
         }`,
       transparent: true,
       depthWrite: false,

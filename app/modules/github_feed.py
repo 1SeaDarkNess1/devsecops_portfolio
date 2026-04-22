@@ -5,7 +5,7 @@ from time import time
 from datetime import datetime
 
 github_bp = Blueprint('github', __name__)
-REPO = os.environ.get('GITHUB_REPO', '1SeaDarkNess1/devsecops_portfolio')
+REPO = os.environ.get('GITHUB_REPO', 'seadarknesk/devsecops_portfolio')
 TOKEN = os.environ.get('GITHUB_TOKEN', '')
 _cache = {'ts': 0, 'data': None}
 

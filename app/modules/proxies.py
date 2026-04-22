@@ -1,6 +1,7 @@
 from flask import Blueprint, jsonify, request
-import requests, socket, ipaddress
+import requests, socket, ipaddress, ssl
 from urllib.parse import urlparse
+from datetime import datetime
 from time import time
 from app.extensions import limiter
 
@@ -58,28 +59,63 @@ def headers_scan():
         return jsonify({'error': str(e)}), 502
 
 # ─── MODUL 2: SSL Certificate Inspector ───
+def _tls_cert_info(hostname, port=443, timeout=4):
+    """Fetch live cert via a TLS handshake. Fast (<1s) and independent
+    of external APIs. Returns dict compatible with the crt.sh shape."""
+    ctx = ssl.create_default_context()
+    with socket.create_connection((hostname, port), timeout=timeout) as sock:
+        with ctx.wrap_socket(sock, server_hostname=hostname) as ssock:
+            cert = ssock.getpeercert()
+    # cert dates: 'Jun 25 19:48:39 2026 GMT'
+    def _iso(s):
+        try:
+            return datetime.strptime(s, '%b %d %H:%M:%S %Y %Z').strftime('%Y-%m-%dT%H:%M:%S')
+        except Exception:
+            return s
+    issuer = dict(x[0] for x in cert.get('issuer', []))
+    subject = dict(x[0] for x in cert.get('subject', []))
+    issuer_str = ', '.join(f'{k}={v}' for k, v in issuer.items())
+    return {
+        'issuer': issuer_str,
+        'issuer_name': issuer_str,
+        'common_name': subject.get('commonName', hostname),
+        'not_before': _iso(cert.get('notBefore', '')),
+        'not_after':  _iso(cert.get('notAfter', '')),
+        'serial': (cert.get('serialNumber') or '')[:16],
+        'total_certs': 1,
+        'nvb': _iso(cert.get('notBefore', '')),
+        'source': 'tls-handshake',
+    }
+
 @proxies_bp.route('/api/security/ssl')
 def ssl_inspect():
     domain = 'bbmlab.duckdns.org'
+
+    # Primary: direct TLS handshake — live, authoritative, <1s
     try:
-        data = cached(f'ssl:{domain}', 3600, lambda: safe_fetch(
-            f'https://crt.sh/?q={domain}&output=json').json())
-        if not data:
-            return jsonify({'error': 'no certs found'}), 404
-        # Sort by latest
-        latest = sorted(data, key=lambda x: x.get('not_after', ''), reverse=True)[0]
-        return jsonify({
-            'issuer': latest.get('issuer_name', 'Unknown'),
-            'common_name': latest.get('common_name', domain),
-            'not_before': latest.get('not_before'),
-            'not_after': latest.get('not_after'),
-            'serial': latest.get('serial_number', '')[:16],
-            'total_certs': len(data),
-            'nvb': latest.get('not_before'), # compatibility for frontend
-            'issuer_name': latest.get('issuer_name') # compatibility
-        })
-    except Exception as e:
-        return jsonify({'error': str(e)}), 502
+        data = cached(f'ssl-tls:{domain}', 3600, lambda: _tls_cert_info(domain))
+        return jsonify(data)
+    except Exception as primary_err:
+        # Fallback: crt.sh (CT logs) when TLS probe fails (DNS, firewall, etc.)
+        try:
+            logs = cached(f'ssl-crt:{domain}', 3600, lambda: safe_fetch(
+                f'https://crt.sh/?q={domain}&output=json', timeout=15).json())
+            if not logs:
+                return jsonify({'error': 'no certs found', 'primary_error': str(primary_err)}), 404
+            latest = sorted(logs, key=lambda x: x.get('not_after', ''), reverse=True)[0]
+            return jsonify({
+                'issuer': latest.get('issuer_name', 'Unknown'),
+                'issuer_name': latest.get('issuer_name'),
+                'common_name': latest.get('common_name', domain),
+                'not_before': latest.get('not_before'),
+                'not_after': latest.get('not_after'),
+                'serial': (latest.get('serial_number') or '')[:16],
+                'total_certs': len(logs),
+                'nvb': latest.get('not_before'),
+                'source': 'crt.sh',
+            })
+        except Exception as fallback_err:
+            return jsonify({'error': f'tls: {primary_err} | crt.sh: {fallback_err}'}), 502
 
 def _classify_severity(score):
     """Classify CVSS score per NVD v3.x standard.
